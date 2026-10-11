@@ -151,5 +151,10 @@ if(host){
  });
  $('assembly-kind').value='note';
  window.addEventListener('aeroforge:design-updated',e=>{if(e.detail?.result){design=e.detail.result;rebuild();}});
+ window.addEventListener('aeroforge:x500-record-updated',e=>{
+  const next=e.detail?.variant;
+  if($('assembly-track').value!=='px4'||!['six_c','six_x'].includes(next))return;
+  if($('assembly-variant').value!==next){$('assembly-variant').value=next;rebuild();}
+ });
  rebuild();
 }

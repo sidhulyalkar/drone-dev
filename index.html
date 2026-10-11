@@ -183,7 +183,23 @@
    <article class="q-card"><h3>03 / Typed compatibility findings</h3><p>Manufacturer-documented facts are visually distinct from fails, holds, and missing evidence. Expand any finding to see why it remains open.</p><div id="v06-findings" class="v06-findings"></div></article>
    <article class="q-card"><h3>04 / PX4 simulation bridge</h3><p id="v06-sim" class="q-caution"></p><p>PX4 maintains an upstream Gazebo x500 simulator with separate depth-camera and visual-odometry targets. You can run that baseline in a separate properly configured PX4 checkout, but it does not simulate the measured behavior of this exact Holybro kit.</p><p>Custom model calibration is blocked until real rotor geometry, inertia, motor coefficients, ESC mapping and battery tests have source-backed records.</p><a href="https://docs.px4.io/main/en/sim_gazebo_gz/vehicles" target="_blank" rel="noopener noreferrer">PX4 Gazebo model documentation ↗</a></article>
   </div>
-  <p class="q-bottom-note">Research-only engineering evidence. The platform does not approve component purchasing, battery charging, propeller spin-up, bench energization or physical flight.</p>
+  
+  <div class="q-grid" id="v14-revision-workbench">
+   <article class="q-card">
+    <h3>05 / Canonical aircraft component record</h3>
+    <p id="v14-identity" role="status">Loading exact variant identity...</p>
+    <ul class="v05-text-list" id="v14-parts"></ul>
+    <p><strong>CAD source linkage:</strong> registering a locally verified X500 V2 frame package in Section 17 links its SHA-256 here. This does not authenticate manufacturer origin, provide rotor datums or qualify physical fit.</p>
+    <button type="button" class="quiet" id="v14-download">↓ Export X500 revision record</button>
+    <p id="v14-change" class="q-caution" aria-live="polite">No revision changes.</p>
+   </article>
+   <article class="q-card">
+    <h3>06 / Evidence-gated connection graph</h3>
+    <p>These are functional connections to inspect, NOT a pin-to-pin wiring diagram. Incompatible power-module families produce a blocker; matching families still require revision-specific documentation and human inspection.</p>
+    <div id="v14-connections" class="v06-findings"></div>
+   </article>
+  </div>
+<p class="q-bottom-note">Research-only engineering evidence. The platform does not approve component purchasing, battery charging, propeller spin-up, bench energization or physical flight.</p>
  </section>
 
  <section class="assembly-v08" id="assembly-v08" aria-label="Assembly Copilot">

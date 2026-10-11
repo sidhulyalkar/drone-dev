@@ -1,8 +1,14 @@
-# AeroForge v1.3 · Source-Linked Drone CAD Workbench
+# AeroForge v1.4 · Source-Linked Drone Engineering Workbench
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
+
+## New in v1.4: Canonical Hardware Reference
+
+The X500 hardware lab (Section 12) now renders a canonical source-aware component record with **part-family identities and a typed connection/compatibility graph**. It preserves incompatible 6C/PM02D and 6X/PM02V3 family blocks, labels matching families as still needing pin-level inspection, and exports a revision-scoped source record. Locally hash-checked X500 V2 frame CAD from Section 17 may be linked to that frame record, but **never becomes source-authenticated or physically qualified**. When the kit variant changes, the PX4 Assembly Copilot selection tracks the variant.
+
+No pinouts, real rotor geometry, independently inspected hardware revisions or power/flight authority are inferred. See [v1.4 X500 Reference Graph](docs/V14_X500_REFERENCE_GRAPH.md).
 
 ## New in v1.3: Source-linked Local CAD Packages
 

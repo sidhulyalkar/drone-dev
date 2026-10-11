@@ -1,12 +1,37 @@
 import {qualifyKit,simulationHandoff,assemblyPacket} from './core/kit_v06.mjs';
+import {compileX500Record,attachX500Cad,compareX500Records} from './core/x500_record_v14.mjs';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const config={variant:'six_c',power:'auto',batteryCells:4,batterySku:'',radioSku:'',receiverSku:'',chargerSku:'',cadImported:false,physicalInspected:false};
-let last=null;
+let last=null,record=null,cadPreview=null;
 function file(text,name,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 function show(){
  try{
  last=qualifyKit(config);
+ const previous=record;
+ record=compileX500Record(config);
+ if(cadPreview){
+  try{record=attachX500Cad(record,cadPreview);}
+  catch{cadPreview=null;}
+ }
+ $('v14-identity').textContent=record.variant+' · '+record.graphStatus+
+  ' · local frame CAD '+(record.geometry.sourceHash?'linked but UNVERIFIED':'not linked');
+ $('v14-parts').innerHTML=Object.values(record.parts).map(p=>
+  '<li>'+p.qty+' × '+esc(p.label)+' <small>['+esc(p.familyId)+'] · revision UNKNOWN · '+(p.sourceUrl?
+   '<a target="_blank" rel="noopener noreferrer" href="'+esc(p.sourceUrl)+'">source ↗</a>':'source unresolved')+
+   '</small></li>').join('');
+ $('v14-connections').innerHTML=record.edges.map(e=>
+  '<details class="v06-finding"><summary><b class="v06-chip '+(e.status.startsWith('BLOCK')?'v06-fail':'v06-hold')+'">'+
+  esc(e.status)+'</b> '+esc(e.from)+' → '+esc(e.to)+'</summary><p>'+esc(e.kind)+
+  '</p><p>Verify: '+esc(e.mustVerify.join('; '))+'</p><small>NO VERIFIED PIN MAP OR CABLE RELEASE</small></details>').join('');
+ if(previous){
+  const changes=compareX500Records(previous,record);
+  $('v14-change').textContent=changes.changedSlots.length||changes.geometryChanged?
+   'Revision change invalidates: '+changes.invalidatedEvidence.join(', '):
+   'No new revision changes since the previous inspection.';
+ }
+ window.dispatchEvent(new CustomEvent('aeroforge:x500-record-updated',
+  {detail:{record,variant:record.variant}}));
  $('v06-status').textContent=last.status;
  $('v06-metrics').textContent=last.counts.documented+' documented screening facts · '+last.counts.unresolved+' unresolved · '+last.counts.failed+' failures';
  $('v06-module').textContent=last.flightController.fc+' / '+last.powerModule.name;
@@ -24,6 +49,14 @@ function init(){if(!$('v06-kit-variant'))return;
  const optional={batterySku:'v06-battery-sku',radioSku:'v06-radio-sku',receiverSku:'v06-rx-sku',chargerSku:'v06-charger-sku'};
  for(const [k,id] of Object.entries(optional))$(id).addEventListener('input',e=>{config[k]=e.target.value.trim();show();});
  for(const [k,id] of [['cadImported','v06-cad-flag'],['physicalInspected','v06-physical-flag']])$(id).addEventListener('change',e=>{config[k]=e.target.checked;show();});
+ $('v14-download').onclick=()=>{if(record)file(JSON.stringify(record,null,2)+'\n',
+  'aeroforge-x500-revision-record-v14.json','application/json');};
+ window.addEventListener('aeroforge:cad-visual-package-verified',e=>{
+  const preview=e.detail?.preview;
+  if(preview?.manifest?.source?.fileName?.toLowerCase()==='x500v2-frame.step'){
+   cadPreview=preview;show();
+  }
+ });
  $('v06-download-json').onclick=()=>{if(last)file(JSON.stringify(last,null,2)+'\n','aeroforge-v06-x500-kit-qualification.json','application/json');};
  $('v06-download-assembly').onclick=()=>file(assemblyPacket(config),'aeroforge-v06-assembly-evidence.md','text/markdown');
  $('v06-download-sim').onclick=()=>file(JSON.stringify(simulationHandoff(config),null,2)+'\n','aeroforge-v06-generic-sitl-handoff.json','application/json');

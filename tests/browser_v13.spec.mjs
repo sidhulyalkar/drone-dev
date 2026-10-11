@@ -68,6 +68,17 @@ test('exact local mesh/source identity is exposed without claiming trusted manuf
  await expect(page.locator('#cad-v13-export')).toBeEnabled();
  await expect(page.locator('#cad-v13-status')).not.toContainText('Package rejected');
 });
+test('X500 canonical compatibility blockers stay visible and keep PX4 assembly selection synchronized',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#assembly-track').selectOption('px4');
+ await page.locator('#v06-kit-variant').selectOption('six_x');
+ await expect(page.locator('#v14-identity')).toContainText('six_x');
+ await expect(page.locator('#assembly-variant')).toHaveValue('six_x');
+ await page.locator('#v06-kit-power').selectOption('pm02v3');
+ await expect(page.locator('#v14-identity')).toContainText('BLOCKED');
+ await expect(page.locator('#v14-connections')).toContainText('BLOCK_FAMILY_MISMATCH');
+ await expect(page.locator('#v14-parts')).toContainText('Pixhawk 6X');
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{
