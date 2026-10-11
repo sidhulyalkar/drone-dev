@@ -1,5 +1,5 @@
 /** AeroForge v2.3: check-level evidence linkage. Research planning, NEVER qualification. */
-import {compileX500InterfaceAudit} from './interface_registry_v21.mjs';
+import {compileX500InterfaceAudit,X500_INTERFACE_EDGES,findInterfacePart} from './interface_registry_v21.mjs';
 import {validateInspectionJournal} from './inspection_journal_v22.mjs';
 import {KIT_RECORD_SCHEMA} from './x500_record_v14.mjs';
 export const MATRIX_SCHEMA='aeroforge/interface-evidence-links/v2.3';
@@ -9,12 +9,29 @@ function context(record){
  if(record?.schema!==KIT_RECORD_SCHEMA)throw Error('Canonical X500 record required');
  return {aircraftReference:record.reference,revisionIdentity:record.revisionIdentity,variant:record.variant,batteryCells:record.selected.batteryCells};
 }
+const EDGE_IDS=Object.freeze(['motor-esc','esc-pdb','fc-power','frame-motor','pdb-battery','esc-actuator']);
+const graphById=new Map(X500_INTERFACE_EDGES.map(e=>[e.id,e]));
+function validContext(c){
+ return isObject(c)&&c.aircraftReference==='holybro-x500-v2'&&
+ ['six_c','six_x'].includes(c.variant)&&Number.isInteger(c.batteryCells)&&
+ c.batteryCells>=2&&c.batteryCells<=12&&typeof c.revisionIdentity==='string'&&
+ c.revisionIdentity.length>0&&c.revisionIdentity.length<=6000;
+}
 function checks(record){
  const a=compileX500InterfaceAudit({variant:record.variant,batteryCells:record.selected.batteryCells});
- const formal=a.edges.map(e=>({id:e.id,role:e.role,partRefs:[e.aId,e.bId].filter(Boolean),items:e.requiredReview,
-  sourceStatus:e.status}));
- const supplemental=a.supplemental.map(e=>({id:e.id,role:e.role,partRefs:[e.a,e.b].filter(Boolean),
-  items:e.checks,sourceStatus:e.status}));
+ const mapping={ 'motor-esc':'motor-esc','esc-pdb':'esc-pdb',
+  'fc-power':record.variant==='six_c'?'6c-power':'6x-power','frame-motor':'mount-motor'};
+ const formal=a.edges.map(e=>{
+  const source=graphById.get(mapping[e.id]);
+  const partRefs=[e.aId,e.bId].filter(Boolean);
+  return {id:e.id,role:e.role,partRefs,items:source?.checks??e.requiredReview,
+   sourceStatus:e.status,sourceUrls:[...new Set(partRefs.map(id=>findInterfacePart(id)?.source?.url).filter(Boolean))]};
+ });
+ const supplemental=a.supplemental.map(e=>{
+  const partRefs=[e.a,e.b].filter(Boolean);
+  return {id:e.id,role:e.role,partRefs,items:e.checks,sourceStatus:e.status,
+   sourceUrls:[...new Set(partRefs.map(id=>findInterfacePart(id)?.source?.url).filter(Boolean))]};
+ });
  return [...formal,...supplemental];
 }
 export function startInterfaceEvidenceLinks(record){
@@ -28,20 +45,21 @@ export function validateInterfaceEvidenceLinks(ledger){
  ledger.procurementApproved!==false||ledger.powerApproved!==false||ledger.flightApproved!==false)
   throw Error('Invalid interface evidence ledger');
  const c=ledger.activeContext;
- if(c.aircraftReference!=='holybro-x500-v2'||!['six_c','six_x'].includes(c.variant)||
- !Number.isInteger(c.batteryCells)||c.batteryCells<2||c.batteryCells>12||
- typeof c.revisionIdentity!=='string'||!c.revisionIdentity||c.revisionIdentity.length>6000)
-  throw Error('Invalid evidence ledger context');
+ if(!validContext(c))throw Error('Invalid evidence ledger context');
  const seen=new Set();
- for(const l of ledger.links){
-  if(!isObject(l)||typeof l.id!=='string'||!/^link-[0-9]{4}$/.test(l.id)||
-  !/^evt-[0-9]{4}$/.test(l.observationId)||typeof l.edgeId!=='string'||
-  !Number.isInteger(l.checkIndex)||l.checkIndex<0||typeof l.rationale!=='string'||
-  l.rationale.trim().length<12||l.rationale.length>1200||!isObject(l.context)||
-  !same(l.context,c)&&l.context.aircraftReference!=='holybro-x500-v2')
-   throw Error('Malformed interface evidence link');
-  if(seen.has(l.id))throw Error('Duplicate evidence link');
-  seen.add(l.id);
+ for(let i=0;i<ledger.links.length;i++){
+  const l=ledger.links[i];
+  if(!isObject(l)||l.id!=='link-'+String(i+1).padStart(4,'0')||
+   !/^evt-[0-9]{4}$/.test(l.observationId)||!EDGE_IDS.includes(l.edgeId)||
+   !Number.isInteger(l.checkIndex)||l.checkIndex<0||l.checkIndex>2||
+   typeof l.rationale!=='string'||l.rationale.trim().length<12||
+   l.rationale!==l.rationale.trim()||l.rationale.length>1200||
+   l.authority!=='UNVERIFIED_USER_ASSOCIATION'||!validContext(l.context))
+    throw Error('Malformed interface evidence link');
+  const key=[l.context.revisionIdentity,l.context.variant,l.context.batteryCells,
+   l.observationId,l.edgeId,l.checkIndex].join('::');
+  if(seen.has(key))throw Error('Duplicate evidence link');
+  seen.add(key);
  }
  return structuredClone(ledger);
 }
@@ -72,7 +90,7 @@ export function interfaceEvidenceMatrix(ledger,journal,record){
  const observations=new Map(j.events.filter(e=>e.type==='observation').map(e=>[e.id,e]));
  const reviews=new Set(j.events.filter(e=>e.type==='review').map(e=>e.observationId));
  const edges=checks(record).map(edge=>({
-  edgeId:edge.id,role:edge.role,partRefs:edge.partRefs,sourceStatus:edge.sourceStatus,
+  edgeId:edge.id,role:edge.role,partRefs:edge.partRefs,sourceStatus:edge.sourceStatus,sourceUrls:edge.sourceUrls,
   checks:edge.items.map((name,checkIndex)=>{
    const linked=safe.links.filter(l=>l.edgeId===edge.id&&l.checkIndex===checkIndex).map(l=>{
     const o=observations.get(l.observationId);
