@@ -1,4 +1,12 @@
-# AeroForge v2.2 · Revision-Aware Hardware Evidence Studio
+# AeroForge v2.4 Draft · Source-Bound Hardware Research Studio
+
+## New in v2.4: Two-Source X500 Frame + Motor CAD Study
+
+The Engineering workspace now supports separately verifying local frame and motor STEP originals with their converted GLB and manifest files, then proposing a user-annotated motor/frame transform and viewing both **real source-derived meshes** together. The motor placement is a hypothesis, and the broad-phase AABB check is not a physical interference test. The registration proposal is visible at the unresolved `frame-motor` checklist item without pretending its evidence is qualified. No manufacturer STEP bytes were fetched or redistributed for this code release. [v2.4 guide](docs/V24_X500_CAD_MATING.md).
+
+## New in v2.3: Check-Level Engineering Evidence Matrix
+
+Individual interface checks now expose evidence links to v2.2 observation records, independent-review notes, and configuration-stale history; user evidence never automatically closes any physical or safety hold. See [v2.3 specification](docs/V23_INTERFACE_EVIDENCE_MATRIX.md).
 
 ## v0.7: Exploded Assembly Showcase
 
