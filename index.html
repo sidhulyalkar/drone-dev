@@ -4,10 +4,10 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/><link rel="stylesheet" href="./feature_v16.css"/><link rel="stylesheet" href="./workspace_v17.css"/><link rel="stylesheet" href="./viewport_v18.css"/><link rel="stylesheet" href="./inspector_v19.css"/><link rel="stylesheet" href="./source_catalog_v20.css"/><link rel="stylesheet" href="./interface_audit_v21.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/><link rel="stylesheet" href="./feature_v16.css"/><link rel="stylesheet" href="./workspace_v17.css"/><link rel="stylesheet" href="./viewport_v18.css"/><link rel="stylesheet" href="./inspector_v19.css"/><link rel="stylesheet" href="./source_catalog_v20.css"/><link rel="stylesheet" href="./interface_audit_v21.css"/><link rel="stylesheet" href="./inspection_v22.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / INSPECT / LEARN</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> AIRCRAFT STUDIO <span class="version">V2.1</span></div>
+ <div class="header-center"><span class="pulse-dot"></span> AIRCRAFT STUDIO <span class="version">V2.2</span></div>
  <div class="header-right"><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
 <nav class="workflow-v12" id="workflow-v12" aria-label="AeroForge workspaces">
@@ -292,6 +292,80 @@
     <div id="v21-edges"></div>
    </details>
    <p id="v21-warning" class="v21-warning">A matching connector family does not verify physical gender, polarity, current capacity or safe wiring.</p>
+  </div>
+ </details>
+
+ <details id="v22-inspection" class="v22-inspection">
+  <summary><span>Physical evidence journal</span><small>Record received parts, measurements and independent reviews</small></summary>
+  <div class="v22-shell">
+   <div class="v22-head"><div><span class="ref-kicker">V2.2 / LOCAL INSPECTION EVIDENCE</span>
+    <h3>Document what you actually inspected.</h3>
+    <p>Every record is a self-reported observation tied to an aircraft revision. A second-person review adds traceability, never automatic electrical or flight approval.</p>
+    </div><output id="v22-summary" role="status">No physical observations recorded</output></div>
+   <div class="v22-actions">
+    <button type="button" id="v22-export">Export journal ↓</button>
+    <button type="button" id="v22-save">Save on this device</button>
+    <button type="button" id="v22-restore">Restore device copy</button>
+    <button type="button" id="v22-delete-save">Delete device copy</button>
+    <label class="v22-file-btn">Import journal JSON<input id="v22-import" type="file" accept=".json,application/json"/></label>
+   </div>
+   <p class="v22-hint">Device storage is opt-in. Exports contain observer names, observations and file hashes, not attachment bytes. Treat exports as private engineering notes.</p>
+   <div id="v22-current-context" class="v22-context">Checking current X500 configuration...</div>
+   <details id="v22-add" class="v22-sub" >
+    <summary>Add an inspection observation</summary>
+    <form id="v22-form" class="v22-form">
+     <div class="v22-grid">
+      <label>Published part or family<select id="v22-part" required></select></label>
+      <label>Observation type<select id="v22-kind">
+       <option value="received_identity">Received label / revision</option>
+       <option value="dimensional_measurement">Measured dimension</option>
+       <option value="connector_observation">Connector inspection</option>
+       <option value="cad_mating_hypothesis">CAD mating hypothesis</option>
+      </select></label>
+      <label>Received part label<input id="v22-label" required maxlength="180" placeholder="Label printed on the part"/></label>
+      <label>Received hardware revision<input id="v22-revision" required maxlength="180" placeholder="Board marking or unknown"/></label>
+      <label>Observer name or initials<input id="v22-observer" required maxlength="80" autocomplete="off"/></label>
+      <label>Observation date<input id="v22-date" required type="date"/></label>
+     </div>
+     <div id="v22-dimension-fields" class="v22-kind-fields" hidden>
+      <label>Measured feature<input id="v22-dimension-name" placeholder="Mount-hole center spacing"/></label>
+      <label>Value in millimetres<input id="v22-mm" type="number" min="0.00001" step="any"/></label>
+      <label>Measurement instrument<input id="v22-instrument" placeholder="Caliper, calibration reference"/></label>
+     </div>
+     <div id="v22-connector-fields" class="v22-kind-fields" hidden>
+      <label>Observed connector family<input id="v22-connector-family" placeholder="MR30, XT30, unknown"/></label>
+      <label>Observed physical mating details<input id="v22-gender" placeholder="Plug/receptacle, key and orientation"/></label>
+      <label>Inspection method<input id="v22-connector-method" placeholder="Visual check / drawing comparison"/></label>
+     </div>
+     <div id="v22-cad-fields" class="v22-kind-fields" hidden>
+      <label>Source CAD SHA-256<input id="v22-step-sha" maxlength="64" placeholder="64 hexadecimal characters"/></label>
+      <label>CAD datum description<input id="v22-datum" placeholder="Origin, shaft axis, mating plane"/></label>
+      <label>Proposed registration method<input id="v22-method" placeholder="How the mating transform was estimated"/></label>
+     </div>
+     <label>Observation notes<textarea id="v22-notes" rows="3" minlength="12" maxlength="1800" required placeholder="Describe what was actually seen, measured and still needs checking."></textarea></label>
+     <label>Optional local supporting file, hashed in your browser
+      <input id="v22-evidence-file" type="file"/></label>
+     <p class="v22-hint">Files are not uploaded or embedded. Only the name, size and SHA-256 of up to 15 MB is recorded. A hash proves byte identity, not source authenticity.</p>
+     <button type="submit" id="v22-add-observation">Record self-reported observation</button>
+    </form>
+   </details>
+   <details class="v22-sub" id="v22-review">
+    <summary>Record a second-person review</summary>
+    <form id="v22-review-form" class="v22-form">
+     <label>Observation to review<select id="v22-review-id" required></select></label>
+     <div class="v22-grid">
+      <label>Reviewer name / initials<input id="v22-reviewer" required maxlength="80" autocomplete="off"/></label>
+      <label>Review date<input id="v22-review-date" type="date" required/></label>
+     </div>
+     <label>Independent review notes<textarea id="v22-review-notes" rows="3" required minlength="12" maxlength="1800" placeholder="What was independently compared or questioned?"></textarea></label>
+     <button type="submit">Record review (not qualification)</button>
+    </form>
+   </details>
+   <details class="v22-sub" id="v22-history"><summary>Inspection history <span id="v22-event-count">0 records</span></summary>
+    <div id="v22-events"></div>
+   </details>
+   <p id="v22-feedback" role="status" aria-live="polite">Journal is held in this browser tab until you export it or explicitly save it locally.</p>
+   <p class="v22-boundary">Recorded inspection ≠ verified measurement. Recorded review ≠ independently certified fit, wire harness, bench power approval or flight readiness.</p>
   </div>
  </details>
 <p class="q-bottom-note">Research-only engineering evidence. The platform does not approve component purchasing, battery charging, propeller spin-up, bench energization or physical flight.</p>
@@ -588,4 +662,4 @@
   This is a preview of source-derived tessellated geometry, not measured aircraft placement. Sha-256 identifies specific bytes but never authenticates source ownership, scale, axes, physical registration, rotor centers, swept disks or safety. Only source files that you are permitted to use should be converted or shared.
  </footer>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./sourcing_ui_v20.mjs"></script><script type="module" src="./interface_audit_ui_v21.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./inspector_ui_v19.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script></body></html>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./sourcing_ui_v20.mjs"></script><script type="module" src="./interface_audit_ui_v21.mjs"></script><script type="module" src="./inspection_ui_v22.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./inspector_ui_v19.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script></body></html>

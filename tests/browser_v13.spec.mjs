@@ -376,6 +376,82 @@ test('Build part research opens X500 documentation without swapping the illustra
  await page.locator('#af-workspace-build').click();
  await expect(page.locator('#af-v19-current strong').first()).toHaveText(nameBefore);
 });
+
+test('physical inspection journal remains self-reported after recording a reviewed ESC and exports only research authority',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#v22-inspection > summary').click();
+ await expect(page.locator('#v22-summary')).toContainText('DOCUMENTATION ONLY');
+ await page.locator('#v22-add > summary').click();
+ await page.locator('#v22-part').selectOption('x500-esc20');
+ await page.locator('#v22-kind').selectOption('connector_observation');
+ await expect(page.locator('#v22-connector-fields')).toBeVisible();
+ await page.locator('#v22-label').fill('ESC 20A, printed manufacturer marking');
+ await page.locator('#v22-revision').fill('PCB REV-A, self-reported');
+ await page.locator('#v22-observer').fill('QA observer A');
+ await page.locator('#v22-date').fill('2026-10-10');
+ await page.locator('#v22-connector-family').fill('XT30');
+ await page.locator('#v22-gender').fill('Inspected mating shape, no continuity test');
+ await page.locator('#v22-connector-method').fill('Visual only using a loupe');
+ await page.locator('#v22-notes').fill('Examined a synthetic ESC identifier; actual polarity and wiring remain unresolved.');
+ await page.locator('#v22-form button[type="submit"]').click();
+ await expect(page.locator('#v22-summary')).toContainText('RECEIPT SELF REPORTED');
+ await expect(page.locator('#v22-events')).toContainText('evt-0001');
+ await page.locator('#v22-review > summary').click();
+ await page.locator('#v22-reviewer').fill('QA observer B');
+ await page.locator('#v22-review-date').fill('2026-10-11');
+ await page.locator('#v22-review-notes').fill('Compared the notes with a second description; this is no independent metrology.');
+ await page.locator('#v22-review-form button[type="submit"]').click();
+ await expect(page.locator('#v22-summary')).toContainText('INDEPENDENT REVIEW RECORDED');
+ const downloading=page.waitForEvent('download');
+ await page.locator('#v22-export').click();
+ const file=await downloading;
+ expect(file.suggestedFilename()).toContain('inspection-research-v22');
+ await expect(page.locator('#v22-feedback')).toContainText('Research packet exported');
+});
+test('inspection history goes stale across X500 hardware changes and can be explicitly saved/cleared locally',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#v22-inspection > summary').click();
+ await page.locator('#v22-add > summary').click();
+ await page.locator('#v22-part').selectOption('x500-frame');
+ await page.locator('#v22-label').fill('Frame plate sample mark');
+ await page.locator('#v22-revision').fill('Revision unidentified');
+ await page.locator('#v22-observer').fill('Tester A');
+ await page.locator('#v22-date').fill('2026-10-10');
+ await page.locator('#v22-notes').fill('Recorded plate stamping as an unverified observation in a synthetic browser test.');
+ await page.locator('#v22-form button[type="submit"]').click();
+ await expect(page.locator('#v22-summary')).toContainText('1 current');
+ await page.locator('#v22-save').click();
+ await expect(page.locator('#v22-feedback')).toContainText('opt-in copy');
+ await page.locator('#v06-kit-variant').selectOption('six_x');
+ await expect(page.locator('#v22-summary')).toContainText('1 stale');
+ await expect(page.locator('#v22-review-form button[type="submit"]')).toBeDisabled();
+ await page.locator('#v22-restore').click();
+ await expect(page.locator('#v22-events')).toContainText('STALE CONFIGURATION');
+ await page.locator('#v22-delete-save').click();
+ await expect(page.locator('#v22-feedback')).toContainText('cleared');
+ await page.locator('#v22-restore').click();
+ await expect(page.locator('#v22-feedback')).toContainText('No saved copy');
+});
+test('forged inspection journal event is rejected during browser import without deleting the active inspection state',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#v22-inspection > summary').click();
+ const fake={
+  schema:'aeroforge/inspection-journal/v2.2',aircraftReference:'holybro-x500-v2',
+  activeContext:{aircraftReference:'holybro-x500-v2',variant:'six_c',batteryCells:4,revisionIdentity:'fake revision'},
+  events:[{id:'evt-0001',type:'observation',integrityChecksum:'forged',payload:{
+   kind:'received_identity',partRef:'x500-frame',receivedLabel:'unknown',hardwareRevision:'unknown',
+   observer:'faker',observedOn:'2026-10-10',notes:'Not an inspected part, a forged receipt',
+   fileDigest:null,data:{}
+  },context:{variant:'six_c',batteryCells:4,revisionIdentity:'fake revision',aircraftReference:'holybro-x500-v2'}}]
+ };
+ await page.locator('#v22-import').setInputFiles({name:'forged.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify(fake))});
+ await expect(page.locator('#v22-feedback')).toContainText('checksum mismatch');
+ await expect(page.locator('#v22-event-count')).toContainText('0 records');
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{

@@ -1,9 +1,16 @@
-# AeroForge v2.1 · Source-Linked Drone Hardware Interfaces
+# AeroForge v2.2 · Revision-Aware Hardware Evidence Studio
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
 
+## New in v2.2: Physical Evidence Journal
+
+The X500 Engineering workspace now includes a compact **Physical evidence journal**. Record delivered-part labels, dimensions, connector observations and source-specific CAD mating hypotheses against the current aircraft selection, with dates, observer details and optional locally SHA-256-hashed attachment receipts. An independent second observer can record a review note; editing the X500 controller or battery-series selection marks prior evidence stale rather than carrying it forward silently.
+
+Journal storage is browser-tab-only by default, with explicit save/restore/delete of a local device copy and JSON export/import. An event checksum detects accidental edits but is not cryptographic provenance. The X500 aircraft record includes an evidence **summary** while its original physical compatibility and flight approval flags remain false.
+
+All physical inspection/review entries are **self-reported**. This release does not inspect actual Holybro hardware, authorize wiring/bench power, or validate mechanical fit. See [v2.2 Inspection Journal](docs/V22_INSPECTION_JOURNAL.md).
 ## New in v2.1: Source-Linked X500 Part Interface Audit
 
 Engineering → X500 Hardware includes a collapsed **Hardware interfaces** inspector. It maps published Holybro motor, ESC, PDB, frame and power-module product option identities to typed electrical or mechanical interface families, with explicit unknown connector gender, pinout, polarity, received revisions and physical fit. The documented 6C/PM02 V3 analog vs 6X/PM02D I2C families remain separate. Off-series batteries and mismatched power-module families are not silently accepted.

@@ -1,0 +1,41 @@
+/* AeroForge v2.2 journal: minimal evidence intake, explicit review authority. */
+.v22-inspection{border:1px solid #54746a;border-radius:12px;margin:20px 0 28px;background:#152c33;color:#dfebe2}
+.v22-inspection>summary{display:flex;align-items:center;gap:13px;padding:19px 20px;font-size:16px;font-weight:700;list-style:none;cursor:pointer}
+.v22-inspection>summary::-webkit-details-marker{display:none}
+.v22-inspection>summary:before{content:'+';font:24px ui-monospace,monospace;color:#d5e9ab}
+.v22-inspection[open]>summary:before{content:'−'}
+.v22-inspection>summary small{color:#a9c7bf;font-size:12px;font-weight:400}
+.v22-shell{border-top:1px solid #41665c;padding:19px}
+.v22-head{display:flex;justify-content:space-between;gap:20px;align-items:start}
+.v22-head h3{font-size:23px;margin:5px 0}
+.v22-head p{font-size:12px;color:#b1cbc4;line-height:1.65;max-width:690px}
+.v22-head output{max-width:250px;line-height:1.55;color:#f0cfaa;font-size:12px;text-align:right}
+.v22-actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 8px}
+.v22-actions button,.v22-file-btn,.v22-form button{font-size:11px;border-radius:6px;padding:11px 12px;border:1px solid #729782;background:#305648;color:#eaf4e6;cursor:pointer}
+.v22-file-btn{position:relative;overflow:hidden;display:inline-block}
+.v22-file-btn input{position:absolute;width:1px;height:1px;opacity:0}
+.v22-hint{color:#a6c5bc;font-size:11px;line-height:1.65}
+.v22-context{padding:12px;color:#d7e6d9;border:1px solid #42645c;background:#223d3d;border-radius:6px;font:11px/1.5 ui-monospace,monospace}
+.v22-sub{border-top:1px solid #42615d;margin-top:15px}
+.v22-sub>summary{list-style:none;cursor:pointer;padding:14px 4px;color:#e5efdf;font-size:12px;font-weight:650}
+.v22-sub>summary::-webkit-details-marker{display:none}
+.v22-form{display:grid;gap:12px;padding:4px 4px 18px}
+.v22-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.v22-form label{display:grid;gap:7px;color:#bed3c8;font-size:11px;line-height:1.5}
+.v22-form input,.v22-form textarea,.v22-form select{width:100%;box-sizing:border-box;border:1px solid #50786a;background:#0e2530;color:#e5f2e4;padding:11px 10px;border-radius:6px;font:12px/1.4 system-ui,sans-serif;min-width:0}
+.v22-form textarea{resize:vertical}
+.v22-kind-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.v22-kind-fields[hidden]{display:none!important}
+.v22-form button{justify-self:start}
+.v22-form button:disabled{opacity:.4;cursor:not-allowed}
+.v22-row{background:#203a41;border:1px solid #3e625c;padding:11px;margin:6px 0;border-radius:7px;font-size:11px}
+.v22-row strong{display:block;font-size:12px}
+.v22-row p{line-height:1.6;color:#b9c9c5;margin:5px 0;overflow-wrap:anywhere}
+.v22-row.stale{background:#443731;border-color:#866a59}
+.v22-row.review{background:#263d36;border-color:#517961}
+.v22-tag{font-size:10px;color:#e2cca1;font-family:ui-monospace,monospace;overflow-wrap:anywhere}
+#v22-feedback{font-size:11px;color:#b6ddc6;line-height:1.6;overflow-wrap:anywhere}
+.v22-boundary{background:#3b342b;color:#efd2a4;padding:12px;border-left:3px solid #e5b375;font-size:11px;line-height:1.7}
+.v22-inspection :is(summary,button,select,input,textarea,.v22-file-btn):focus-visible{outline:2px solid #d9f1ae;outline-offset:3px}
+@media(max-width:760px){.v22-head{display:block}.v22-head output{text-align:left}.v22-grid,.v22-kind-fields{grid-template-columns:1fr}.v22-inspection>summary{flex-wrap:wrap}.v22-shell{padding:13px}}
+@media(prefers-reduced-motion:reduce){.v22-inspection *{transition:none!important;animation:none!important}}

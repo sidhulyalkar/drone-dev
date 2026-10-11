@@ -2,10 +2,11 @@ import {qualifyKit,simulationHandoff,assemblyPacket} from './core/kit_v06.mjs';
 import {compileX500Record,attachX500Cad,compareX500Records} from './core/x500_record_v14.mjs';
 import {attachX500Registration} from './core/registration_v15.mjs';
 import {attachSourcingReference,findSourceSku} from './core/source_catalog_v20.mjs';
+import {attachInspectionEvidenceSummary} from './core/inspection_journal_v22.mjs';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const config={variant:'six_c',power:'auto',batteryCells:4,batterySku:'',radioSku:'',receiverSku:'',chargerSku:'',cadImported:false,physicalInspected:false};
-let last=null,record=null,cadPreview=null,registration=null,sourcingSku=null;
+let last=null,record=null,cadPreview=null,registration=null,sourcingSku=null,inspectionJournal=null;
 function file(text,name,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 function show(){
  try{
@@ -20,7 +21,11 @@ function show(){
   try{record=registration?attachX500Registration(record,cadPreview,registration):attachX500Cad(record,cadPreview);}
   catch{cadPreview=null;registration=null;}
  }
- $('v14-identity').textContent=record.variant+' · '+record.graphStatus+
+ if(inspectionJournal){
+  try{record=attachInspectionEvidenceSummary(record,inspectionJournal);}
+  catch{inspectionJournal=null;}
+ }
+  $('v14-identity').textContent=record.variant+' · '+record.graphStatus+
   ' · local frame CAD '+(record.geometry.sourceHash?'linked but UNVERIFIED':'not linked')+
   ' · source SKU '+(record.sourceCatalogCandidate?.sku||'unresolved');
  $('v14-parts').innerHTML=Object.values(record.parts).map(p=>
@@ -51,7 +56,25 @@ function show(){
  }catch(e){last=null;$('v06-alert').textContent='Invalid selection: '+e.message;}
 }
 function init(){if(!$('v06-kit-variant'))return;
- const selectIds={variant:'v06-kit-variant',power:'v06-kit-power',batteryCells:'v06-kit-cells'};
+ window.addEventListener('aeroforge:x500-record-requested',()=>{
+  if(record)window.dispatchEvent(new CustomEvent('aeroforge:x500-record-updated',
+   {detail:{record,variant:record.variant}}));
+ });
+ window.addEventListener('aeroforge:inspection-journal-updated',e=>{
+  const received=e.detail?.journal;
+  if(!record||received?.schema!=='aeroforge/inspection-journal/v2.2')return;
+  try{
+   const updated=attachInspectionEvidenceSummary(record,received);
+   inspectionJournal=received;record=updated;
+   const identity=$('v14-identity');
+   const prefix=identity.textContent.split(' · inspection ')[0];
+   identity.textContent=prefix+' · inspection '+
+    updated.inspectionSummary.stage.replaceAll('_',' ').toLowerCase()+
+    ' ('+updated.inspectionSummary.currentObservations+' current / '+
+    updated.inspectionSummary.staleObservations+' stale)';
+  }catch(err){$('v06-alert').textContent='Inspection journal rejected: '+err.message;}
+ });
+  const selectIds={variant:'v06-kit-variant',power:'v06-kit-power',batteryCells:'v06-kit-cells'};
  for(const [k,id] of Object.entries(selectIds)){$(id).value=config[k];$(id).addEventListener('change',e=>{
   config[k]=k==='batteryCells'?Number(e.target.value):e.target.value;
   if(sourcingSku&&(findSourceSku(sourcingSku)?.variant!==config.variant||config.batteryCells!==4))sourcingSku=null;
