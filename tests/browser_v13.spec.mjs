@@ -325,6 +325,57 @@ test('two published kit variants can be compared and exported as unapproved rese
  const downloaded=await downloadPromise;
  expect(downloaded.suggestedFilename()).toContain('30189');
 });
+
+test('X500 interface research exposes exact motor option SKUs and only unverified connector-family matches',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#v21-interface-audit > summary').click();
+ await expect(page.locator('#v21-current')).toContainText('6C');
+ await expect(page.locator('#v21-part-list')).toContainText('520085');
+ await expect(page.locator('#v21-part-list')).toContainText('520086');
+ await page.locator('#v21-motor').selectOption('x500-motor-ccw');
+ await page.locator('#v21-edge-disclosure > summary').click();
+ await expect(page.locator('#v21-edges')).toContainText('MR30');
+ await expect(page.locator('#v21-edges')).toContainText('mating unverified');
+ await expect(page.locator('#v21-warning')).toContainText('polarity');
+ await page.locator('#v21-role').selectOption('esc');
+ await expect(page.locator('#v21-part-list')).toContainText('520081');
+ await expect(page.locator('#v21-part-list')).toContainText('XT30');
+});
+test('the source-level X500 interface audit follows kit 6X choice and 6S mismatch',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#v21-interface-audit > summary').click();
+ await page.locator('#v21-role').selectOption('power-module');
+ await expect(page.locator('#v21-current')).toContainText('6C');
+ await expect(page.locator('#v21-part-list')).toContainText('PM02 V3');
+ await page.locator('#v06-kit-variant').selectOption('six_x');
+ await expect(page.locator('#v21-current')).toContainText('6X');
+ await expect(page.locator('#v21-part-list')).toContainText('CURRENT FAMILY');
+ await expect(page.locator('#v21-part-list')).toContainText('PM02D');
+ await page.locator('#v06-kit-cells').selectOption('6');
+ await expect(page.locator('#v21-status')).toContainText('BLOCKED SELECTION');
+ await expect(page.locator('#v21-warning')).toContainText('requires 4S');
+ const pending=page.waitForEvent('download');
+ await page.locator('#v21-export').click();
+ const file=await pending;
+ expect(file.suggestedFilename()).toContain('x500-six_x');
+});
+test('Build part research opens X500 documentation without swapping the illustrative FPV part',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-build').click();
+ await page.locator('#af-v19-part-browser summary').click();
+ await page.locator('#showcase-parts [data-showcase-id="motor-0"]').click();
+ const nameBefore=await page.locator('#af-v19-current strong').first().textContent();
+ await expect(page.locator('.af-v21-research-button')).toContainText('X500 motor');
+ await page.locator('.af-v21-research-button').click();
+ await expect(page.locator('#af-workspace-engineering')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#v21-interface-audit')).toHaveAttribute('open');
+ await expect(page.locator('#v21-role')).toHaveValue('motor');
+ await expect(page.locator('#v21-part-list')).toContainText('520085');
+ await page.locator('#af-workspace-build').click();
+ await expect(page.locator('#af-v19-current strong').first()).toHaveText(nameBefore);
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{

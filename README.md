@@ -1,9 +1,16 @@
-# AeroForge v2.0 · Source-Aware Drone Build Studio
+# AeroForge v2.1 · Source-Linked Drone Hardware Interfaces
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
 
+## New in v2.1: Source-Linked X500 Part Interface Audit
+
+Engineering → X500 Hardware includes a collapsed **Hardware interfaces** inspector. It maps published Holybro motor, ESC, PDB, frame and power-module product option identities to typed electrical or mechanical interface families, with explicit unknown connector gender, pinout, polarity, received revisions and physical fit. The documented 6C/PM02 V3 analog vs 6X/PM02D I2C families remain separate. Off-series batteries and mismatched power-module families are not silently accepted.
+
+Selected procedural FPV components in Build can jump to the related **X500 manufacturer research category**, without applying those SKUs to the FPV design. Open electrical/mechanical holds and source links are available on demand. You can export a source-dated research packet, not a purchasable or qualified BOM.
+
+Matching MR30 or XT30 connector family claims do **not** prove a safe physical mating. The actual Holybro STEP assets, received hardware revisions, electrical pinouts, motor mounting, battery protection and flight readiness remain unverified. See [v2.1 Hardware Interface Research](docs/V21_X500_INTERFACE_RESEARCH.md).
 ## New in v2.0: Source-Aware SKU Research
 
 The X500 Engineering workspace now has a compact, collapsed-by-default **Source catalog**. It records six exact manufacturer SKU identities: four Holybro X500 V2 kit controller/radio variants, the X500 V2 frame-kit SKU, and a SpeedyBee F405 V4 stack that the manufacturer lists as discontinued. Compare options and follow their official specification pages, review revision-specific unresolved interfaces, and export a dated research-only evidence packet.

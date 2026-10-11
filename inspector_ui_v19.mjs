@@ -1,5 +1,6 @@
 import {getCurrentDesign} from './app.mjs';
 import {compileComponentInspector} from './core/component_inspector_v19.mjs';
+import {researchRoleForShowcasePart} from './core/interface_registry_v21.mjs';
 const $=id=>document.getElementById(id),host=$('af-inspector-v19');
 if(host){
  let design=getCurrentDesign(),partId=null,plan=null;
@@ -16,7 +17,20 @@ if(host){
    make('p',card.identity.kind==='ILLUSTRATIVE_SUBASSEMBLY_PROXY'?
     'Illustrative subassembly, not an independently identified purchasable part.':
     'Catalog class '+card.identity.selectedCatalogId+' · received revision and real SKU unknown.','af-v19-muted'));
-  if(card.designScreen.blockers.length)$('af-v19-current').append(make('p',
+  const researchRole=researchRoleForShowcasePart(partId);
+  if(researchRole){
+   const action=make('button','Explore X500 '+researchRole+' references ↗','af-v21-research-button');
+   action.type='button';action.dataset.researchRole=researchRole;
+   action.addEventListener('click',()=>{
+    window.dispatchEvent(new CustomEvent('aeroforge:source-interface-research',
+     {detail:{partId,role:researchRole}}));
+   });
+   $('af-v19-current').append(action);
+   $('af-v19-current').append(make('p',
+    'X500 references belong to a different aircraft family. This is research, not a substitution for the selected FPV part.',
+    'af-v19-muted'));
+  }
+   if(card.designScreen.blockers.length)$('af-v19-current').append(make('p',
    card.designScreen.blockers.length+' design screening blocker(s). Physical fit remains unverified.','af-v19-blocker'));
   for(const f of card.specifications){
    const row=make('div','','af-v19-fact');
