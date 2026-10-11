@@ -1,0 +1,102 @@
+{
+  "schema": "aeroforge/design-snapshot/v0.4",
+  "qualificationEngine": "qualification_v04/1.0.0",
+  "referenceId": "source-two-v0.1-tmotor-1750",
+  "partFacts": {
+    "frame": {
+      "wheelbaseMm": 220,
+      "frameMassG": 72,
+      "stackPatternsMm": [
+        20,
+        30.5
+      ]
+    },
+    "motor": {
+      "cellsMin": 5,
+      "cellsMax": 6,
+      "maxTestCurrentA": 34.11,
+      "shaftMm": 4,
+      "massG": 35.1
+    },
+    "prop": {
+      "diameterNominalIn": 5.1
+    },
+    "stack": {
+      "cellsMin": 3,
+      "cellsMax": 6,
+      "continuousA": 55,
+      "patternMm": 30.5,
+      "massG": 27.2,
+      "firmware": "Betaflight"
+    }
+  },
+  "partIDs": {
+    "frame": "tbs-source-two-v01",
+    "motor": "tmotor-v2207v2-1750",
+    "prop": "tmotor-t5143s-revision-unknown",
+    "stack": "speedybee-f405v5-55a"
+  },
+  "partRevisions": {
+    "frame": "v0.1",
+    "motor": "V2 / 1750KV",
+    "prop": "UNIDENTIFIED",
+    "stack": "V5 / OX32 55A"
+  },
+  "sourceRevisions": {
+    "TBS-CAD": "source_two v0.1",
+    "TBS-MAIN-DXF": "git blob 2849f408855942877b273a66a5e9e67b2987b425",
+    "TMOTOR-MOTOR": "V2 / 1750KV",
+    "TMOTOR-PROP": "UNKNOWN",
+    "SPEEDYBEE-STACK": "V5 / OX32 55A",
+    "IFLIGHT-RESEARCH": "RECONFIRM"
+  },
+  "inputs": {
+    "stackCandidate": "reference-eol",
+    "packCells": 6,
+    "packConnector": "UNSPECIFIED",
+    "escConnector": "UNSPECIFIED",
+    "escProtocol": "DShot",
+    "fcFirmware": "Betaflight",
+    "flightStackSourceRevision": "",
+    "verifiedStackMountDiameterMm": null,
+    "measurementNote": "",
+    "motorCentersMeasured": false,
+    "rotors": null,
+    "measuredPropDiameterMm": null,
+    "requiredRotorGapMm": 2,
+    "payloadOffsetMm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "payloadMassG": 0,
+    "measuredAircraftMassG": null,
+    "batterySku": "",
+    "motorScrewEngagementMm": null,
+    "manualPinoutReviewed": false
+  },
+  "qualification": {
+    "status": "BLOCKED",
+    "failed": 1,
+    "holds": 11,
+    "documented": 4,
+    "readiness": "NOT_FLIGHT_QUALIFIED"
+  },
+  "simulation": {
+    "schema": "aeroforge/px4-handoff/v0.4",
+    "status": "BLOCKED_MISSING_CALIBRATION",
+    "readyForSITL": false,
+    "selectedFlightStackId": "speedybee-f405v5-55a",
+    "selectedFirmware": "Betaflight",
+    "px4TargetVerified": false,
+    "measuredInertiaKgM2": null,
+    "motorCoefficients": null,
+    "motorDirectionMap": null,
+    "registeredCadGeometry": null,
+    "actualRotorXYZ": null,
+    "measuredMassKg": null,
+    "disclaimer": "This is a blocked handoff; no Gazebo SDF should be generated from these values."
+  },
+  "notice": "Documented screening only. Not a build approval, flight qualification or runnable simulation.",
+  "sha256": "804aab84e4b8712d71ded1d4d95906df4f15c14d66c01fc7efad6963675d6ffb"
+}

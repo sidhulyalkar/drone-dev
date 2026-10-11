@@ -1,0 +1,219 @@
+{
+  "schema": "aeroforge-reference-assessment/v0.3",
+  "referenceId": "source-two-v0.1-tmotor-1750",
+  "inputs": {
+    "batteryCells": 6,
+    "batteryMassG": 210,
+    "batterySku": "",
+    "otherMassG": 210,
+    "otherMassEvidence": "assumption",
+    "massMeasuredG": null,
+    "motorHalfSpanXMm": 77.78,
+    "motorHalfSpanYMm": 77.78,
+    "rotorCoordinatesVerified": false,
+    "propDiameterMeasuredMm": null,
+    "stackReplacementVerified": false,
+    "stackReplacementSku": "",
+    "motorMountVerified": false,
+    "propHubVerified": false,
+    "groundControlVerified": false,
+    "remoteIdVerified": false
+  },
+  "layout": {
+    "coords": [
+      {
+        "x": -77.78,
+        "y": -77.78
+      },
+      {
+        "x": 77.78,
+        "y": -77.78
+      },
+      {
+        "x": -77.78,
+        "y": 77.78
+      },
+      {
+        "x": 77.78,
+        "y": 77.78
+      }
+    ],
+    "diagonalMm": 220,
+    "framePublishedWheelbaseMm": 220,
+    "propDiameterMm": 129.54,
+    "tipClearanceMm": 26.02,
+    "closestPair": [
+      0,
+      1
+    ],
+    "rotorGeometrySource": "symmetrical-X proxy, NOT source frame geometry",
+    "propSource": "model designation inference"
+  },
+  "knownAirframeMassG": 239.6,
+  "nominalMassG": 659.6,
+  "massG": 659.6,
+  "massStatus": "assumed",
+  "bench": {
+    "maxMeasuredThrustPerMotorG": 1507.11,
+    "maxMeasuredCurrentA": 34.11,
+    "testPointVoltageV": 22.51,
+    "staticThrustRatioAtAssumedMass": 9.14,
+    "hoverInsidePublishedTestWindow": false,
+    "staticAtPerMotorThrust": null,
+    "hoverPowerW": null,
+    "enduranceMin": null
+  },
+  "cost": {
+    "knownManufacturerFrameUSD": 16.95,
+    "unknownSlots": [
+      "motor actual price/stock",
+      "replacement stack",
+      "battery",
+      "prop pack shipping/taxes",
+      "FPV/video",
+      "receiver/radio",
+      "charger",
+      "wiring/mounts",
+      "Remote ID equipment"
+    ]
+  },
+  "issues": [
+    {
+      "id": "ROTOR_XY",
+      "severity": "HOLD",
+      "summary": "Motor centers are a symmetric-X visualization proxy",
+      "evidence": "Source Two is described as stretched; exact motor XY must come from original CAD.",
+      "action": "Import the original CAD, extract the motor centers, and record their drawing revision."
+    },
+    {
+      "id": "PROP_SWEEP",
+      "severity": "HOLD",
+      "summary": "Propeller tip envelope is inferred from model name",
+      "evidence": "T5143S product name is not dimensional inspection.",
+      "action": "Measure the actual tip-to-tip diameter and fixture/hub stack-up."
+    },
+    {
+      "id": "MOTOR_ARM_INTERFACE",
+      "severity": "HOLD",
+      "summary": "Arm-to-motor mounting is not qualified",
+      "evidence": "V2207 technical drawing and frame DXF mounting interfaces have not been compared.",
+      "action": "Inspect both mechanical drawings and motor fastener lengths."
+    },
+    {
+      "id": "PROP_HUB",
+      "severity": "HOLD",
+      "summary": "Propeller hub and motor shaft interface is not qualified",
+      "evidence": "Published 4mm motor shaft does not establish prop hub mating features.",
+      "action": "Inspect original prop and motor drawings; check retention system."
+    },
+    {
+      "id": "STACK_EOL",
+      "severity": "HOLD",
+      "summary": "Reference SpeedyBee F405 V5 stack is discontinued",
+      "evidence": "Manufacturer explicitly labels its product discontinued.",
+      "action": "Record a specific available replacement SKU and obtain its exact manufacturer documentation."
+    },
+    {
+      "id": "BATTERY_SKU",
+      "severity": "HOLD",
+      "summary": "Battery is an unqualified 6S mass assumption",
+      "evidence": "No actual battery manufacturer, pack current rating, size, chemistry, connector, or BMS/charger specification.",
+      "action": "Specify the exact pack SKU and inspect its datasheet."
+    },
+    {
+      "id": "UNRESOLVED_MASS",
+      "severity": "HOLD",
+      "summary": "Accessories and assembly mass are assumptions",
+      "evidence": "Video/radio/antenna/wires/fasteners masses are not measured as an integrated aircraft.",
+      "action": "Weigh the revision-specific parts and complete BOM."
+    },
+    {
+      "id": "NO_ALL_UP_MASS",
+      "severity": "HOLD",
+      "summary": "No measured ready-to-fly mass",
+      "evidence": "Even known component masses cannot substitute for a measured assembled aircraft.",
+      "action": "Weigh the assembled aircraft with actual battery/props/camera."
+    },
+    {
+      "id": "RC_FAILSAFE",
+      "severity": "HOLD",
+      "summary": "Radio, receiver, failsafe and ground link are unspecified",
+      "evidence": "No controls/receiver/firmware pairing or link-loss bench evidence.",
+      "action": "Specify exact control link and test failsafe props-off."
+    },
+    {
+      "id": "REGULATORY",
+      "severity": "HOLD",
+      "summary": "Operation requirements not independently documented",
+      "evidence": "U.S. recreational flight may require TRUST, FAA registration and Remote ID.",
+      "action": "Review current FAA and local airspace rules for actual aircraft/operation."
+    },
+    {
+      "id": "SITL_COEFFICIENTS",
+      "severity": "HOLD",
+      "summary": "Gazebo thrust/torque coefficients and inertias are missing",
+      "evidence": "Bench thrust table alone is not a calibrated model; there is no measured inertia or dynamic actuator response.",
+      "action": "Measure mass properties and identify motor kT/kQ and spin-up dynamics; then calibrate SITL."
+    }
+  ],
+  "status": "EVIDENCE_HOLD",
+  "readiness": "NOT FLIGHT QUALIFIED",
+  "assumptions": [
+    "Symmetric X geometry is a proxy, not exact Source Two CAD",
+    "Mass estimate combines manufacturer subset and user inputs",
+    "Bench thrust data at specified conditions cannot predict flight time",
+    "Physical verification and valid operating authorization are always required"
+  ],
+  "revision": "AF-c1789991",
+  "sources": [
+    {
+      "id": "TBS-FRAME",
+      "title": "TBS Source Two V0.1 product specification",
+      "url": "https://www.team-blacksheep.com/products/prod:source_two_5in",
+      "accessed": "2026-10-10",
+      "license": "Manufacturer facts; original frame CAD GPL-3.0"
+    },
+    {
+      "id": "TBS-CAD",
+      "title": "Source Two v0.1 STEP/DXF/F3D source",
+      "url": "https://github.com/ps915/source_two",
+      "accessed": "2026-10-10",
+      "license": "GPL-3.0, not bundled"
+    },
+    {
+      "id": "TMOTOR-MOTOR",
+      "title": "T-Motor V2207 V2 1750KV datasheet and bench table",
+      "url": "https://store.tmotor.com/product/v2207-v2-fpv-motor.html",
+      "accessed": "2026-10-10",
+      "license": "Manufacturer specifications"
+    },
+    {
+      "id": "TMOTOR-PROP",
+      "title": "T-Motor T5143S propeller product",
+      "url": "https://store.tmotor.com/product/t5143s-fpv-propeller.html",
+      "accessed": "2026-10-10",
+      "license": "Manufacturer product reference"
+    },
+    {
+      "id": "SPEEDYBEE-STACK",
+      "title": "SpeedyBee F405 V5 OX32 55A stack (DISCONTINUED)",
+      "url": "https://www.speedybee.com/speedybee-f405-v5-55a-stack/",
+      "accessed": "2026-10-10",
+      "license": "Manufacturer specifications"
+    },
+    {
+      "id": "PX4-SITL",
+      "title": "PX4 Gazebo custom models documentation",
+      "url": "https://docs.px4.io/v1.18/en/sim_gazebo_gz/",
+      "accessed": "2026-10-10",
+      "license": "Reference documentation"
+    },
+    {
+      "id": "FAA-REG",
+      "title": "FAA recreational registration and Remote ID",
+      "url": "https://www.faa.gov/uas/getting_started/register_drone",
+      "accessed": "2026-10-10",
+      "license": "Official agency guidance"
+    }
+  ]
+}

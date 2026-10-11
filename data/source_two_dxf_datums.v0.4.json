@@ -1,0 +1,18 @@
+{
+  "schema": "aeroforge/cad-2d-datum-extract/v0.4",
+  "subject": "SOURCE TWO v0.1, TBS / ps915",
+  "upstream": "https://github.com/ps915/source_two",
+  "license": "Upstream frame design is GPL-3.0; extracted drawing-derived coordinates are treated as subject to that upstream license, separately from MIT application code",
+  "unit": "mm",
+  "drawing_coordinate_system": "2D manufacturer DXF coordinate system; not an assembled 3D datum frame",
+  "files": [
+    {"path": "S2_v0.1_main_plate_3mm.dxf", "github_git_blob_sha1": "2849f408855942877b273a66a5e9e67b2987b425", "circles": [[23.593,56.335,1.475],[23.593,-39.675,1.475],[10,-5,1.475],[10,15,1.475],[15.25,20.25,1.5],[14.25,48.804,1.475],[-23.593,56.335,1.475],[-15.25,20.25,1.5],[-14.25,-32.144,1.475],[-10,-5,1.475],[-14.25,48.804,1.475],[-15.25,-10.25,1.5],[15.25,-10.25,1.5],[-10,15,1.475],[14.25,-32.144,1.475],[-23.593,-39.675,1.475]]},
+    {"path": "S2_v0.1_top_plate_2mm.dxf", "github_git_blob_sha1": "79798cd8a1bb1c4614d75890ff590625a3d498a8", "circles": [[14.25,-32.144,1.5],[-14.25,-32.144,1.5],[-14.25,48.804,1.475],[14.25,48.804,1.475]]},
+    {"path": "S2_v0.1_5_inch_arms_4mm_4x.dxf", "github_git_blob_sha1": "1e76541df13966bd280308569c202ffb02762e2a", "circles": [[0,59.295,3.5],[0,-12,1.475],[0,0,1.475]]}
+  ],
+  "recognized_stack_mount_patterns": [
+    {"name": "30.5-mm square", "source_file": "S2_v0.1_main_plate_3mm.dxf", "hole_centers_mm": [[-15.25,-10.25],[-15.25,20.25],[15.25,-10.25],[15.25,20.25]], "nominal_hole_diameter_mm": 3, "source": "DXF circular hole geometry"},
+    {"name": "20-mm square", "source_file": "S2_v0.1_main_plate_3mm.dxf", "hole_centers_mm": [[-10,-5],[-10,15],[10,-5],[10,15]], "nominal_hole_diameter_mm": 2.95, "source": "DXF circular hole geometry"}
+  ],
+  "holds": ["Global STEP and 2D DXF reference frames not reconciled", "3D stack plate and standoff clearance not established", "Frame arm DXF is a production drawing, not an assembled arm transform", "Motor shaft XYZ cannot be inferred from the 2D plate drilling positions", "Hole diameters need checking against mounting hardware stackup and tolerances"]
+}

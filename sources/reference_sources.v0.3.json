@@ -1,0 +1,54 @@
+{
+  "schema": "aeroforge-reference-sources/v0.3",
+  "sources": [
+    {
+      "id": "TBS-FRAME",
+      "title": "TBS Source Two V0.1 product specification",
+      "url": "https://www.team-blacksheep.com/products/prod:source_two_5in",
+      "accessed": "2026-10-10",
+      "license": "Manufacturer facts; original frame CAD GPL-3.0"
+    },
+    {
+      "id": "TBS-CAD",
+      "title": "Source Two v0.1 STEP/DXF/F3D source",
+      "url": "https://github.com/ps915/source_two",
+      "accessed": "2026-10-10",
+      "license": "GPL-3.0, not bundled"
+    },
+    {
+      "id": "TMOTOR-MOTOR",
+      "title": "T-Motor V2207 V2 1750KV datasheet and bench table",
+      "url": "https://store.tmotor.com/product/v2207-v2-fpv-motor.html",
+      "accessed": "2026-10-10",
+      "license": "Manufacturer specifications"
+    },
+    {
+      "id": "TMOTOR-PROP",
+      "title": "T-Motor T5143S propeller product",
+      "url": "https://store.tmotor.com/product/t5143s-fpv-propeller.html",
+      "accessed": "2026-10-10",
+      "license": "Manufacturer product reference"
+    },
+    {
+      "id": "SPEEDYBEE-STACK",
+      "title": "SpeedyBee F405 V5 OX32 55A stack (DISCONTINUED)",
+      "url": "https://www.speedybee.com/speedybee-f405-v5-55a-stack/",
+      "accessed": "2026-10-10",
+      "license": "Manufacturer specifications"
+    },
+    {
+      "id": "PX4-SITL",
+      "title": "PX4 Gazebo custom models documentation",
+      "url": "https://docs.px4.io/v1.18/en/sim_gazebo_gz/",
+      "accessed": "2026-10-10",
+      "license": "Reference documentation"
+    },
+    {
+      "id": "FAA-REG",
+      "title": "FAA recreational registration and Remote ID",
+      "url": "https://www.faa.gov/uas/getting_started/register_drone",
+      "accessed": "2026-10-10",
+      "license": "Official agency guidance"
+    }
+  ]
+}

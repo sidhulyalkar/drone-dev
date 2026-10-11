@@ -1,0 +1,268 @@
+{
+  "schema": "aeroforge/qualification-graph/v0.4",
+  "referenceId": "source-two-v0.1-tmotor-1750",
+  "baselineRevision": "AF-c1789991",
+  "inputs": {
+    "stackCandidate": "reference-eol",
+    "packCells": 6,
+    "packConnector": "UNSPECIFIED",
+    "escConnector": "UNSPECIFIED",
+    "escProtocol": "DShot",
+    "fcFirmware": "Betaflight",
+    "flightStackSourceRevision": "",
+    "verifiedStackMountDiameterMm": null,
+    "measurementNote": "",
+    "motorCentersMeasured": false,
+    "rotors": null,
+    "measuredPropDiameterMm": null,
+    "requiredRotorGapMm": 2,
+    "payloadOffsetMm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "payloadMassG": 0,
+    "measuredAircraftMassG": null,
+    "batterySku": "",
+    "motorScrewEngagementMm": null,
+    "manualPinoutReviewed": false
+  },
+  "parts": {
+    "frame": "tbs-source-two-v01",
+    "motor": "tmotor-v2207v2-1750",
+    "prop": "tmotor-t5143s-revision-unknown",
+    "stack": "speedybee-f405v5-55a"
+  },
+  "stack": {
+    "id": "speedybee-f405v5-55a",
+    "sku": "SpeedyBee F405 V5 OX32 55A stack",
+    "revision": "V5 / OX32 55A",
+    "vendor": "SpeedyBee",
+    "kind": "fc-esc",
+    "url": "https://www.speedybee.com/speedybee-f405-v5-55a-stack/",
+    "availability": "DISCONTINUED",
+    "evidence": "SPEEDYBEE-STACK",
+    "facts": {
+      "cellsMin": 3,
+      "cellsMax": 6,
+      "continuousA": 55,
+      "patternMm": 30.5,
+      "massG": 27.2,
+      "firmware": "Betaflight"
+    },
+    "sourceQuality": "manufacturer-specification"
+  },
+  "ruleCount": 16,
+  "rules": [
+    {
+      "id": "frame-stack-pattern",
+      "from": "frame",
+      "to": "fc-esc",
+      "kind": "mechanical",
+      "status": "PASS_DOCUMENTED",
+      "why": "Source Two DXF reveals 30.5-mm square mount and stack lists 30.5-mm nominal pattern. Bolt-hole/spacing and installation not yet qualified.",
+      "evidence": [
+        "TBS-MAIN-DXF",
+        "SPEEDYBEE-STACK"
+      ],
+      "action": "Check actual bolt diameter, spacers, plate and board shape in 3D."
+    },
+    {
+      "id": "stack-height",
+      "from": "frame",
+      "to": "fc-esc",
+      "kind": "geometry",
+      "status": "HOLD_GEOMETRY",
+      "why": "No registered manufacturer STEP/GLB and stack Z-envelope for this pairing.",
+      "evidence": [
+        "TBS-CAD",
+        "SPEEDYBEE-STACK"
+      ],
+      "action": "Perform datum registration and collision check against actual mesh."
+    },
+    {
+      "id": "battery-motor-voltage",
+      "from": "battery",
+      "to": "motor",
+      "kind": "electrical",
+      "status": "PASS_DOCUMENTED",
+      "why": "6S is within the motor documented 5–6S screening range.",
+      "evidence": [
+        "TMOTOR-MOTOR"
+      ],
+      "action": "Confirm pack sag, connector, current and thermal limits."
+    },
+    {
+      "id": "battery-esc-voltage",
+      "from": "battery",
+      "to": "fc-esc",
+      "kind": "electrical",
+      "status": "PASS_DOCUMENTED",
+      "why": "6S is within the selected stack 2/3–6S rating.",
+      "evidence": [
+        "SPEEDYBEE-STACK"
+      ],
+      "action": "Check measured pack voltage transients and exact harness."
+    },
+    {
+      "id": "esc-current",
+      "from": "motor",
+      "to": "fc-esc",
+      "kind": "electrical",
+      "status": "PASS_DOCUMENTED",
+      "why": "Nominal ESC continuous per-channel exceeds max current in one T-Motor static test. Does not qualify thermal duty cycle.",
+      "evidence": [
+        "SPEEDYBEE-STACK",
+        "TMOTOR-MOTOR"
+      ],
+      "action": "Measure application current, temperatures and harness bottlenecks."
+    },
+    {
+      "id": "battery-connector",
+      "from": "battery",
+      "to": "fc-esc",
+      "kind": "connector",
+      "status": "HOLD_SOURCE",
+      "why": "Connector pairing not specified",
+      "evidence": [
+        "SPEEDYBEE-STACK"
+      ],
+      "action": "Verify current, polarity, real connector gender and wiring before powering."
+    },
+    {
+      "id": "stack-availability",
+      "from": "fc-esc",
+      "to": "procurement",
+      "kind": "sourcing",
+      "status": "FAIL_SOURCE",
+      "why": "SpeedyBee F405 V5 OX32 55A stack: DISCONTINUED. Retail listings are not real-time procurement authority.",
+      "evidence": [
+        "SPEEDYBEE-STACK"
+      ],
+      "action": "Choose a current, exact and demonstrably obtainable stack before ordering."
+    },
+    {
+      "id": "fc-firmware",
+      "from": "fc-esc",
+      "to": "autopilot",
+      "kind": "protocol",
+      "status": "HOLD_SOURCE",
+      "why": "Candidate advertises Betaflight; the current simulation contract targets PX4 and has no validated PX4 firmware target.",
+      "evidence": [
+        "SPEEDYBEE-STACK"
+      ],
+      "action": "Validate the exact autopilot and simulator path independently (do not assume Betaflight compatibility with PX4)."
+    },
+    {
+      "id": "fc-pinout",
+      "from": "fc-esc",
+      "to": "receiver-video",
+      "kind": "connector",
+      "status": "HOLD_SOURCE",
+      "why": "No version-locked actual battery, receiver, video/BEC pinout integration is provided.",
+      "evidence": [
+        "SPEEDYBEE-STACK"
+      ],
+      "action": "Record source revision, ports, BEC load, UART assignment, continuity and props-off bench results."
+    },
+    {
+      "id": "motor-screw-depth",
+      "from": "frame",
+      "to": "motor",
+      "kind": "mechanical",
+      "status": "HOLD_MEASUREMENT",
+      "why": "Motor bolt clearance/engagement is unknown.",
+      "evidence": [
+        "TBS-CAD",
+        "TMOTOR-MOTOR"
+      ],
+      "action": "Inspect fastener lengths/clearance against original mechanical drawings and actual motor."
+    },
+    {
+      "id": "prop-hub",
+      "from": "motor",
+      "to": "prop",
+      "kind": "mechanical",
+      "status": "HOLD_SOURCE",
+      "why": "4-mm manufacturer motor shaft value does not prove prop hub/retention fit.",
+      "evidence": [
+        "TMOTOR-MOTOR",
+        "TMOTOR-PROP"
+      ],
+      "action": "Inspect specific propeller revision, bore, fastener and directions."
+    },
+    {
+      "id": "rotor-clearance",
+      "from": "frame",
+      "to": "prop",
+      "kind": "geometry",
+      "status": "HOLD_MEASUREMENT",
+      "why": "Measured XYZ motor centers and prop swept diameter not supplied.",
+      "evidence": [
+        "TBS-CAD",
+        "TMOTOR-PROP"
+      ],
+      "action": "Extract motor XYZ from registered original STEP, inspect all 3D intersections and dynamic clearance."
+    },
+    {
+      "id": "coordinate-provenance",
+      "from": "frame",
+      "to": "rotor",
+      "kind": "evidence",
+      "status": "HOLD_MEASUREMENT",
+      "why": "Motor centers are not measured or registered to source CAD.",
+      "evidence": [
+        "TBS-CAD"
+      ],
+      "action": "Check actual source revision, axes, datums and independent measurements."
+    },
+    {
+      "id": "ready-to-fly-mass",
+      "from": "aircraft",
+      "to": "test",
+      "kind": "evidence",
+      "status": "HOLD_MEASUREMENT",
+      "why": "No weighed aircraft with installed battery and flight hardware.",
+      "evidence": [],
+      "action": "Attach test record with scale serial, method, revision and date."
+    },
+    {
+      "id": "cg-inertia",
+      "from": "aircraft",
+      "to": "simulator",
+      "kind": "physics",
+      "status": "HOLD_MEASUREMENT",
+      "why": "No measured baseline mass/CG and inertial tensor.",
+      "evidence": [],
+      "action": "Measure base CG and 6 inertial tensor components; include wiring/battery position."
+    },
+    {
+      "id": "simulation",
+      "from": "aircraft",
+      "to": "PX4-Gazebo",
+      "kind": "simulation",
+      "status": "HOLD_CALIBRATION",
+      "why": "Missing measured inertias, motor coefficients, spin response, actual rotor mappings and valid PX4 target.",
+      "evidence": [
+        "TMOTOR-MOTOR"
+      ],
+      "action": "Complete physical tests and then execute pinned SITL."
+    }
+  ],
+  "failed": 1,
+  "holds": 11,
+  "documented": 4,
+  "rotor": null,
+  "cg": null,
+  "sourceManifest": "data/source_two_dxf_datums.v0.4.json",
+  "readiness": "NOT_FLIGHT_QUALIFIED",
+  "status": "BLOCKED",
+  "sourceIDs": [
+    "TBS-CAD",
+    "TBS-MAIN-DXF",
+    "TMOTOR-MOTOR",
+    "TMOTOR-PROP",
+    "SPEEDYBEE-STACK",
+    "IFLIGHT-RESEARCH"
+  ]
+}

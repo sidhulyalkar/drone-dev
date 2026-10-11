@@ -1,0 +1,40 @@
+{
+  "schema": "aeroforge-px4-gazebo-handoff/v0.3",
+  "revision": "AF-c1789991",
+  "status": "BLOCKED_MISSING_CALIBRATION",
+  "readyForSITL": false,
+  "simulationEnvironment": "PX4 Gazebo (proposed)",
+  "required": {
+    "mass_kg": null,
+    "inertia_kg_m2": {
+      "ixx": null,
+      "iyy": null,
+      "izz": null,
+      "ixy": null,
+      "ixz": null,
+      "iyz": null
+    },
+    "rotor_coordinates_m": null,
+    "motor_thrust_coefficient": null,
+    "motor_moment_coefficient": null,
+    "motor_time_constant_up_s": null,
+    "motor_time_constant_down_s": null,
+    "propeller_direction_each": null,
+    "drag_coefficients": null,
+    "flight_controller_target": null
+  },
+  "openIssues": [
+    "ROTOR_XY",
+    "PROP_SWEEP",
+    "MOTOR_ARM_INTERFACE",
+    "PROP_HUB",
+    "STACK_EOL",
+    "BATTERY_SKU",
+    "UNRESOLVED_MASS",
+    "NO_ALL_UP_MASS",
+    "RC_FAILSAFE",
+    "REGULATORY",
+    "SITL_COEFFICIENTS"
+  ],
+  "caution": "NOT a runnable SDF or a calibrated model. Values that have not been measured remain null."
+}
