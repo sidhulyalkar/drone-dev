@@ -23,7 +23,18 @@ function selectDesign(settings,presetId=null){try{state=validateSettings(setting
 function defaultKit(video){return video==='research'?'research':video==='digital'?'digital':'analog'}
 function initialize(){
  $('presets').innerHTML=presets.map(p=>`<button class="preset" type="button" data-preset="${p.id}"><span class="preset-icon">${p.icon}</span><strong>${esc(p.name)}</strong><span>${esc(p.tagline)}</span></button>`).join('');
- $('presets').addEventListener('click',e=>{const el=e.target.closest('[data-preset]');if(!el)return;const p=presets.find(x=>x.id===el.dataset.preset);selectDesign({...p.settings,groundKit:defaultKit(p.settings.video)},p.id)});
+ window.addEventListener('aeroforge:select-catalog-alternative',e=>{
+  const slot=e.detail?.slot,id=e.detail?.id;
+  const group={frame:'frames',motor:'motors',stack:'stacks',battery:'batteries',
+   prop:'props',video:'video'}[slot];
+  if(!group||typeof id!=='string'||!catalog[group].some(p=>p.id===id)){
+   toast('Unknown catalog candidate; no configuration change applied');return;
+  }
+  // Full-engine re-evaluation. A synthetically screenable part is NOT physically compatible.
+  selectDesign({...state,[slot]:id});
+  toast('Illustrative candidate applied. Recheck blockers and manufacturer specifications.');
+ });
+  $('presets').addEventListener('click',e=>{const el=e.target.closest('[data-preset]');if(!el)return;const p=presets.find(x=>x.id===el.dataset.preset);selectDesign({...p.settings,groundKit:defaultKit(p.settings.video)},p.id)});
  $('ground-kit').innerHTML=groundKits.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('');
  $('ground-kit').addEventListener('change',e=>{state.groundKit=e.target.value;selectedPreset=null;render()});
  buildInputs();

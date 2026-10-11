@@ -1,9 +1,16 @@
-# AeroForge v1.8 · Unified 3D Drone Build Studio
+# AeroForge v1.9 · Contextual Drone Component Build Studio
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
 
+## New in v1.9: One Contextual Component Inspector
+
+Selecting a procedural part in the Build 3D viewer now opens a compact class-level inspector with current specifications, candidate alternatives re-screened through the full design engine, available source-backed research candidates, and **exact current-revision Assembly Copilot steps**. The detailed part browser and extra material are collapsed by default. Changing a catalog candidate updates the active aircraft and recalculates compatibility blockers without losing the part focus.
+
+**Everything remains an illustrative catalog class until revision-specific vendor evidence is independently checked.** Candidate source pages are not qualified buy links, zero simulated blockers does not establish real fit, and assembly notes cannot grant power or flight authority. CAD solids remain in their own source-unregistered evidence mode.
+
+See [v1.9 Contextual Component Inspector](docs/V19_COMPONENT_INSPECTOR.md).
 ## New in v1.8: Unified Build Viewer
 
 The Build workspace now uses **one primary Three.js canvas** with Aircraft, Exploded, and Local CAD modes. The first two modes retain the existing procedural aircraft and guided assembly tour. Local CAD becomes available only after a matching GLB and manifest are verified in the Engineering CAD tool; Build independently rechecks the GLB hash, then shows the source-derived **unregistered** solids in its existing scene. Changing or resetting source data invalidates the CAD view. Hidden viewers skip WebGL drawing without destroying controls or revision history.

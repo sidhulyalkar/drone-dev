@@ -1,0 +1,33 @@
+/* AeroForge v1.9: contextual Build component inspector, progressive details */
+.af-inspector-v19{padding:13px 15px 15px;border-bottom:1px solid #36535b;background:#152a34;color:#e0eee6}
+.af-v19-header{display:flex;justify-content:space-between;gap:8px;align-items:center;padding-bottom:10px;border-bottom:1px solid #35505a;font-size:10px;font-weight:700;letter-spacing:.07em}
+#af-v19-status{color:#e9c58f;font-size:9px;letter-spacing:0;text-align:right}
+.af-v19-current{padding:12px 0 5px;line-height:1.5}
+.af-v19-current strong{font-size:14px;letter-spacing:-.015em}
+.af-v19-muted{color:#a4b9ba;font-size:11px;line-height:1.6;margin:5px 0;overflow-wrap:anywhere}
+.af-v19-blocker{font-size:11px;color:#f5c4a4;background:#49352f;border-left:2px solid #f0a87e;padding:9px;margin:6px 0;line-height:1.6}
+.af-v19-facts{display:grid;gap:5px;margin:8px 0}
+.af-v19-fact{display:flex;justify-content:space-between;align-items:baseline;gap:13px;background:#1e3640;padding:9px 11px;border-radius:5px;font-size:11px}
+.af-v19-fact span{color:#9cb6b7}
+.af-v19-fact strong{text-align:right;font-weight:600;max-width:56%;overflow-wrap:anywhere}
+.af-v19-disclosure{border-top:1px solid #38525c}
+.af-v19-disclosure summary{color:#d6eadf;font-size:11px;font-weight:650;padding:13px 12px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;list-style:none;align-items:center}
+.af-v19-disclosure summary::-webkit-details-marker{display:none}
+.af-v19-disclosure summary:after{content:'⌄';color:#b0cabd}
+.af-v19-disclosure[open] summary:after{content:'⌃'}
+.af-v19-disclosure summary span{background:#2a4750;color:#c9e2d6;border-radius:8px;padding:2px 6px;font:10px ui-monospace,monospace;margin-left:auto}
+.af-v19-disclosure>div{padding:4px 10px 12px;max-height:350px;overflow:auto}
+.af-v19-entry{padding:10px 8px;border-bottom:1px solid #39525b;font-size:11px}
+.af-v19-entry:last-child{border-bottom:0}
+.af-v19-entry>strong{display:block;line-height:1.4;margin-bottom:4px}
+.af-v19-entry button,.af-v19-entry a{display:inline-block;text-align:left;border:1px solid #5e846f;background:#2a493f;color:#e6f7d7;font-size:11px;border-radius:5px;padding:9px 10px;margin-top:6px;text-decoration:none;cursor:pointer}
+.af-v19-entry button:hover,.af-v19-entry a:hover{border-color:#bce8a2}
+.af-v19-entry button:disabled{opacity:.43;cursor:not-allowed}
+.af-v19-entry button:focus-visible,.af-v19-entry a:focus-visible,.af-v19-disclosure summary:focus-visible{outline:2px solid #d4f1a7;outline-offset:2px}
+.af-v19-authority{margin:12px 0 0;color:#e5cc9f;font-size:10px;line-height:1.6}
+.af-v19-part-browser .showcase-parts{max-height:310px}
+#af-v19-part-browser[open]{background:#192f39}
+#showcase-v07[data-af-view-mode=cad] #af-inspector-v19,
+#showcase-v07[data-af-view-mode=cad] #af-v19-part-browser{display:none!important}
+@media(max-width:800px){.af-v19-fact{flex-wrap:wrap}.af-v19-fact strong{max-width:100%;text-align:left}}
+@media(prefers-reduced-motion:reduce){.af-inspector-v19 *{animation:none!important;transition:none!important}}

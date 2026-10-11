@@ -127,10 +127,11 @@ if(host){
  function buildController(){controller=createTourController(manifest.parts,display);filter='all';$('showcase-subsystem').value='all';setDetail(null);display(controller.getState());}
  function setManifest(r){if(!r)return;const next=buildShowcaseManifest(r);
   // Keep the view tied to the currently selected design and avoid stale part labels.
-  const prev=manifest.airframe.name;manifest=next;buildController();plainView();
+  const prevSelected=selectedId;manifest=next;buildController();plainView();
   $('showcase-airframe').textContent=manifest.airframe.name;
   $('showcase-geometry').textContent=manifest.parts.length+' SEPARATE OBJECTS · '+manifest.airframe.wheelbaseMm+' MM CLASS';
   if(viewer)viewer.setManifest(manifest);
+  if(prevSelected&&manifest.parts.some(p=>p.id===prevSelected))controller.select(prevSelected);
  }
  const filters=$('showcase-subsystem');filters.innerHTML=SUBSYSTEMS.map(s=>`<option value="${s.id}">${esc(s.label)}</option>`).join('');
  $('showcase-play').addEventListener('click',()=>{if(mode==='cad')setMode('aircraft');controller.toggle()});

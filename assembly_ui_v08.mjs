@@ -84,7 +84,9 @@ if(host){
    const x=stepStatus(session,plan,s.id);
    return '<button type="button" class="assembly-rail-step'+(active===i?' current':'')+'" data-step-id="'+escapeHTML(s.id)+'" aria-current="'+(active===i?'step':'false')+'"><span class="assembly-index">'+String(i+1).padStart(2,'0')+'</span><span><strong>'+escapeHTML(s.title)+'</strong><small>'+escapeHTML(s.stage)+' · '+(x.recorded?'Note recorded':x.blocker?'Needs earlier observations':'Open')+'</small></span><span class="assembly-dot '+(x.recorded?'noted':'')+'"></span></button>';
   }).join('');
-  $('assembly-step-title').textContent=step.title;
+  window.dispatchEvent(new CustomEvent('aeroforge:assembly-context-updated',
+   {detail:{plan,currentStepId:step.id}}));
+   $('assembly-step-title').textContent=step.title;
   $('assembly-step-stage').textContent=step.stage+' · '+(active+1)+' of '+plan.steps.length;
   $('assembly-step-description').textContent=step.about;
   $('assembly-step-status').textContent=status.status.replaceAll('_',' ');
@@ -121,7 +123,18 @@ if(host){
  });
  for(const id of ['assembly-video','assembly-variant','assembly-rx','assembly-radio'])$(id).addEventListener('change',rebuild);
  $('assembly-kind').addEventListener('change',render);
- $('assembly-step-rail').addEventListener('click',e=>{
+ window.addEventListener('aeroforge:assembly-context-requested',()=>{
+  if(plan)window.dispatchEvent(new CustomEvent('aeroforge:assembly-context-updated',{detail:{plan,currentStepId:current()?.id}}));
+ });
+ window.addEventListener('aeroforge:assembly-open-step',e=>{
+  const stepId=e.detail?.stepId,planKey=e.detail?.planKey;
+  if(!plan||!stepId||plan.key!==planKey)return;
+  const index=plan.steps.findIndex(step=>step.id===stepId);
+  if(index<0)return;
+  navigate(index);
+  host.scrollIntoView({behavior:'instant',block:'start'});
+ });
+  $('assembly-step-rail').addEventListener('click',e=>{
   const b=e.target.closest('[data-step-id]');if(b){const i=plan.steps.findIndex(s=>s.id===b.dataset.stepId);if(i>=0)navigate(i);}
  });
  $('assembly-parts').addEventListener('click',e=>{

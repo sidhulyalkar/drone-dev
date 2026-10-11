@@ -244,6 +244,43 @@ test('local CAD is shown in the same Build canvas only after rechecking hashes; 
  await expect(page.locator('#af-view-aircraft')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#af-v18-cad-details')).toBeHidden();
 });
+
+test('clicking a 3D part reveals one contextual record and jumps to its real assembly step',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-build').click();
+ await page.locator('#af-v19-part-browser summary').click();
+ await page.locator('#showcase-parts [data-showcase-id="motor-0"]').click();
+ await expect(page.locator('#af-v19-current')).toContainText('2207');
+ await expect(page.locator('#af-v19-status')).toContainText('NO VERIFIED SKU');
+ await page.locator('#af-v19-assembly summary').click();
+ await expect(page.locator('#af-v19-steps [data-step-id="motors"]')).toBeVisible();
+ await page.locator('#af-v19-steps [data-step-id="motors"]').click();
+ await expect(page.locator('#assembly-step-title')).toContainText('Mount motors');
+ await expect(page.locator('#assembly-step-status')).not.toContainText('APPROVED');
+});
+test('alternative selection reruns concept screening and preserves the selected component inspector',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-build').click();
+ await page.locator('#af-v19-part-browser summary').click();
+ await page.locator('#showcase-parts [data-showcase-id="motor-0"]').click();
+ await page.locator('#af-v19-alternatives summary').click();
+ await expect(page.locator('#af-v19-alternative-count')).not.toHaveText('0');
+ await page.locator('#af-v19-options [data-alt-id="1204"]').click();
+ await expect(page.locator('#af-v19-current')).toContainText('1204');
+ await expect(page.locator('#af-v19-current')).toContainText('screening blocker');
+ await expect(page.locator('#af-v19-status')).toContainText('NO VERIFIED SKU');
+ await expect(page.locator('#showcase-part-title')).toContainText('Brushless motor');
+});
+test('a real-world candidate remains labeled research-only, never a qualified order link',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-build').click();
+ await page.locator('#af-v19-part-browser summary').click();
+ await page.locator('#showcase-parts [data-showcase-id="frame"]').click();
+ await page.locator('#af-v19-sources summary').click();
+ await expect(page.locator('#af-v19-source-list')).toContainText('TBS Source One');
+ await expect(page.locator('#af-v19-source-list')).toContainText('Unresolved');
+ await expect(page.locator('#af-v19-status')).toContainText('NO VERIFIED SKU');
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{
