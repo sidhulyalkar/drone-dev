@@ -1,0 +1,75 @@
+/* v0.9 Mission Architecture Studio. Independent from CAD qualification and existing simulator. */
+.mission-v09{margin:60px 0 35px;scroll-margin-top:28px}
+.mission-v09 *{box-sizing:border-box}
+.mission-v09-header{display:flex;align-items:start;justify-content:space-between;gap:24px;margin-bottom:17px}
+.mission-v09-eyebrow{font:11px ui-monospace,monospace;letter-spacing:.12em;color:#c9e6a9}
+.mission-v09 h2{font-size:clamp(28px,4vw,54px);line-height:1.1;letter-spacing:-.04em;margin:8px 0 9px}
+.mission-v09 h2 em{font-style:normal;color:#bbe7a0}
+.mission-v09-header p{font-size:13px;line-height:1.65;color:#b1c4c5;max-width:730px;margin:0}
+.mission-v09-count{border:1px solid #526d56;background:#1f352f;padding:14px 17px;border-radius:10px;color:#d9edcc;min-width:185px;font-size:11px;line-height:1.65}
+.mission-v09-count strong{display:block;font-size:23px;color:#c7f0a3}
+.mission-v09-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:20px 0 24px}
+.mission-v09-card{background:linear-gradient(135deg,#1a2c35,#182a31);border:1px solid #38575a;border-radius:11px;min-height:154px;padding:15px;display:flex;align-items:start;flex-direction:column;gap:8px;text-align:left;color:#e0e9e3;cursor:pointer}
+.mission-v09-card:hover{background:#263a40;border-color:#7f9f96}
+.mission-v09-card.selected{background:linear-gradient(135deg,#214f45,#1b383b);border-color:#b4dbaa;box-shadow:inset 0 0 0 1px #819d80}
+.mission-v09-card strong{font-size:19px;letter-spacing:-.02em}
+.mission-v09-card>span:not(.mission-v09-kind){font-size:12px;color:#abc3c0}
+.mission-v09-kind{border:1px solid #52746e;color:#c9dfb3;border-radius:4px;padding:5px 7px;letter-spacing:.13em;font-size:10px;font-family:ui-monospace,monospace}
+.mission-v09-card-foot{margin-top:auto;padding-top:8px;display:flex;justify-content:space-between;gap:6px;width:100%;border-top:1px solid #385459;align-items:center}
+.mission-v09-layout{display:grid;grid-template-columns:minmax(0,1.36fr) minmax(290px,0.88fr);gap:15px;align-items:start}
+.mission-v09-panel{border:1px solid #38565c;border-radius:12px;background:#172831;overflow:hidden;min-width:0}
+.mission-v09-panel-inner{padding:19px}
+.mission-v09-hero{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.mission-v09-panel h3{font-size:clamp(23px,3vw,31px);letter-spacing:-.025em;margin:0 0 5px;color:#e4f0de}
+.mission-v09-subtitle{font-size:12px;color:#a4beba}
+.mission-v09-tag{font:10px ui-monospace,monospace;color:#e7d9af;border:1px solid #705b40;background:#40382e;padding:7px 9px;border-radius:5px;flex-shrink:0}
+.mission-v09-canvas{margin:16px 0 12px;border-radius:8px;overflow:hidden;background:#11212b;border:1px solid #335057}
+.mission-v09-canvas svg{display:block;width:100%;height:auto}
+.mission-v09-description{display:grid;gap:11px;font-size:12px;line-height:1.6;color:#c1d1c7}
+.mission-v09-description p{margin:0}
+.mission-v09-description b{display:block;color:#d5ebb9;font:10px ui-monospace,monospace;letter-spacing:.09em;margin-bottom:4px}
+.mission-v09-status{font:11px ui-monospace,monospace;padding:12px 14px;background:#243e39;color:#d1e8c7;border-top:1px solid #3d6358}
+.mission-v09-warning{color:#f2ca97;background:#3d312c;border-left:3px solid #d1a76c;padding:12px 15px;font-size:12px;line-height:1.5;margin:0}
+.mission-v09-panel h4{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#cce2bc;margin:0 0 12px}
+.mission-v09-option-list{display:grid;gap:9px}
+.mission-v09-option{display:flex;gap:10px;align-items:flex-start;border:1px solid #365155;border-radius:8px;padding:10px;background:#1b3336;cursor:pointer}
+.mission-v09-option input{margin:3px 0;accent-color:#b4e3a4;flex:0 0 auto}
+.mission-v09-option strong{display:block;font-size:12px;color:#e3eddf}
+.mission-v09-option small{display:block;font-size:11px;line-height:1.55;color:#aac4c0;margin-top:3px}
+.mission-v09-metric{color:#cfe5bc;font-size:12px;margin-top:10px;line-height:1.5}
+.mission-v09-components{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0}
+.mission-v09-component-group{min-width:0;border:1px solid #324c51;background:#1a3036;border-radius:9px;padding:11px}
+.mission-v09-component-group h4{font-size:10px;color:#d7e8bf;text-transform:uppercase;letter-spacing:.12em;border-bottom:1px solid #37525a;padding-bottom:9px;margin:0 0 9px}
+.mission-v09-component{display:grid;gap:5px;padding:8px 0;border-bottom:1px solid #2c474d;overflow-wrap:anywhere}
+.mission-v09-component:last-child{border-bottom:0}
+.mission-v09-component strong{font-size:12px;color:#e0eee3}
+.mission-v09-component span{font-size:11px;color:#b2c6c3;line-height:1.5}
+.mission-v09-component small{font-size:10px;color:#e2cba4}
+.mission-v09-holds{display:grid;gap:6px}
+.mission-v09-hold{border:1px solid #526053;border-radius:7px;padding:10px 12px;background:#26382f;font-size:12px;color:#e0e5d8;line-height:1.4}
+.mission-v09-hold summary{cursor:pointer}
+.mission-v09-hold b{margin-right:7px;color:#efd8b0;font-size:10px}
+.mission-v09-hold .mission-v09-bad{color:#ff9989}
+.mission-v09-hold p{color:#b5cbbf;line-height:1.5;font-size:11px;margin:8px 0 0}
+.mission-v09-compare-controls{display:grid;grid-template-columns:1fr;gap:8px}
+.mission-v09-compare-controls label{font-size:11px;color:#b7ccc2}
+.mission-v09-compare-controls select{background:#12272b;color:#edf6e7;border:1px solid #63817b;border-radius:7px;padding:10px;width:100%;font-size:12px}
+.mission-v09-comparison{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+.mission-v09-comparison>div{background:#21393a;padding:10px;border-radius:6px;display:grid;gap:5px}
+.mission-v09-comparison b{font-size:12px;color:#e2efd7}
+.mission-v09-comparison span,.mission-v09-comparison p,.mission-v09-comparison small{color:#b3c8c4;font-size:11px;line-height:1.6;margin:0}
+.mission-v09-comparison p,.mission-v09-comparison small{grid-column:1/-1}
+.mission-v09-actions{display:flex;flex-wrap:wrap;gap:9px}
+.mission-v09-actions button{background:#2e4f42;color:#dff1d7;border:1px solid #699a7b;border-radius:7px;cursor:pointer;padding:10px 14px;font-size:12px}
+.mission-v09-actions button:hover{background:#447359}
+.mission-v09-actions button:disabled{opacity:.45;cursor:not-allowed}
+.mission-v09-actions button:first-child{background:#c7e7ab;border-color:#c7e7ab;color:#183027;font-weight:700}
+.mission-v09-actions button:focus-visible,.mission-v09-card:focus-visible,.mission-v09-option:focus-within,.mission-v09 select:focus-visible{outline:2px solid #bcefa0;outline-offset:3px}
+.mission-v09-footer{margin-top:13px;padding:16px 19px;background:#183235;border:1px solid #39575c;border-radius:10px;color:#a9c5ba;font-size:12px;line-height:1.7}
+.mission-v09-library{color:#e2e6cf;margin:0 0 7px}
+@media(max-width:900px){.mission-v09-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.mission-v09-layout{grid-template-columns:1fr}.mission-v09-components{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.mission-v09-cards{grid-template-columns:1fr}.mission-v09-card{min-height:128px}.mission-v09-header{display:block}.mission-v09-count{margin-top:13px;min-width:0;display:inline-block}.mission-v09-components{grid-template-columns:1fr}.mission-v09-panel-inner{padding:14px}.mission-v09-comparison{grid-template-columns:1fr}.mission-v09-comparison p,.mission-v09-comparison small{grid-column:auto}}
+@media(prefers-reduced-motion:reduce){.mission-v09 *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+.mission-v09-secondary{grid-template-columns:minmax(0,1.4fr) minmax(290px,0.88fr);margin-top:15px}
+@media(max-width:900px){.mission-v09-secondary{grid-template-columns:1fr}}

@@ -1,8 +1,14 @@
-# AeroForge v0.8 · Evidence-first Drone Engineering & Assembly Workbench
+# AeroForge v0.9 · Mission-Driven Drone Engineering Workbench
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
+
+## New in v0.9: Everyday Mission Architecture Studio
+
+**Section 15** introduces 40 reusable component classes and six custom scenario concepts: controlled indoor inventory, solar/roof inspection, exploratory community air quality, garden vegetation mapping, accessible trail surveying, and habitat restoration via VTOL. Users can choose optional modules, inspect schematics, compare architectures and export JSON/Markdown concept briefs.
+
+**These are concept architectures, not vendor-qualified builds.** Optional modules are not installed into the existing v0.7 illustration or v0.8 assembly plan, and all CAD, electrical, autonomy, sensor performance, flight and cost qualifications remain open. Details: [v0.9 Mission Architectures](docs/V09_MISSION_ARCHITECTURES.md).
 
 ## New in v0.8: interactive Assembly Copilot
 

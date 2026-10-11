@@ -4,10 +4,10 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / VERIFY / FLY</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V0.8 · ASSEMBLY COPILOT</span></div>
+ <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V0.9 · MISSION ARCHITECTURES</span></div>
  <div class="header-right"><a href="https://github.com/sidhulyalkar/worcester-longboard" target="_blank" rel="noreferrer">Worcester DNA ↗</a><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
 <main>
@@ -218,4 +218,50 @@
     <div class="assembly-actions"><button type="button" id="assembly-export-json">↓ Session JSON</button><button type="button" id="assembly-export-md">↓ Printable Markdown packet</button><button type="button" id="assembly-reset">↺ Reset local work</button></div>
   </footer>
  </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script></body></html>
+
+<section id="mission-v09" class="mission-v09" aria-label="Everyday mission architecture studio">
+ <header class="mission-v09-header"><div>
+  <div class="mission-v09-eyebrow">15 / NEW AIRCRAFT DESIGN PROGRAM</div>
+  <h2>New missions.<br/><em>New machines.</em></h2>
+  <p>Build around a real-world need, not only motor size. Explore six distinct concepts, adapt sensor and safety modules, compare architectures, and export source-aware engineering questions before committing to hardware.</p>
+  </div><aside class="mission-v09-count"><strong>06</strong>EVERYDAY MISSION CONCEPTS<br/>40 MODULE CLASSES<br/>FOUR AIRFRAME TOPOLOGIES</aside></header>
+ <div id="mission-v09-cards" class="mission-v09-cards" aria-label="Select a drone mission concept"></div>
+ <div class="mission-v09-layout">
+  <article class="mission-v09-panel"><div class="mission-v09-panel-inner">
+    <div class="mission-v09-hero"><div><h3 id="mission-v09-title">Mission design</h3><div id="mission-v09-subtitle" class="mission-v09-subtitle"></div></div><span id="mission-v09-topology" class="mission-v09-tag"></span></div>
+    <div id="mission-v09-drawing" class="mission-v09-canvas" aria-label="Schematic conceptual drone silhouette"></div>
+    <div class="mission-v09-description">
+      <p><b>WHAT IT WOULD DO</b><span id="mission-v09-purpose"></span></p>
+      <p><b>DELIVERABLE</b><span id="mission-v09-deliverable"></span></p>
+    </div></div>
+    <div id="mission-v09-summary" class="mission-v09-status" role="status">Calculating module holds...</div>
+    <p id="mission-v09-warning" class="mission-v09-warning"></p>
+  </article>
+  <aside class="mission-v09-panel"><div class="mission-v09-panel-inner">
+    <h4>Optional subsystem upgrades</h4><p class="mission-v09-subtitle">Explore features to add. Each addition brings compatibility, mass, wiring and calibration questions: not guaranteed fit.</p>
+    <div id="mission-v09-options" class="mission-v09-option-list"></div>
+   </div><div class="mission-v09-panel-inner" style="border-top:1px solid #35515a">
+    <h4>Architecture comparison</h4><div class="mission-v09-compare-controls"><label for="mission-v09-compare">Compare against</label>
+    <select id="mission-v09-compare">
+      <option value="indoor-inventory">Aisle Wisp · Guarded indoor</option>
+      <option value="solar-roof">Solar Surveyor · Roof inspection</option>
+      <option value="air-sampler">Air Mosaic · Air quality</option>
+      <option value="garden-mapper">Garden Atlas · Vegetation mapping</option>
+      <option value="accessible-trails">Pathfinder Mapper · Trail access</option>
+      <option value="habitat-vtol">Canopy Cartographer · VTOL</option>
+    </select></div><div id="mission-v09-comparison" class="mission-v09-comparison"></div>
+   </div>
+  </aside>
+ </div>
+ <div class="mission-v09-layout mission-v09-secondary">
+  <article class="mission-v09-panel"><div class="mission-v09-panel-inner"><h4>Subsystem and component-class inventory</h4><p class="mission-v09-subtitle">A concept-level component map, not priced purchasing SKUs.</p><div id="mission-v09-components" class="mission-v09-components"></div></div></article>
+  <aside class="mission-v09-panel"><div class="mission-v09-panel-inner"><h4>Critical design questions</h4><div id="mission-v09-holds" class="mission-v09-holds"></div></div></aside>
+ </div>
+ <footer class="mission-v09-footer">
+   <p id="mission-v09-library" class="mission-v09-library"></p>
+   <p>This is a mission-architecture planning workspace. It does not make airworthiness, regulatory, procurement, flight-time, price, privacy, or sensor-accuracy claims. U.S. outdoor flights for work generally require Part 107 compliance; current Remote ID, airspace, overflight, and VLOS rules must be checked for the specific operation.</p>
+   <div class="mission-v09-actions"><button id="mission-v09-export" type="button">↓ Export design JSON</button><button id="mission-v09-export-brief" type="button">↓ Export design brief</button><button id="mission-v09-baseline" type="button">↗ Open illustrative quad baseline</button></div>
+   <p id="mission-v09-action-status" role="status" aria-live="polite"></p>
+ </footer>
+</section>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script></body></html>
