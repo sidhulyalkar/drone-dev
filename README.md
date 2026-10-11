@@ -1,9 +1,16 @@
-# AeroForge v1.6 · Source-Based CAD Feature Engineering
+# AeroForge v1.7 · Minimal Drone Design & Engineering Workspaces
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
 
+## New in v1.7: Three Minimal Workspaces
+
+AeroForge now opens in **Explore**, with a small set of controls and an aircraft viewer. Primary workspaces: **Explore** (mission, presets, configurator), **Build** (exploded tour and assembly), and **Engineering** (source evidence, qualification, PX4, X500, dimensional and CAD labs). Detailed component settings, planner options and flight metrics are expandable; any blocking compatibility findings remain visible. No tools or aircraft records have been removed.
+
+Old deep links and all tools remain available in the compact **All tools** menu. Inactive sections are hidden, not recreated, so switching workspaces preserves CAD inputs, assembly notes and scene identities. Duplicate v1.6 script/style imports are removed.
+
+See [v1.7 Minimal Workspace Design](docs/V17_MINIMAL_WORKSPACE.md). The release is a software/UI change, not evidence of physical fit or flight qualification.
 ## New in v1.6: Source-Bound CAD Feature Measurements
 
 Section 19 adds **direct surface-point picking on locally hash-checked X500 CAD**, a non-WebGL coordinate entry fallback, and a 3D circular-feature fit with residual checks. It distinguishes clicked mesh-surface points from user-typed coordinates. You can explicitly attach a numerically plausible circular-feature center to a motor candidate in Section 18 without losing the exact STEP/GLB source identity. High-residual fits are blocked, and editing any source or annotation invalidates old evidence.

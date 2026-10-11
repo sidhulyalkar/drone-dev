@@ -41,6 +41,7 @@ const upload=async (page,f,tamper=false,includeStep=false)=>{
 };
 test('screening an explicitly synthetic example, editing, and reinspection never preserves stale exports',async({page})=>{
  await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
  await page.locator('#dim-example').click();
  await expect(page.locator('#dim-review-proof')).toContainText('CURRENT');
  await expect(page.locator('#dim-export')).toBeEnabled();
@@ -53,6 +54,7 @@ test('screening an explicitly synthetic example, editing, and reinspection never
 });
 test('tampered local GLB remains rejected without rendering or export',async({page})=>{
  await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
  await upload(page,fixture(),true,true);
  await page.locator('#cad-v13-inspect').click();
  await expect(page.locator('#cad-v13-status')).toContainText('GLB SHA-256 mismatch');
@@ -61,6 +63,7 @@ test('tampered local GLB remains rejected without rendering or export',async({pa
 });
 test('exact local mesh/source identity is exposed without claiming trusted manufacturer origin',async({page})=>{
  await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
  await upload(page,fixture(),false,true);
  await page.locator('#cad-v13-inspect').click();
  await expect(page.locator('#cad-v13-package-evidence')).toContainText('MATCH LOCAL FILE');
@@ -70,7 +73,9 @@ test('exact local mesh/source identity is exposed without claiming trusted manuf
 });
 test('X500 canonical compatibility blockers stay visible and keep PX4 assembly selection synchronized',async({page})=>{
  await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-build').click();
  await page.locator('#assembly-track').selectOption('px4');
+ await page.locator('#af-workspace-engineering').click();
  await page.locator('#v06-kit-variant').selectOption('six_x');
  await expect(page.locator('#v14-identity')).toContainText('six_x');
  await expect(page.locator('#assembly-variant')).toHaveValue('six_x');
@@ -82,6 +87,7 @@ test('X500 canonical compatibility blockers stay visible and keep PX4 assembly s
 
 test('verified local X500-named STEP accepts human annotations but blocks physical qualification',async({page})=>{
  await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
  const f=fixture(); // Entirely synthetic test bytes, NOT manufacturer STEP
  f.manifest.source.fileName='x500v2-frame.step';
  await page.locator('#cad-v13-manifest').setInputFiles({name:'fixture.visual-package.json',mimeType:'application/json',
@@ -115,6 +121,7 @@ test('verified local X500-named STEP accepts human annotations but blocks physic
 
 test('source-bound circular feature hypothesis propagates without claiming a motor shaft center',async({page})=>{
  await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
  const f=fixture();
  f.manifest.source.fileName='x500v2-frame.step'; // synthetic test file, no manufacturer geometry
  await page.locator('#cad-v13-manifest').setInputFiles({name:'fixture.visual-package.json',mimeType:'application/json',
@@ -144,11 +151,61 @@ test('source-bound circular feature hypothesis propagates without claiming a mot
  await expect(page.locator('#cad-v16-add-points')).toBeDisabled();
  await expect(page.locator('#cad-v15-export')).toBeDisabled();
 });
+
+test('minimal shell defaults to Explore with engineering sections unmounted from view, not DOM',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#af-workspace-explore')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#mission-planner')).toBeVisible();
+ await expect(page.locator('#assembly-v08')).toBeHidden();
+ await expect(page.locator('#dimensional-v11')).toBeHidden();
+ await expect(page.locator('#showcase-v07')).toBeHidden();
+ await expect(page.locator('#cad-v13-manifest')).toHaveCount(1);
+ await expect(page.locator('#af-tool-menu')).not.toHaveAttribute('open');
+});
+test('component and metric details reveal without resetting design controls or changing engineering status',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#plan-payload')).toBeHidden();
+ await page.locator('#af-plan-options').click();
+ await expect(page.locator('#plan-payload')).toBeVisible();
+ await page.locator('#plan-payload').fill('20');
+ await page.locator('#af-plan-options').click();
+ await expect(page.locator('#plan-payload')).toHaveValue('20');
+ await expect(page.locator('#config-inputs')).toBeHidden();
+ await page.locator('#af-customize').click();
+ await expect(page.locator('#config-inputs')).toBeVisible();
+ await expect(page.locator('#af-customize')).toHaveAttribute('aria-expanded','true');
+ await expect(page.locator('#screening-status')).toBeAttached();
+ await expect(page.locator('#af-analysis')).toBeVisible();
+ await page.locator('#af-analysis').click();
+ await expect(page.locator('.metrics-panel .envelope')).toBeVisible();
+});
+test('swapping workspaces keeps assembly state and CAD inspector form values',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#dim-example').click();
+ await expect(page.locator('#dim-review-proof')).toContainText('CURRENT');
+ await page.locator('#af-workspace-build').click();
+ await expect(page.locator('#assembly-v08')).toBeVisible();
+ await expect(page.locator('#dimensional-v11')).toBeHidden();
+ await page.locator('#af-workspace-engineering').click();
+ await expect(page.locator('#dim-review-proof')).toContainText('CURRENT');
+ await expect(page.locator('#dim-rotors')).not.toHaveValue('');
+ await expect(page.locator('#dim-export')).toBeEnabled();
+});
+test('deep links reveal engineering and nested Explore views even from a conflicting query',async({page})=>{
+ await page.goto('http://127.0.0.1:8080/?view=build#dimensional-v11',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#af-workspace-engineering')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#dimensional-v11')).toBeVisible();
+ await page.goto('http://127.0.0.1:8080/?view=engineering#mission-v10',{waitUntil:'domcontentloaded'});
+ await expect(page.locator('#af-workspace-explore')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#mission-v10')).toBeVisible();
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{
   await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#workflow-v12')).toBeVisible();
+  await page.locator('#af-tool-menu summary').click();
   await page.locator('#workflow-v12 a[href="#dimensional-v11"]').click();
   await expect(page.locator('#dimensional-v11')).toBeVisible();
   await page.locator('#dim-example').click();

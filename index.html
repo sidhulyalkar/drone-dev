@@ -4,28 +4,37 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/><link rel="stylesheet" href="./feature_v16.css"/><link rel="stylesheet" href="./feature_v16.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/><link rel="stylesheet" href="./feature_v16.css"/><link rel="stylesheet" href="./workspace_v17.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / INSPECT / LEARN</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.6 · CAD FEATURE EVIDENCE</span></div>
- <div class="header-right"><a href="https://github.com/sidhulyalkar/worcester-longboard" target="_blank" rel="noreferrer">Worcester DNA ↗</a><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
+ <div class="header-center"><span class="pulse-dot"></span> AIRCRAFT STUDIO <span class="version">V1.7</span></div>
+ <div class="header-right"><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
-<nav class="workflow-v12" id="workflow-v12" aria-label="AeroForge workflow navigation">
+<nav class="workflow-v12" id="workflow-v12" aria-label="AeroForge workspaces">
  <div class="workflow-v12-inner">
-  <span class="workflow-v12-label">WORKFLOW</span>
-  <div class="workflow-v12-links">
-   <a href="#mission-planner">Design</a>
-   <a href="#showcase-v07">Exploded view</a>
-   <a href="#mission-v09">Missions</a>
-   <a href="#mission-v10">3D architectures</a>
-   <a href="#assembly-v08">Assembly</a>
-   <a href="#reference-lab">Reference parts</a>
-   <a href="#x500-kit-lab">X500 hardware</a>
-   <a href="#qualification-console">Qualification</a>
-   <a href="#v05-program-lab">Simulation</a>
-   <a href="#dimensional-v11">CAD inspection</a><a href="#cad-package-v13">Real CAD viewer</a>
+  <span class="workflow-v12-label">AEROFORGE</span>
+  <div class="af-workspace-switch" role="group" aria-label="Primary workspaces">
+   <button type="button" id="af-workspace-explore" data-workspace="explore" aria-pressed="true">Explore</button>
+   <button type="button" id="af-workspace-build" data-workspace="build" aria-pressed="false">Build</button>
+   <button type="button" id="af-workspace-engineering" data-workspace="engineering" aria-pressed="false">Engineering</button>
   </div>
-  <output id="workflow-v12-status" class="workflow-v12-status" aria-live="polite">Select a workflow</output>
+  <details id="af-tool-menu" class="af-tool-menu">
+   <summary>All tools <span aria-hidden="true">⌄</span></summary>
+   <div class="workflow-v12-links" aria-label="Individual engineering tools">
+    <a href="#mission-planner">Design</a>
+    <a href="#showcase-v07">Exploded view</a>
+    <a href="#mission-v09">Missions</a>
+    <a href="#mission-v10">3D architectures</a>
+    <a href="#assembly-v08">Assembly</a>
+    <a href="#reference-lab">Reference parts</a>
+    <a href="#x500-kit-lab">X500 hardware</a>
+    <a href="#qualification-console">Qualification</a>
+    <a href="#v05-program-lab">Simulation</a>
+    <a href="#dimensional-v11">CAD inspection</a>
+    <a href="#cad-package-v13">Real CAD viewer</a>
+   </div>
+  </details>
+  <output id="workflow-v12-status" class="workflow-v12-status" aria-live="polite">Explore your aircraft</output>
  </div>
 </nav>
 <main>
@@ -40,7 +49,7 @@
     <label>ALL-IN STARTUP BUDGET (USD)<input id="plan-budget" name="budget" type="number" min="0" max="5000" step="50" value="900" inputmode="numeric"></label>
     <label>EXTRA PAYLOAD (G)<input id="plan-payload" name="payload" type="number" min="0" max="400" step="10" value="0" inputmode="numeric"></label>
     <label>OPTIMIZE FOR<select id="plan-priority" name="priority"><option value="balanced">Balanced mission</option><option value="cost">Lowest startup cost</option><option value="endurance">Endurance (illustrative)</option><option value="agility">Agility (illustrative)</option></select></label>
-    <button type="submit" class="primary">Find three designs ↗</button>
+    <button type="button" id="af-plan-options" class="af-text-action" aria-expanded="false">More options</button><button type="submit" class="primary">Find three designs ↗</button>
    </form>
    <div id="plan-results" class="plan-results" aria-live="polite"></div>
    <p class="plan-disclaimer">Mission-fit scores are transparent heuristics, not measured performance. All prices are planning placeholders. A recommendation is never a flight-readiness determination.</p>
@@ -49,7 +58,7 @@
  <section class="preset-section"><div class="section-heading"><span class="number">01</span> START WITH A MISSION <span class="section-help">Pick a reference architecture, then make it yours.</span></div><div id="presets" class="preset-grid"></div></section>
  <section class="workspace">
   <aside class="panel left-panel"><div class="panel-heading"><div><span class="number">02</span><b> COMPONENT LAB</b><p>Every swap recalculates your aircraft.</p></div><span class="panel-decoration">↗</span></div>
-   <div class="configuration" id="config-inputs"></div>
+   <button type="button" id="af-customize" class="af-reveal-button" aria-expanded="false">Customize components</button><div class="configuration" id="config-inputs"></div>
    <div class="range-group"><label for="payload"><span>ADDITIONAL PAYLOAD</span><output id="payload-label">0 g</output></label><input id="payload" type="range" min="0" max="400" step="5" value="0"/><div class="range-extremes"><span>0 g</span><span>400 g</span></div><p class="field-note">Includes sensors, mountings, computers or other equipment not already in the selected video system.</p></div>
    <div class="mission-group"><label for="mission">FLIGHT BEHAVIOR</label><select id="mission"><option value="freestyle">Aggressive FPV</option><option value="cinematic">Smooth cinematic</option><option value="explore">Exploration / cruising</option><option value="research">Sensor research</option></select></div><div class="mission-group"><label for="ground-kit">GROUND EQUIPMENT</label><select id="ground-kit"></select><p class="field-note">Estimates change with ground systems; exact protocols and purchases must be verified.</p></div>
   </aside>
@@ -59,7 +68,7 @@
    <div class="context-strip"><span><i>◈</i> PROCEDURAL 3D GEOMETRY</span><span><i>◈</i> DIMENSIONS TRACK PARTS</span><span><i>◈</i> NOT A CERTIFIED CAD ASSEMBLY</span></div>
   </section>
   <aside class="panel metrics-panel"><div class="panel-heading"><div><span class="number">03</span><b> ILLUSTRATIVE FLIGHT MODEL</b><p>Synthetic catalog assumptions, not flight test evidence.</p></div><span class="panel-decoration">⌁</span></div>
-   <div class="readiness"><span id="status-dot" class="status-dot"></span><div><small>DESIGN SCREENING</small><strong id="screening-status">CONCEPT</strong></div><span id="blocker-count">0 blockers</span></div>
+   <button type="button" id="af-analysis" class="af-reveal-button" aria-expanded="false">Full analysis</button><div class="readiness"><span id="status-dot" class="status-dot"></span><div><small>DESIGN SCREENING</small><strong id="screening-status">CONCEPT</strong></div><span id="blocker-count">0 blockers</span></div>
    <div class="metrics-grid"><div class="metric"><label>ILLUSTRATIVE MASS</label><div><strong id="mass">0</strong><small>g</small></div></div><div class="metric"><label>ILLUSTRATIVE TIME</label><div><strong id="time">0</strong><small>min</small></div></div><div class="metric"><label>PLACEHOLDER T/W</label><div><strong id="twr">0</strong><small>×</small></div></div><div class="metric"><label>ILLUSTRATIVE COST</label><div><small>$</small><strong id="cost">0</strong></div></div></div>
    <div class="price-split"><div><span>GROUND & BENCH</span><b id="ground-cost">$0</b></div><div><span>STARTUP TOTAL</span><b id="startup-cost">$0</b></div></div>
    <div class="scenario-range"><span>ENDURANCE SENSITIVITY <i>(not confidence limits)</i></span><strong id="flight-range">0–0 min</strong><p>Two efficiency / usable-energy assumptions around the central estimate.</p></div>
@@ -493,4 +502,4 @@
   This is a preview of source-derived tessellated geometry, not measured aircraft placement. Sha-256 identifies specific bytes but never authenticates source ownership, scale, axes, physical registration, rotor centers, swept disks or safety. Only source files that you are permitted to use should be converted or shared.
  </footer>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script></body></html>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script></body></html>
