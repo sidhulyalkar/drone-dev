@@ -8,7 +8,7 @@ function preview(opts={}){
  const source={fileName:'x500v2-frame.step',sha256:'a'.repeat(64),
   revision:'SYNTHETIC_TEST_NOT_MANUFACTURER',documentationUrl:'https://example.org/manual'};
  return {schema:'aeroforge/cad-preview-evidence/v1.3',glbHashMatchesManifest:true,
-  localStepHashMatchesManifest:true,manifest:{source,mesh:{sha256:'b'.repeat(64)}},...opts};
+  localStepHashMatchesManifest:true,manifest:{source,mesh:{sha256:'b'.repeat(64)},conversion:{coordinateFrame:'CAD_NATIVE_UNREGISTERED'}},...opts};
 }
 function form(){
  return {axisMap:['+X','+Y','+Z'],datumKernelMm:[0,0,0],reviewerLabel:'test-observer',
