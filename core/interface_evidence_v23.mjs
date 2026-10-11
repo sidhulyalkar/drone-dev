@@ -4,6 +4,12 @@ import {validateInspectionJournal} from './inspection_journal_v22.mjs';
 import {KIT_RECORD_SCHEMA} from './x500_record_v14.mjs';
 export const MATRIX_SCHEMA='aeroforge/interface-evidence-links/v2.3';
 const isObject=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
+const exactKeys=(obj,keys)=>Object.keys(obj).every(k=>keys.includes(k));
+const CONTEXT_KEYS=['aircraftReference','revisionIdentity','variant','batteryCells'];
+const LINK_KEYS=['id','observationId','edgeId','checkIndex','rationale','context','authority',
+ 'requirementSnapshot','edgeSignature','observationChecksum'];
+const LEDGER_KEYS=['schema','activeContext','links','authority','procurementApproved',
+ 'powerApproved','flightApproved'];
 const same=(a,b)=>a?.revisionIdentity===b?.revisionIdentity&&a?.variant===b?.variant&&a?.batteryCells===b?.batteryCells&&a?.aircraftReference===b?.aircraftReference;
 function context(record){
  if(record?.schema!==KIT_RECORD_SCHEMA)throw Error('Canonical X500 record required');
@@ -12,7 +18,7 @@ function context(record){
 const EDGE_IDS=Object.freeze(['motor-esc','esc-pdb','fc-power','frame-motor','pdb-battery','esc-actuator']);
 const graphById=new Map(X500_INTERFACE_EDGES.map(e=>[e.id,e]));
 function validContext(c){
- return isObject(c)&&c.aircraftReference==='holybro-x500-v2'&&
+ return isObject(c)&&exactKeys(c,CONTEXT_KEYS)&&c.aircraftReference==='holybro-x500-v2'&&
  ['six_c','six_x'].includes(c.variant)&&Number.isInteger(c.batteryCells)&&
  c.batteryCells>=2&&c.batteryCells<=12&&typeof c.revisionIdentity==='string'&&
  c.revisionIdentity.length>0&&c.revisionIdentity.length<=6000;
@@ -45,7 +51,8 @@ export function startInterfaceEvidenceLinks(record){
   authority:'USER_DECLARED_RESEARCH_LINKS_ONLY',procurementApproved:false,powerApproved:false,flightApproved:false};
 }
 export function validateInterfaceEvidenceLinks(ledger){
- if(!isObject(ledger)||ledger.schema!==MATRIX_SCHEMA||!isObject(ledger.activeContext)||
+ if(!isObject(ledger)||!exactKeys(ledger,LEDGER_KEYS)||
+ ledger.schema!==MATRIX_SCHEMA||!isObject(ledger.activeContext)||
  !Array.isArray(ledger.links)||ledger.links.length>3000||
  ledger.authority!=='USER_DECLARED_RESEARCH_LINKS_ONLY'||
  ledger.procurementApproved!==false||ledger.powerApproved!==false||ledger.flightApproved!==false)
@@ -55,7 +62,7 @@ export function validateInterfaceEvidenceLinks(ledger){
  const seen=new Set();
  for(let i=0;i<ledger.links.length;i++){
   const l=ledger.links[i];
-  if(!isObject(l)||l.id!=='link-'+String(i+1).padStart(4,'0')||
+  if(!isObject(l)||!exactKeys(l,LINK_KEYS)||l.id!=='link-'+String(i+1).padStart(4,'0')||
    !/^evt-[0-9]{4}$/.test(l.observationId)||!EDGE_IDS.includes(l.edgeId)||
    !Number.isInteger(l.checkIndex)||l.checkIndex<0||l.checkIndex>99||
    typeof l.rationale!=='string'||l.rationale.trim().length<12||
