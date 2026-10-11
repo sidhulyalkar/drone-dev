@@ -18,5 +18,10 @@ jobs:
           for file in core/*.mjs; do node --check "$file"; done
       - name: Run engineering regression tests
         run: npm test
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned CAD smoke-test dependencies
+        run: python -m pip install -r requirements-cad.txt
       - name: Run CAD and geometry contract smoke tests
         run: npm run test:cad

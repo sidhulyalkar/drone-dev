@@ -1,0 +1,5 @@
+# Minimal, pinned dependencies required by the synthetic CAD/DXF smoke tests.
+# This is NOT a complete CAD conversion environment (step_to_glb.py uses optional CAD libraries).
+ezdxf==1.4.4
+trimesh==4.11.1
+numpy==2.3.5

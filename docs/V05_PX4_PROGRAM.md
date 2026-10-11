@@ -19,6 +19,7 @@ Two tracks are independent:
 
 ```bash
 npm test
+python3 -m pip install -r requirements-cad.txt
 npm run test:cad
 ```
 
