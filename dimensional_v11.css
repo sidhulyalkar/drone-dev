@@ -1,0 +1,45 @@
+/* AeroForge v1.1 / dimensional inspection. All coordinates in user-defined FRD mm; not real source CAD. */
+.dim-v11{margin:54px 0 42px;border:1px solid #466566;border-radius:14px;background:linear-gradient(145deg,#142b33,#192b34);overflow:hidden}
+.dim-v11 *{box-sizing:border-box}
+.dim-v11-head{padding:24px 23px 19px;border-bottom:1px solid #3d595c;display:flex;justify-content:space-between;align-items:flex-start;gap:25px}
+.dim-v11-head h2{font-size:clamp(24px,4vw,43px);margin:7px 0 9px;letter-spacing:-.04em;color:#e4efd9;line-height:1.1}
+.dim-v11-head h2 em{font-style:normal;color:#bde4a8}
+.dim-v11-head p{color:#a9c5c1;font-size:13px;line-height:1.65;max-width:760px;margin:0}
+.dim-v11-kicker{font:11px ui-monospace,monospace;letter-spacing:.12em;color:#b6dfa4}
+.dim-v11-head aside{min-width:170px;max-width:230px;font:11px ui-monospace,monospace;background:#372f2b;color:#f2d1a1;padding:13px 15px;border:1px solid #725a42;border-radius:9px;line-height:1.7}
+.dim-v11-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px;padding:18px}
+.dim-v11-panel{background:#182e36;border:1px solid #3b5a5e;border-radius:10px;padding:17px;min-width:0}
+.dim-v11-panel h3{font-size:17px;color:#e0eddb;margin:0 0 7px}
+.dim-v11-panel h4{font-size:10px;color:#d0e6bd;letter-spacing:.1em;text-transform:uppercase;margin:15px 0 9px}
+.dim-v11-panel p{color:#adc6c0;font-size:12px;line-height:1.6}
+.dim-v11-fields{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.dim-v11-fields label,.dim-v11-panel>.dim-label{display:grid;gap:6px;color:#b3c9c5;font-size:11px;line-height:1.4}
+.dim-v11-fields input,.dim-v11-panel textarea,.dim-v11-panel input{width:100%;min-width:0;padding:10px;background:#0e212b;border:1px solid #506e70;border-radius:7px;color:#e7f1e9;font:12px ui-monospace,monospace}
+.dim-v11-panel input[type=file]{padding:9px;font-size:10px}
+.dim-v11-panel textarea{min-height:106px;resize:vertical;line-height:1.6}
+.dim-v11-panel textarea::placeholder{color:#728d92}
+.dim-v11-panel input:focus-visible,.dim-v11-panel textarea:focus-visible,.dim-v11 button:focus-visible{outline:2px solid #c8ecad;outline-offset:3px}
+.dim-v11-inline{font:10px ui-monospace,monospace;color:#9cb9b9;line-height:1.6}
+.dim-v11-actions{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+.dim-v11-actions button{background:#2e564a;color:#e2f2df;border:1px solid #658e7a;border-radius:7px;padding:9px 12px;font-size:11px;cursor:pointer}
+.dim-v11-actions button:hover{background:#426a52}
+.dim-v11-actions button:first-child{background:#c5e7a9;color:#163328;border-color:#c5e7a9;font-weight:700}
+.dim-v11-btn-muted{background:#31404a!important}
+.dim-v11-plot{width:100%;min-height:260px;background:#101f2a;border:1px solid #436266;border-radius:8px;overflow:hidden;display:grid;place-items:center;color:#aac5c2;text-align:center;font-size:12px;line-height:1.6}
+.dim-v11-plot svg{display:block;width:100%;height:auto}
+.dim-v11-overview{display:grid;gap:8px;padding:11px 0;border-bottom:1px solid #44605e;font-size:11px;color:#c7dbce}
+.dim-v11-overview b{font-size:13px;color:#ebdcad}
+.dim-v11-source-status{overflow-wrap:anywhere;color:#add3c7;font:10px ui-monospace,monospace;line-height:1.6}
+.dim-v11-checks{max-height:360px;overflow:auto;display:grid;gap:7px;margin:15px 0}
+.dim-check{background:#22393d;border:1px solid #466368;border-radius:7px;padding:10px;font-size:11px;color:#d7e3d9}
+.dim-check summary{cursor:pointer;line-height:1.5}
+.dim-check b{padding:3px 6px;border-radius:3px;margin-right:5px;font:10px ui-monospace,monospace;color:#e5d19e;background:#5a4b37}
+.dim-check b.dim-conflict{color:#ffe4de;background:#73392f}
+.dim-check b.dim-plan-clear{color:#cff2b4;background:#275342}
+.dim-check p{color:#bdcec7;margin:10px 0 0;font-size:11px}
+.dim-v11-caution{margin:0;padding:14px 20px;background:#3b302b;border-top:1px solid #6c513e;color:#f1dbb9;font-size:12px;line-height:1.6}
+.dim-v11-source-links{font-size:11px;line-height:1.65;padding:0 18px 15px;color:#b2cbc0}
+.dim-v11-source-links a{color:#c8eab0}
+@media(max-width:980px){.dim-v11-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.dim-v11-head{display:block;padding:18px}.dim-v11-head aside{margin-top:13px;max-width:none}.dim-v11-grid{padding:10px}.dim-v11-fields{grid-template-columns:1fr}.dim-v11-panel{padding:13px}}
+@media(prefers-reduced-motion:reduce){.dim-v11 *{animation:none!important;scroll-behavior:auto!important;transition:none!important}}

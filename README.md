@@ -1,8 +1,14 @@
-# AeroForge v1.0 · Mission-Driven Drone Engineering Workbench
+# AeroForge v1.1 · Evidence-Driven Drone Engineering Workbench
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
+
+## New in v1.1: Dimensional CAD Evidence & Conservative Collision Screens
+
+**Section 16** lets you locally register a manufacturer CAD file SHA-256 (without uploading its bytes), enter actual BODY-FRD millimetre rotor coordinates, measured propeller diameters and component AABBs, and screen conservative projected rotor-disk and bounding-volume interferences. It exports a geometry/measurement report and a **blocked PX4 FRD-CG geometry handoff**; no motor coordinates are guessed from the X500's nominal 500mm wheelbase.
+
+An explicitly marked classroom example illustrates the process. It is **not** Holybro CAD. A separate optional local STEP solid-inventory CLI uses CadQuery for unregistered kernel bounding boxes, requiring manual verification of units and axes. Neither tool authenticates vendor file origin or qualifies real physical fit. See [v1.1 Dimensional CAD Evidence](docs/V11_DIMENSIONAL_CAD.md).
 
 ## New in v1.0: Interactive 3D Mission Systems
 

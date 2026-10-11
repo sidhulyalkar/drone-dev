@@ -10,7 +10,7 @@ const localPython=process.platform==='win32'
   : join(root,'.venv','bin','python');
 const python=existsSync(localPython) ? localPython
   : (process.platform==='win32' ? 'python' : 'python3');
-const args=['-m','unittest','discover','-s','tests','-p','python_geometry_v04.py','-v'];
+const args=['-m','unittest','discover','-s','tests','-p','python_*.py','-v'];
 const result=spawnSync(python,args,{cwd:root,stdio:'inherit'});
 if(result.error){console.error('CAD test runner:',result.error.message);process.exit(1);}
 process.exit(result.status??1);

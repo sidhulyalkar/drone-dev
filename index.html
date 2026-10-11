@@ -4,10 +4,10 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / VERIFY / FLY</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.0 · 3D MISSION SYSTEMS</span></div>
+ <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.1 · DIMENSIONAL ENGINEERING</span></div>
  <div class="header-right"><a href="https://github.com/sidhulyalkar/worcester-longboard" target="_blank" rel="noreferrer">Worcester DNA ↗</a><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
 <main>
@@ -294,4 +294,69 @@
    <p id="mission-v09-action-status" role="status" aria-live="polite"></p>
  </footer>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script></body></html>
+
+<section id="dimensional-v11" class="dim-v11" aria-label="Measured CAD and dimensional geometry audit">
+ <div class="dim-v11-head"><div>
+  <div class="dim-v11-kicker">16 / SOURCE REGISTERED DIMENSIONAL INSPECTION</div>
+  <h2>From visual concept<br/>to <em>measurable geometry.</em></h2>
+  <p>Inspect actual, user-supplied component dimensions in millimetres. Register the bytes of a locally chosen CAD source with SHA-256, screen projected rotor disks and component bounding boxes, and export a separately blocked PX4 coordinate-frame handoff. We do not fabricate manufacturer motor positions.</p>
+  </div><aside>CAD SOURCE / NOT VERIFIED<br/>NO APPROVED PHYSICAL FIT<br/>NO FLIGHT AUTHORITY</aside>
+ </div>
+ <div class="dim-v11-grid">
+  <article class="dim-v11-panel">
+   <h3>01 / Register your source</h3>
+   <p>Holybro publishes the X500 V2 frame STEP and an AIR2216II motor STEP. Download the file yourself and select it below to compute its SHA-256 locally. <strong>No STEP parsing or authenticated manufacturer file comparison occurs in this browser.</strong></p>
+   <div class="dim-v11-fields">
+    <label>Source label<input id="dim-source-label" value="Holybro X500 V2 CAD, not verified"/></label>
+    <label>Local file name<input id="dim-file-name" placeholder="Select a source file below"/></label>
+    <label>Official documentation / source URL<input id="dim-source-url" type="url"/></label>
+    <label>Measurement datum (not CG)<input id="dim-datum" placeholder="e.g. center of bottom plate, FRD axes"/></label>
+    <label>Local source file · hash only<input id="dim-file" type="file" accept=".step,.stp,.glb,.json,.dxf,.STEP,.STP"/></label>
+    <label>Minimum projected gap (mm)<input id="dim-gap" type="number" min="0" max="250" step=".1" value="5"/></label>
+   </div>
+   <p id="dim-source-status" class="dim-v11-source-status">No source-file SHA-256 registered</p>
+   <h4>02 / Enter rotor coordinates and measured propeller sizes</h4>
+   <p class="dim-v11-inline">BODY-FRD (+X FORWARD, +Y RIGHT, +Z DOWN), millimetres, relative to your documented datum. CSV rows: rotor ID, X, Y, Z, prop diameter. Empty until you supply data.</p>
+   <label class="dim-label" for="dim-rotors">Rotor measurements</label>
+   <textarea id="dim-rotors" spellcheck="false" placeholder="R1, measuredX, measuredY, measuredZ, measuredPropDiameter"></textarea>
+   <h4>03 / Register component envelopes and optional mass</h4>
+   <p class="dim-v11-inline">CSV rows: ID, label (no commas), center X/Y/Z, dimension X/Y/Z, mass grams (may be blank). AABB proxies remain conservative even when entered from manufacturer dimensions.</p>
+   <label class="dim-label" for="dim-parts">Measured component bounding boxes</label>
+   <textarea id="dim-parts" spellcheck="false" placeholder="camera, Camera module, x, y, z, widthX, widthY, depthZ, massG"></textarea>
+   <label class="dim-label" for="dim-notes">Measurement provenance / inspection notes</label>
+   <textarea id="dim-notes" placeholder="State where each coordinate and dimension came from. Source file hashing is not automatic dimension extraction."></textarea>
+   <div class="dim-v11-actions">
+    <button id="dim-inspect" type="button">↗ Screen supplied dimensions</button>
+    <button id="dim-example" class="dim-v11-btn-muted" type="button">◈ Load explicitly synthetic example</button>
+    <button id="dim-clear" class="dim-v11-btn-muted" type="button">↺ Start with blank real measurements</button>
+   </div>
+   <h4>Local measurement file import</h4>
+   <label class="dim-label" for="dim-import">Load an existing v1.1 measurement JSON file (not the evaluation export)</label>
+   <input id="dim-import" type="file" accept=".json,application/json"/>
+  </article>
+  <article class="dim-v11-panel">
+   <h3>04 / Dimensional screening results</h3>
+   <div class="dim-v11-overview">
+    <b id="dim-result">MEASUREMENTS NEEDED</b>
+    <span id="dim-numbers">No geometry screened</span>
+    <span id="dim-mass">No component masses measured</span>
+   </div>
+   <h4>Aircraft top view · orthographic projection</h4>
+   <div id="dim-plot" class="dim-v11-plot">Enter actual coordinates or load the explicitly synthetic classroom example to see a dimensioned rotor/part projection.</div>
+   <p class="dim-v11-inline">The visual graph scales with entered geometry. XY overlap is a conservative warning across all Z heights; passing this test is not full mesh collision approval or evidence of safe airflow.</p>
+   <div id="dim-checks" class="dim-v11-checks"></div>
+   <div class="dim-v11-actions">
+    <button id="dim-export" type="button">↓ Evaluation JSON</button>
+    <button id="dim-px4" type="button">↓ Blocked PX4 FRD handoff</button>
+    <button id="dim-report" type="button">↓ Printable inspection report</button>
+   </div>
+   <p id="dim-alert" class="dim-v11-inline" role="status">Unqualified source / dimensions.</p>
+  </article>
+ </div>
+ <div class="dim-v11-source-links">
+  Source documents: <a href="https://docs.holybro.com/drone-development-kit/px4-development-kit-x500v2/download" target="_blank" rel="noopener noreferrer">Holybro X500 V2 CAD downloads ↗</a> ·
+  <a href="https://docs.px4.io/main/en/config/actuators" target="_blank" rel="noopener noreferrer">PX4 actuator coordinate system ↗</a>
+ </div>
+ <p class="dim-v11-caution">A file hash identifies bytes; it does not prove vendor origin, dimensions, physical registration, measured CG, motor mapping, structural strength, electrical fit, commissioning or airworthiness. Real PX4 rotor coordinates are FRD metres relative to measured whole-aircraft CG, not an arbitrary drawing datum.</p>
+</section>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script></body></html>
