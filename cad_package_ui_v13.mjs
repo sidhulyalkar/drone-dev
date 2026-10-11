@@ -11,6 +11,7 @@ if(root){
  function clear(){
   window.dispatchEvent(new CustomEvent('aeroforge:cad-visual-package-cleared'));
   checked=null;meshList=[];viewer?.dispose();viewer=null;
+  window.dispatchEvent(new CustomEvent('aeroforge:cad-surface-pick-cleared'));
   el('cad-v13-canvas').querySelectorAll('canvas').forEach(c=>c.remove());
   el('cad-v13-parts').replaceChildren();
   el('cad-v13-package-evidence').textContent='No local package validated.';
@@ -96,7 +97,30 @@ if(root){
   ++loading;clear();for(const id of fileIds)el(id).value='';
   say('Select a manifest and its exact GLB, plus optional matching STEP, to start.');
  });
- window.addEventListener('aeroforge:cad-motor-annotation-updated',e=>{
+ window.addEventListener('aeroforge:cad-surface-pick-mode',e=>{
+  const enabled=e.detail?.enabled===true;
+  const allowed=!!viewer&&!!checked&&checked.localStepHashMatchesManifest===true&&
+   checked.manifest.source.fileName.toLowerCase()==='x500v2-frame.step';
+  if(enabled&&!allowed){
+   window.dispatchEvent(new CustomEvent('aeroforge:cad-surface-pick-unavailable'));
+   return;
+  }
+  if(enabled){
+   el('cad-v13-explode').value='0';el('cad-v13-explode-value').textContent='0%';
+   viewer.setExplode(0);el('cad-v13-explode').disabled=true;
+   viewer.setSurfacePickHandler(point=>{
+    window.dispatchEvent(new CustomEvent('aeroforge:cad-surface-point-picked',{
+     detail:{point,source:{stepSha256:checked.manifest.source.sha256,
+      glbSha256:checked.manifest.mesh.sha256,revision:checked.manifest.source.revision}}
+    }));
+   });
+   say('Pick visible CAD surface points for a *hypothetical* circular feature. A surface is not a motor center.','warning');
+  }else{
+   viewer?.setSurfacePickHandler(null);
+   el('cad-v13-explode').disabled=!viewer;
+  }
+ });
+  window.addEventListener('aeroforge:cad-motor-annotation-updated',e=>{
   const proposal=e.detail?.proposal;
   if(!proposal)viewer?.setMotorMarkers([]);
   else if(proposal.schema==='aeroforge/x500-registration-proposal/v1.5')viewer?.setMotorMarkers(proposal.rotors);

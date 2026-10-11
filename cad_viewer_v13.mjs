@@ -27,6 +27,7 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
  const roots=new THREE.Group();scene.add(roots);
  const markers=new THREE.Group();roots.add(markers);
  let parts=[],center=new THREE.Vector3(),extent=1,explode=0,selected=-1,dead=false;
+ let onSurfacePick=null;
  const ray=new THREE.Raycaster(),xy=new THREE.Vector2();
  const loader=new GLTFLoader();
  function release(){
@@ -36,7 +37,7 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
    for(const m of (Array.isArray(obj.material)?obj.material:[obj.material]))if(m)materials.add(m);
   });
   geometry.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());
-  roots.clear();roots.add(markers);markers.clear();parts=[];selected=-1;
+  roots.clear();roots.add(markers);markers.clear();parts=[];selected=-1;onSurfacePick=null;
  }
  function layout(){
   for(const part of parts){
@@ -99,6 +100,7 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
  }
   function setExplode(v){
   if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>1)throw new Error('Invalid explosion distance');
+  if(onSurfacePick&&v!==0)throw Error('Disable source point picking before exploding CAD');
   explode=v;layout();
  }
  function select(i){
@@ -119,10 +121,22 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
   const r=renderer.domElement.getBoundingClientRect();
   xy.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);
   ray.setFromCamera(xy,camera);
-  for(const h of ray.intersectObjects(roots.children,true)){
+  // Only actual CAD mesh objects are pickable. Overlay annotations are excluded.
+  for(const h of ray.intersectObjects(parts,true)){
    let o=h.object;while(o&&!parts.includes(o))o=o.parent;
    const part=parts.find(p=>p===o||p.children.includes(o));
-   if(part){select(part.userData.index);break;}
+   if(part){
+    if(onSurfacePick){
+     if(explode!==0)throw new Error('Source surface picks require assembled, non-exploded geometry');
+     roots.updateMatrixWorld(true);
+     const originalMeters=roots.worldToLocal(h.point.clone());
+     const kernelMm=originalMeters.toArray().map(x=>Math.round(x*100000)/100);
+     // 0.001 millimetre rounding: location is only a triangulated surface hit.
+     onSurfacePick({pointKernelMm:kernelMm,meshIndex:part.userData.index,
+      meshName:part.name||'unregistered mesh',origin:'VISUAL_SURFACE_RAYCAST_NOT_SHAFT_DATUM'});
+    }else select(part.userData.index);
+    break;
+   }
   }
  }
  renderer.domElement.addEventListener('pointerdown',pointerDown);
@@ -136,7 +150,12 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
  let raf=0;
  const render=()=>{if(dead)return;controls.update();renderer.render(scene,camera);raf=requestAnimationFrame(render);};
  raf=requestAnimationFrame(render);
- return{load,select,setExplode,setMotorMarkers,dispose(){
+ function setSurfacePickHandler(callback){
+  if(callback!==null&&typeof callback!=='function')throw Error('Expected a pick callback or null');
+  onSurfacePick=callback;
+  if(callback){explode=0;layout();}
+ }
+ return{load,select,setExplode,setMotorMarkers,setSurfacePickHandler,dispose(){
   if(dead)return;dead=true;cancelAnimationFrame(raf);
   renderer.domElement.removeEventListener('pointerdown',pointerDown);
   renderer.domElement.removeEventListener('pointerup',pointerUp);

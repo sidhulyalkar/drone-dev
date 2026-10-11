@@ -1,0 +1,25 @@
+/* v1.6 feature picker: visual landmark proposals, never qualified motor datums */
+.cad-v16{border:1px solid #5b7b74;border-radius:10px;background:#122a32;padding:17px 18px;margin:7px 0 12px;color:#e3efdc}
+.cad-v16 *{box-sizing:border-box}
+.cad-v16-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-bottom:1px solid #4d6c62;padding-bottom:11px}
+.cad-v16-heading h4{font-size:18px;letter-spacing:-.02em;color:#e4efdc;margin:6px 0}
+.cad-v16-heading p{font-size:11px;line-height:1.7;color:#aac9c1;max-width:650px;margin:4px 0}
+.cad-v16-heading>span{flex-shrink:0;max-width:180px;font:10px/1.6 ui-monospace,monospace;color:#ecc6a1;padding:9px;border:1px solid #776145;border-radius:5px;background:#403328}
+.cad-v16-controls{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin:12px 0}
+.cad-v16-controls label{font-size:10px;color:#cfe0d0;min-width:130px}
+.cad-v16-controls select{width:100%;background:#112b2f;border:1px solid #5e8074;color:#e0eddb;border-radius:6px;padding:10px}
+.cad-v16-controls button{border:1px solid #7e9c85;border-radius:6px;padding:10px 12px;background:#33594d;color:#e3edda;font-size:11px;cursor:pointer;min-height:37px}
+.cad-v16-controls button:disabled{opacity:.38;cursor:not-allowed}
+.cad-v16-controls button:focus-visible,.cad-v16-controls select:focus-visible{outline:2px solid #c5e8a8;outline-offset:2px}
+.cad-v16-points{white-space:pre-wrap;overflow:auto;max-height:120px;padding:10px;border-radius:5px;border:1px solid #4a605d;background:#10212a;color:#bad0ce;font:10px/1.6 ui-monospace,monospace}
+.cad-v16-result{display:block;color:#d2ecb9;font:12px/1.6 ui-monospace,monospace;overflow-wrap:anywhere}
+.cad-v16-status{color:#f0d1a4;font-size:11px;line-height:1.6;margin:10px 0 0}
+@media(max-width:680px){.cad-v16-heading{display:block}.cad-v16-heading>span{display:inline-block;margin-top:8px}}
+@media(prefers-reduced-motion:reduce){.cad-v16 *{transition:none!important;animation:none!important}}
+
+.cad-v16-import{margin:12px 0;display:grid;gap:8px}
+.cad-v16-import label{display:grid;gap:6px;color:#bed3c6;font-size:11px;line-height:1.6}
+.cad-v16-import textarea{box-sizing:border-box;width:100%;min-height:78px;resize:vertical;color:#e9f2e5;background:#0e242d;border:1px solid #537a6c;border-radius:6px;padding:10px;font:11px/1.5 ui-monospace,monospace}
+.cad-v16-import button{justify-self:start;padding:9px 12px;border:1px solid #71977e;background:#335848;color:#e1f0dd;border-radius:6px;cursor:pointer;font-size:11px}
+.cad-v16-import button:disabled{opacity:.38;cursor:not-allowed}
+.cad-v16-import textarea:focus-visible,.cad-v16-import button:focus-visible{outline:2px solid #c5e8a8;outline-offset:2px}

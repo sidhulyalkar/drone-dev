@@ -65,12 +65,28 @@ export function proposeX500Registration(preview,input){
  if(!Array.isArray(input.rotors)||input.rotors.length!==4)fail('X500 reference requires four distinct observed motor centers');
  const rotors=input.rotors.map((r,i)=>{
   if(!r||typeof r!=='object'||Array.isArray(r))fail('Invalid motor observation');
-  for(const k of Object.keys(r))if(!['id','centerKernelMm','propDiameterMm'].includes(k))fail('Unknown motor field '+k);
+  for(const k of Object.keys(r))if(!['id','centerKernelMm','propDiameterMm','observationKind','featureEvidence'].includes(k))fail('Unknown motor field '+k);
   const id=str(r.id,'motor ID',40);
   const centerKernelMm=xyz(r.centerKernelMm,'motor center '+id);
   const propDiameterMm=number(r.propDiameterMm,'propeller diameter',1,2000);
+  const kind=r.observationKind??'MANUAL_COORDINATE_HYPOTHESIS';
+  if(!['MANUAL_COORDINATE_HYPOTHESIS','CAD_SURFACE_CIRCLE_FIT_HYPOTHESIS'].includes(kind))
+   fail('Unknown motor observation kind');
+  let featureEvidence=null;
+  if(kind==='CAD_SURFACE_CIRCLE_FIT_HYPOTHESIS'){
+   const e=r.featureEvidence;
+   if(e?.schema!=='aeroforge/cad-feature-measurement/v1.6'||
+      e.stepSha256!==packageSource.sha256||
+      e.glbSha256!==preview.manifest?.mesh?.sha256||
+      e.revision!==packageSource.revision||
+      e.shaftCenterIndependentlyVerified!==false||
+      !Array.isArray(e.featureCenterKernelMm)||e.featureCenterKernelMm.length!==3||
+      e.featureCenterKernelMm.some((n,i)=>typeof n!=='number'||Math.abs(n-centerKernelMm[i])>1e-4))
+    fail('Circle-fit annotation does not match this exact CAD revision and measured center');
+   featureEvidence={...e};
+  }else if(r.featureEvidence!==undefined)fail('Manual center cannot carry a CAD circle fit receipt');
   return {id,centerKernelMm,centerDatumFRDMm:transform(centerKernelMm,datumKernelMm,matrix).map(rounded),
-   propDiameterMm,annotationSource:'MANUALLY_MARKED_IN_UNVERIFIED_CAD'};
+   propDiameterMm,annotationSource:kind,featureEvidence};
  });
  if(new Set(rotors.map(r=>r.id)).size!==4)fail('Motor identifiers must be unique');
  const points=rotors.map(r=>r.centerDatumFRDMm);

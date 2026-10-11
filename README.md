@@ -1,8 +1,14 @@
-# AeroForge v1.5 · CAD Registration and Drone Engineering Workbench
+# AeroForge v1.6 · Source-Based CAD Feature Engineering
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
+
+## New in v1.6: Source-Bound CAD Feature Measurements
+
+Section 19 adds **direct surface-point picking on locally hash-checked X500 CAD**, a non-WebGL coordinate entry fallback, and a 3D circular-feature fit with residual checks. It distinguishes clicked mesh-surface points from user-typed coordinates. You can explicitly attach a numerically plausible circular-feature center to a motor candidate in Section 18 without losing the exact STEP/GLB source identity. High-residual fits are blocked, and editing any source or annotation invalidates old evidence.
+
+This does **not** prove that an inspected circular feature is the motor shaft center, identify real parts, register the aircraft CG, authenticate manufacturer bytes or approve construction/flight. See [v1.6 CAD Feature Evidence](docs/V16_CAD_FEATURE_EVIDENCE.md).
 
 ## New in v1.5: Source CAD Motor-Datum Registration
 

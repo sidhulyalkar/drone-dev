@@ -112,6 +112,38 @@ test('verified local X500-named STEP accepts human annotations but blocks physic
  await expect(page.locator('#cad-v15-inspect')).toBeDisabled();
  await expect(page.locator('#v14-identity')).toContainText('not linked');
 });
+
+test('source-bound circular feature hypothesis propagates without claiming a motor shaft center',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ const f=fixture();
+ f.manifest.source.fileName='x500v2-frame.step'; // synthetic test file, no manufacturer geometry
+ await page.locator('#cad-v13-manifest').setInputFiles({name:'fixture.visual-package.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify(f.manifest))});
+ await page.locator('#cad-v13-glb').setInputFiles({name:'browser-fixture.glb',mimeType:'model/gltf-binary',buffer:f.glb});
+ await page.locator('#cad-v13-step').setInputFiles({name:'x500v2-frame.step',mimeType:'application/octet-stream',buffer:f.step});
+ await page.locator('#cad-v13-inspect').click();
+ await expect(page.locator('#cad-v16-add-points')).toBeEnabled();
+ await page.locator('#cad-v15-observer').fill('SYNTHETIC BROWSER QA');
+ await page.locator('#cad-v15-notes').fill('Synthetic circular-feature coordinates only, not Holybro CAD.');
+ await page.locator('#cad-v15-units').check();
+ await page.locator('#cad-v15-rotors').fill('R1,199,150,0,254\nR2,-200,150,0,254\nR3,-200,-150,0,254\nR4,200,-150,0,254');
+ await page.locator('#cad-v16-point-input').fill(
+  '210,150,0,2,ring-edge\n200,160,0,2,ring-edge\n190,150,0,2,ring-edge\n200,140,0,2,ring-edge\n207.0710678,157.0710678,0,2,ring-edge');
+ await page.locator('#cad-v16-add-points').click();
+ await expect(page.locator('#cad-v16-status')).toContainText('unverified coordinate claim');
+ await page.locator('#cad-v16-fit').click();
+ await expect(page.locator('#cad-v16-output')).toContainText('200, 150, 0 mm');
+ await expect(page.locator('#cad-v16-use')).toBeEnabled();
+ await page.locator('#cad-v16-use').click();
+ await expect(page.locator('#cad-v15-rotors')).toHaveValue(/R1, 200, 150, 0, 254/);
+ await expect(page.locator('#cad-v15-export')).toBeDisabled();
+ await page.locator('#cad-v15-inspect').click();
+ await expect(page.locator('#cad-v15-summary')).toContainText('NO VERIFIED AIRCRAFT DATUM');
+ await expect(page.locator('#cad-v15-export')).toBeEnabled();
+ await page.locator('#cad-v13-reset').click();
+ await expect(page.locator('#cad-v16-add-points')).toBeDisabled();
+ await expect(page.locator('#cad-v15-export')).toBeDisabled();
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{

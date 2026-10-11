@@ -4,10 +4,10 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/><link rel="stylesheet" href="./feature_v16.css"/><link rel="stylesheet" href="./feature_v16.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / INSPECT / LEARN</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.3 · CAD SOURCE PIPELINE</span></div>
+ <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.6 · CAD FEATURE EVIDENCE</span></div>
  <div class="header-right"><a href="https://github.com/sidhulyalkar/worcester-longboard" target="_blank" rel="noreferrer">Worcester DNA ↗</a><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
 <nav class="workflow-v12" id="workflow-v12" aria-label="AeroForge workflow navigation">
@@ -453,7 +453,31 @@
    <label>Observer / measurement record label<input id="cad-v15-observer" placeholder="E.g. mechanical review v1"/></label>
    <label>Motor shaft centers in source CAD mm, four rows<textarea id="cad-v15-rotors" spellcheck="false" rows="6" placeholder="R1, CAD_X, CAD_Y, CAD_Z, propDiameterMm&#10;R2, ...&#10;R3, ...&#10;R4, ..."></textarea></label>
   </div>
-  <label>Where the coordinates came from / measured datum evidence<textarea id="cad-v15-notes" rows="3" placeholder="Describe STEP solids, chosen shaft-axis center and verified drawing dimensions. Do not enter guessed wheelbase-derived coordinates."></textarea></label>
+  
+  <div id="cad-feature-v16" class="cad-v16" aria-label="Local CAD circular feature measurement">
+   <div class="cad-v16-heading"><div><span class="cad-v13-kicker">19 / MEASURE A VISIBLE CAD FEATURE</span>
+    <h4>Surface points → circular-feature hypothesis</h4>
+    <p>Pick at least four points around the same circular edge in the assembled GLB. We fit a circle and show the residual errors. A visual ring or surface is not necessarily concentric with a motor shaft, so the derived center is a hypothesis, never an automatically accepted motor datum.</p>
+    </div><span>NO AUTOMATIC SHAFT IDENTIFICATION</span></div>
+   <div class="cad-v16-controls">
+    <label>Hypothetical motor label
+     <select id="cad-v16-motor"><option value="R1">R1</option><option value="R2">R2</option><option value="R3">R3</option><option value="R4">R4</option></select>
+    </label>
+    <button type="button" id="cad-v16-pick" disabled>Begin surface-point picking</button>
+    <button type="button" id="cad-v16-fit" disabled>Calculate circle center</button>
+    <button type="button" id="cad-v16-use" disabled>Copy hypothesis to motor row</button>
+    <button type="button" id="cad-v16-clear" disabled>Clear picked points</button>
+   </div>
+   <div class="cad-v16-import">
+    <label>Accessibility / no WebGL: enter inspected CAD surface points (native kernel mm), one per row
+     <textarea id="cad-v16-point-input" rows="3" spellcheck="false" placeholder="X,Y,Z,meshIndex,meshLabel\n10,0,0,2,ring-edge"></textarea>
+    </label><button type="button" id="cad-v16-add-points" disabled>Use entered surface coordinates (unverified)</button>
+   </div>
+   <pre id="cad-v16-points" class="cad-v16-points">No source-surface picks yet.</pre>
+   <output id="cad-v16-output" class="cad-v16-result">No fitted feature.</output>
+   <p id="cad-v16-status" role="status" class="cad-v16-status" aria-live="polite">Original matching X500 STEP required.</p>
+  </div>
+<label>Where the coordinates came from / measured datum evidence<textarea id="cad-v15-notes" rows="3" placeholder="Describe STEP solids, chosen shaft-axis center and verified drawing dimensions. Do not enter guessed wheelbase-derived coordinates."></textarea></label>
   <label class="cad-v15-check"><input type="checkbox" id="cad-v15-units"/> I have personally checked the STEP importer length-unit assumption against a source reference dimension. This is an unverified user declaration, not independent review.</label>
   <div class="cad-v13-actions">
    <button type="button" id="cad-v15-inspect" disabled>Inspect marked motor geometry</button>
@@ -469,4 +493,4 @@
   This is a preview of source-derived tessellated geometry, not measured aircraft placement. Sha-256 identifies specific bytes but never authenticates source ownership, scale, axes, physical registration, rotor centers, swept disks or safety. Only source files that you are permitted to use should be converted or shared.
  </footer>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script></body></html>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script></body></html>
