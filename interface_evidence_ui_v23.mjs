@@ -62,8 +62,9 @@ if(host){
     for(const l of c.links){
      row.append(make('p',l.observationId+' · '+l.status+
       (l.reviewRecorded?' · second-person review note':'')+' · '+l.rationale));
-     if(l.status==='CHECK_DEFINITION_CHANGED'||l.status==='LEGACY_CHECK_BINDING_REQUIRED')
-      row.append(make('p','Historical association only. Re-link this observation to the current requirement after review.'));
+     if(['CHECK_DEFINITION_CHANGED','LEGACY_CHECK_BINDING_REQUIRED',
+       'LEGACY_RECEIPT_BINDING_REQUIRED','RECEIPT_CHANGED_OR_REPLACED'].includes(l.status))
+      row.append(make('p','Historic/unbound association only. Check that the original observation and requirement match, then explicitly link the correct current receipt.'));
     }
     const attach=make('button','Select this check');
     attach.type='button';
