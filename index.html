@@ -4,10 +4,10 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / VERIFY / FLY</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V0.5 · PX4 PROGRAM LAB</span></div>
+ <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V0.8 · ASSEMBLY COPILOT</span></div>
  <div class="header-right"><a href="https://github.com/sidhulyalkar/worcester-longboard" target="_blank" rel="noreferrer">Worcester DNA ↗</a><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
 <main>
@@ -167,4 +167,55 @@
   </div>
   <p class="q-bottom-note">Research-only engineering evidence. The platform does not approve component purchasing, battery charging, propeller spin-up, bench energization or physical flight.</p>
  </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script></body></html>
+
+ <section class="assembly-v08" id="assembly-v08" aria-label="Assembly Copilot">
+  <div class="assembly-eyebrow"><strong>14 / ASSEMBLY COPILOT</strong><span>FROM SELECTED DESIGN → DOCUMENTED BUILD RECORD</span></div>
+  <div class="assembly-top">
+   <div><h2>Understand every part.<br/><em>Build without guessing.</em></h2><p>A context-aware companion to the exploded showcase. Choose an assembly path, inspect each component, open original learning references, and record observations tied to your exact part selection.</p></div>
+   <aside><strong>EDUCATIONAL WORKBENCH · NOT A FLIGHT RELEASE</strong>The 3D model is illustrative and wiring diagrams are not authoritative. Recorded observations remain self-reported; real electrical, power and flight checks require independent evidence and responsible supervision.</aside>
+  </div>
+  <div class="assembly-settings">
+   <label>Assembly program<select id="assembly-track"><option value="fpv">FPV / Betaflight</option><option value="px4">X500 V2 / PX4 exploration</option></select></label>
+   <div id="assembly-fpv-options"><label>Video architecture<select id="assembly-video"><option value="analog">Analog VTX</option><option value="dji-o3">DJI O3</option><option value="walksnail">Walksnail</option><option value="unspecified">Not chosen / hold</option></select></label></div>
+   <div id="assembly-px4-options" hidden><label>Pixhawk bundle<select id="assembly-variant"><option value="six_c">Pixhawk 6C / PM02 V3</option><option value="six_x">Pixhawk 6X / PM02D</option></select></label></div>
+   <label>Receiver part ID<input type="text" maxlength="150" id="assembly-rx" placeholder="Optional exact SKU; unresolved" autocomplete="off"/></label>
+   <label>Transmitter part ID<input type="text" maxlength="150" id="assembly-radio" placeholder="Optional exact SKU; unresolved" autocomplete="off"/></label>
+  </div>
+  <div class="assembly-hud"><span id="assembly-plan-heading">Compiling assembly steps…</span><span id="assembly-progress">0 steps recorded</span><span id="assembly-plan-key">Revision unknown</span></div>
+  <p class="assembly-caution" role="status" id="assembly-alert">A training record does not authorize working with powered electronics or flight.</p>
+  <div class="assembly-layout">
+   <nav class="assembly-rail" aria-label="Build stages"><div class="assembly-rail-head">BUILD STAGE NAVIGATION · PREVIEW ANY STAGE</div><div id="assembly-step-rail" class="assembly-rail-scroll"></div></nav>
+   <article class="assembly-workbench" aria-live="polite">
+    <div class="assembly-step-top"><span id="assembly-step-stage">A · 01 / 12</span><output id="assembly-step-status" data-status="NOT_STARTED">NOT STARTED</output></div>
+    <h3 id="assembly-step-title">Identify components</h3>
+    <p id="assembly-step-description">Document the precise component revision and inspect it before assembly.</p>
+    <div class="assembly-focus"><div class="label">COMPONENT FOCUS · ILLUSTRATIVE 3D MODEL</div><p>Choose a part to locate it in the Exploded Showcase (Section 13). Model anchors do not establish CAD clearance or manufacturing fit.</p><div id="assembly-parts" class="assembly-part-pills"></div><p id="assembly-dependencies"></p></div>
+    <div class="assembly-columns">
+     <div class="assembly-pane"><h4>Tools / materials to identify</h4><ul id="assembly-tools"></ul></div>
+     <div class="assembly-pane"><h4>What to inspect and record</h4><ul id="assembly-checks"></ul></div>
+    </div>
+    <div id="assembly-source" class="assembly-source"></div>
+    <p id="assembly-step-warning" class="assembly-caution"></p>
+    <div class="assembly-note-box">
+     <h4>Record a workbench observation</h4>
+     <p>Notes and measurements are <strong>self-reported and unreviewed</strong>. Saving one does not unlock an electrical safety gate. Avoid storing sensitive identifiers or personal photos in this text field.</p>
+     <label class="assembly-label" for="assembly-note">Observation or issue</label>
+     <textarea id="assembly-note" maxlength="1200" placeholder="Example: Caliper measured mounting hole spacing; manufacturer's dimension is not yet independently verified."></textarea>
+     <div class="assembly-note-controls">
+      <label>Evidence category<select id="assembly-kind"><option value="note">Workbench note</option><option value="measurement">Self-reported measurement</option><option value="source-reference">Source reference</option><option value="issue">Part mismatch / problem</option></select></label>
+      <label id="assembly-value-field" hidden>Measured number<input id="assembly-value" type="number" step="any" placeholder="e.g. 2.5"/></label>
+      <label id="assembly-unit-field" hidden>Unit<input id="assembly-unit" maxlength="20" placeholder="mm / A / Ω"/></label>
+      <label>Source / tool ID<input id="assembly-origin" maxlength="200" placeholder="Personal notes or instrument/model"/></label>
+     </div>
+     <div class="assembly-actions"><button type="button" id="assembly-save" class="primary">＋ Save local observation</button></div>
+     <p id="assembly-storage" role="status" aria-live="polite">Private to this browser, unless you explicitly export.</p>
+    </div>
+    <div class="assembly-pane"><h4>Recorded observations</h4><ul id="assembly-observations" class="assembly-observations"></ul></div>
+    <div class="assembly-nav"><button type="button" id="assembly-prev">← Previous step</button><button type="button" id="assembly-next">Preview next →</button></div>
+   </article>
+  </div>
+  <footer class="assembly-footer"><b id="assembly-review-count">No stale observations recorded</b>Selections, notes, problems and open gates remain in the exported work record. Local observations aren't independent test results, and this feature makes no powered-operation or flight approval decisions.
+    <div class="assembly-actions"><button type="button" id="assembly-export-json">↓ Session JSON</button><button type="button" id="assembly-export-md">↓ Printable Markdown packet</button><button type="button" id="assembly-reset">↺ Reset local work</button></div>
+  </footer>
+ </section>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script></body></html>

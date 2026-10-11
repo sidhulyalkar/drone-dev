@@ -1,0 +1,78 @@
+/* AeroForge Assembly Copilot v0.8. Independent from illustrative aircraft materials. */
+.assembly-v08{margin:64px auto 34px;scroll-margin-top:26px}
+.assembly-v08 *{box-sizing:border-box}
+.assembly-eyebrow{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;font-family:ui-monospace,monospace;letter-spacing:.13em;font-size:11px;color:#aac0bd}
+.assembly-eyebrow strong{font-size:14px;color:#c9eeab}
+.assembly-top{display:grid;grid-template-columns:1.35fr .65fr;gap:28px;align-items:end;margin:20px 0}
+.assembly-top h2{font-size:clamp(30px,4.5vw,60px);line-height:1.07;letter-spacing:-.04em;margin:0 0 13px}
+.assembly-top h2 em{font-style:normal;color:#b8e59c}
+.assembly-top p{max-width:700px;color:#9fb5ba;line-height:1.55;margin:0}
+.assembly-top aside{border:1px solid #496253;border-radius:11px;padding:17px 19px;background:linear-gradient(145deg,#16362f,#1c282d);font-size:12px;color:#bed2c9}
+.assembly-top aside strong{display:block;color:#d5f1b4;font-size:13px;letter-spacing:.05em;margin-bottom:7px}
+.assembly-settings{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px;background:#16252e;border:1px solid #36474b;padding:16px;border-radius:12px}
+.assembly-settings label{display:grid;gap:6px;flex:1;min-width:150px;font-size:11px;color:#aebcc2;letter-spacing:.045em}
+.assembly-settings select,.assembly-settings input{width:100%;min-height:41px;background:#0f1d24;color:#e6eee6;border:1px solid #44575e;border-radius:7px;padding:9px 10px;font:inherit;font-size:13px}
+.assembly-settings select:focus-visible,.assembly-settings input:focus-visible,.assembly-v08 button:focus-visible,.assembly-v08 textarea:focus-visible{outline:2px solid #c6f2a1;outline-offset:2px}
+.assembly-settings [hidden]{display:none!important}
+.assembly-hud{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:12px 0 17px;font-size:12px;color:#a2b7bc}
+.assembly-hud span:first-child{color:#ddf0cd}
+.assembly-caution{padding:12px 15px;border-left:3px solid #dab07a;background:#3b3129;color:#f4dbb7;font-size:12px;line-height:1.6;margin:0 0 18px}
+.assembly-layout{display:grid;grid-template-columns:minmax(220px,0.86fr) minmax(0,2.2fr);gap:17px;align-items:start}
+.assembly-rail{border:1px solid #364b51;border-radius:11px;background:#14242b;overflow:hidden}
+.assembly-rail-head{padding:16px 16px 11px;font-size:10px;letter-spacing:.16em;color:#8facb5;border-bottom:1px solid #2e474b}
+.assembly-rail-scroll{max-height:840px;overflow:auto}
+.assembly-rail-step{border:0;border-bottom:1px solid #25393c;display:flex;align-items:center;gap:11px;padding:11px 12px;width:100%;cursor:pointer;color:#d2dedb;text-align:left;background:transparent}
+.assembly-rail-step:hover{background:#21363a}.assembly-rail-step.current{background:#26473d;box-shadow:inset 3px 0 #b4e6a5}
+.assembly-rail-step>span:nth-child(2){flex:1;min-width:0}
+.assembly-rail-step strong{font-size:12px;font-weight:650;display:block;line-height:1.4}
+.assembly-rail-step small{display:block;font-size:10px;color:#a1b6b5;margin-top:3px;line-height:1.4}
+.assembly-index{font:11px ui-monospace,monospace;color:#85a3a3}
+.assembly-dot{width:7px;height:7px;border-radius:50%;background:#596f6d;flex-shrink:0}
+.assembly-dot.noted{background:#b5df9d}
+.assembly-workbench{min-width:0;background:radial-gradient(ellipse at 75% 12%,#253c37,#15262d 60%);border:1px solid #3a5954;border-radius:12px;padding:23px}
+.assembly-step-top{display:flex;justify-content:space-between;gap:12px;align-items:center;color:#a9bebc;font-size:10px;letter-spacing:.14em}
+.assembly-step-top output{border:1px solid #685c43;background:#453a2c;color:#f4d8a9;padding:5px 8px;border-radius:6px;font-size:10px;letter-spacing:.025em}
+.assembly-step-top output[data-status="RECORD_NOT_VERIFICATION"]{border-color:#49685b;background:#254338;color:#d0efb6}
+.assembly-workbench h3{font-size:clamp(25px,3vw,35px);line-height:1.1;letter-spacing:-.02em;margin:17px 0 8px}
+.assembly-workbench>p{font-size:13px;line-height:1.65;color:#bdcecb}
+.assembly-focus{padding:17px;border:1px dashed #536e67;border-radius:9px;background:#162b2f;margin:19px 0}
+.assembly-focus .label{font:10px ui-monospace,monospace;letter-spacing:.12em;color:#a8c4b8}
+.assembly-focus p{font-size:12px;color:#bcd0c8;line-height:1.6}
+.assembly-part-pills{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0 0}
+.assembly-part-pills button{padding:8px 11px;background:#24433b;border:1px solid #54766d;border-radius:8px;color:#def1d2;font-size:11px;cursor:pointer}
+.assembly-part-pills button:hover{background:#365e50}
+.assembly-columns{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.assembly-pane{min-width:0;border:1px solid #344e51;border-radius:9px;padding:14px;background:#192a31}
+.assembly-pane h4{margin:0 0 10px;color:#c9decc;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.assembly-pane ul{padding-left:17px;margin:0;display:grid;gap:9px;color:#b5c8c7;font-size:12px;line-height:1.5}
+.assembly-source{margin:15px 0 0;font-size:12px;line-height:1.6}
+.assembly-source a{color:#c7eca7}
+.assembly-source .assembly-no-source{color:#e6bb83}
+.assembly-note-box{margin-top:19px;border-top:1px solid #3a5752;padding-top:20px}
+.assembly-note-box h4{margin:0 0 5px;font-size:14px;color:#e0ecca}
+.assembly-note-box p{font-size:11px;color:#b2c2be;line-height:1.6;margin:0 0 12px}
+.assembly-note-box textarea{width:100%;min-height:87px;max-height:160px;background:#101e25;color:#e8f0e5;border:1px solid #526962;border-radius:7px;padding:12px;font:13px/1.5 inherit;resize:vertical}
+.assembly-note-controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:9px}
+.assembly-note-controls label{display:grid;gap:5px;color:#a7beb9;font-size:10px}
+.assembly-note-controls select,.assembly-note-controls input{width:100%;min-width:0;background:#101e25;color:#e4ede6;border:1px solid #526962;border-radius:7px;padding:8px;min-height:37px;font-size:12px}
+.assembly-note-controls [hidden]{display:none!important}
+.assembly-actions{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}
+.assembly-actions button,.assembly-nav button{min-height:39px;padding:9px 14px;border-radius:7px;border:1px solid #526d66;color:#e3f0dd;background:#263e3a;font-size:12px;cursor:pointer}
+.assembly-actions button:hover:not(:disabled),.assembly-nav button:hover:not(:disabled){background:#3b6353}
+.assembly-actions button.primary{border-color:#b5e69b;background:#c3e7a9;color:#132a22;font-weight:700}
+.assembly-actions button.primary:hover{background:#e1f5c8}
+.assembly-actions button:disabled,.assembly-nav button:disabled{opacity:.4;cursor:default}
+.assembly-observations{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.assembly-observations li{display:grid;gap:3px;border:1px solid #34514b;padding:10px;border-radius:7px;background:#1f3431;font-size:11px;color:#d8e3d6;overflow-wrap:anywhere}
+.assembly-observations li strong{color:#f0cf98;font-size:10px}
+.assembly-observations li small{color:#91acaa;font-size:10px}
+.assembly-observations .assembly-empty{color:#a1b8b0;background:transparent;border-style:dashed}
+.assembly-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:17px;border-top:1px solid #3a5553;padding-top:16px}
+.assembly-nav button{min-width:120px}
+.assembly-footer{margin-top:15px;border:1px solid #38544d;padding:14px;border-radius:9px;background:#182a29;color:#b5c6bc;font-size:11px}
+.assembly-footer b{display:block;color:#d5ecca;margin-bottom:6px}
+.assembly-footer .assembly-actions{margin:10px 0 0}
+#assembly-storage{color:#e7c693;min-height:1.4em}
+@media(max-width:850px){.assembly-layout{grid-template-columns:1fr}.assembly-rail-scroll{display:flex;max-height:none;overflow-x:auto;gap:5px;padding:7px}.assembly-rail-step{min-width:180px;max-width:230px;border:1px solid #2e4649;border-radius:7px;padding:11px}.assembly-rail-head{border:0;padding-bottom:0}.assembly-top{grid-template-columns:1fr}.assembly-top aside{max-width:600px}}
+@media(max-width:550px){.assembly-v08{margin-top:38px}.assembly-workbench{padding:14px}.assembly-columns{grid-template-columns:1fr}.assembly-note-controls{grid-template-columns:1fr 1fr}.assembly-settings{padding:12px}.assembly-hud{display:grid}.assembly-nav button{min-width:0;flex:1}.assembly-actions button{flex:1}}
+@media(prefers-reduced-motion:reduce){.assembly-v08 *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}

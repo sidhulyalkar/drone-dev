@@ -21,6 +21,7 @@ if(host){
    $('showcase-part-evidence').textContent='PROCEDURAL · UNVERIFIED COMPONENT CLASS';
    $('showcase-part-specs').innerHTML=p.specs.map(([k,v])=>`<div><span>${esc(k)}</span><strong>${esc(v)}</strong></div>`).join('');}
   list();
+  if(selectedId)window.dispatchEvent(new CustomEvent('aeroforge:showcase-part-selected',{detail:{partId:selectedId}}));
  }
  function display(s){if(s.partId!==selectedId)setDetail(s.partId);
   $('showcase-progress').textContent=s.total?`${String(s.currentIndex+1).padStart(2,'0')} / ${String(s.total).padStart(2,'0')}`:'0 / 0';
@@ -52,6 +53,13 @@ if(host){
  $('showcase-export').addEventListener('click',download);
  host.addEventListener('keydown',e=>{if(e.target.matches('input,select,textarea'))return;if(e.key==='ArrowRight'){e.preventDefault();controller.step(1)}if(e.key==='ArrowLeft'){e.preventDefault();controller.step(-1)}});
  window.addEventListener('aeroforge:design-updated',e=>setManifest(e.detail.result));
+ window.addEventListener('aeroforge:assembly-focus-part',e=>{
+  const id=e.detail?.partId;
+  if(id&&manifest.parts.some(p=>p.id===id)){
+   controller.select(id);
+   host.scrollIntoView({behavior:reduced?'auto':'smooth',block:'center'});
+  }
+ });
  buildController();plainView();setManifest(getCurrentDesign());
  // The viewer is progressive enhancement. Part inspection and manifest export always work.
  import('./showcase_3d_v07.mjs').then(mod=>{
