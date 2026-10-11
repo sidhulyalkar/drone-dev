@@ -17,6 +17,12 @@ function validContext(c){
  c.batteryCells>=2&&c.batteryCells<=12&&typeof c.revisionIdentity==='string'&&
  c.revisionIdentity.length>0&&c.revisionIdentity.length<=6000;
 }
+/** The exact requirement and endpoints are pinned when a user links an observation.
+ * Historical v2.3 links without these fields remain importable, but NEVER count as current.
+ */
+const edgeSignature=e=>e.role+':'+e.partRefs.join('|');
+const definitionMatches=(link,edge,requirement)=>
+ link.requirementSnapshot===requirement&&link.edgeSignature===edgeSignature(edge);
 function checks(record){
  const a=compileX500InterfaceAudit({variant:record.variant,batteryCells:record.selected.batteryCells});
  const mapping={ 'motor-esc':'motor-esc','esc-pdb':'esc-pdb',
@@ -56,8 +62,18 @@ export function validateInterfaceEvidenceLinks(ledger){
    l.rationale!==l.rationale.trim()||l.rationale.length>1200||
    l.authority!=='UNVERIFIED_USER_ASSOCIATION'||!validContext(l.context))
     throw Error('Malformed interface evidence link');
+  // Accept legacy records as historical associations only; a newly linked
+  // receipt must pin both the requirement text and both interface endpoints.
+  const hasRequirement=l.requirementSnapshot!==undefined;
+  const hasEndpoint=l.edgeSignature!==undefined;
+  if(hasRequirement!==hasEndpoint||
+   (hasRequirement&&(typeof l.requirementSnapshot!=='string'||l.requirementSnapshot.length<8||
+    l.requirementSnapshot.length>500||typeof l.edgeSignature!=='string'||
+    l.edgeSignature.length<3||l.edgeSignature.length>300)))
+   throw Error('Invalid check definition snapshot');
   const key=[l.context.revisionIdentity,l.context.variant,l.context.batteryCells,
-   l.observationId,l.edgeId,l.checkIndex].join('::');
+   l.observationId,l.edgeId,l.checkIndex,l.requirementSnapshot??'LEGACY_UNBOUND',
+   l.edgeSignature??'LEGACY_UNBOUND'].join('::');
   if(seen.has(key))throw Error('Duplicate evidence link');
   seen.add(key);
  }
@@ -79,10 +95,12 @@ export function appendInterfaceEvidenceLink(ledger,journal,record,{observationId
  if(!edge.partRefs.includes(obs.payload.partRef))throw Error('Observation part is not on selected interface');
  if(typeof rationale!=='string'||rationale.trim().length<12||rationale.length>1200)
   throw Error('Explain specifically how this receipt relates to the check');
- if(safe.links.some(l=>l.observationId===observationId&&l.edgeId===edgeId&&l.checkIndex===checkIndex&&same(l.context,c)))
+ if(safe.links.some(l=>l.observationId===observationId&&l.edgeId===edgeId&&
+  l.checkIndex===checkIndex&&same(l.context,c)&&definitionMatches(l,edge,edge.items[checkIndex])))
   throw Error('Receipt already linked to this check');
- const id='link-'+String(Math.max(0,...safe.links.map(l=>Number(l.id.slice(5))))+1).padStart(4,'0');
+ const id='link-'+String(safe.links.length+1).padStart(4,'0');
  return {...safe,links:[...safe.links,{id,observationId,edgeId,checkIndex,
+  requirementSnapshot:edge.items[checkIndex],edgeSignature:edgeSignature(edge),
   rationale:rationale.trim(),context:c,authority:'UNVERIFIED_USER_ASSOCIATION'}]};
 }
 export function interfaceEvidenceMatrix(ledger,journal,record){
@@ -95,9 +113,14 @@ export function interfaceEvidenceMatrix(ledger,journal,record){
    const linked=safe.links.filter(l=>l.edgeId===edge.id&&l.checkIndex===checkIndex).map(l=>{
     const o=observations.get(l.observationId);
     const current=!!o&&same(o.context,c)&&same(l.context,c)&&edge.partRefs.includes(o.payload.partRef);
+    const status=!current?'STALE_OR_INVALID_EVIDENCE':
+     l.requirementSnapshot===undefined?'LEGACY_CHECK_BINDING_REQUIRED':
+     definitionMatches(l,edge,name)?'SELF_REPORTED_EVIDENCE_LINKED':'CHECK_DEFINITION_CHANGED';
     return {linkId:l.id,observationId:l.observationId,rationale:l.rationale,
-     kind:o?.payload.kind??null,reviewRecorded:current&&reviews.has(l.observationId),
-     status:current?'SELF_REPORTED_EVIDENCE_LINKED':'STALE_OR_INVALID_EVIDENCE'};
+     requirementAtLink:l.requirementSnapshot??null,edgeAtLink:l.edgeSignature??null,
+     kind:o?.payload.kind??null,
+     reviewRecorded:current&&status==='SELF_REPORTED_EVIDENCE_LINKED'&&reviews.has(l.observationId),
+     status};
    });
    const currentCount=linked.filter(l=>l.status==='SELF_REPORTED_EVIDENCE_LINKED').length;
    return {checkId:edge.id+':'+checkIndex,checkIndex,requirement:name,
