@@ -54,7 +54,7 @@ function visual(overrides={}){
 test('hash-matched frame package links to frame family but remains unregistered/unverified',()=>{
  const d=compileX500Record(),next=attachX500Cad(d,visual());
  assert.equal(next.parts.frame.cadSourceSha256,'b'.repeat(64));
- assert.equal(next.geometry.localSourceHash,'b'.repeat(64));
+ assert.equal(next.geometry.sourceHash,'b'.repeat(64));
  assert.equal(next.geometry.visualGlbHash,'c'.repeat(64));
  assert.equal(next.geometry.sourceLocalBytesChecked,true);
  assert.equal(next.geometry.manufacturerAuthenticated,false);
