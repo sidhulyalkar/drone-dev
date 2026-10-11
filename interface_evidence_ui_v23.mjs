@@ -1,7 +1,6 @@
 /** v2.3 optional collapsed check-level research panel. No automatic device persistence. */
 import {startInterfaceEvidenceLinks,reconcileInterfaceEvidenceLinks,appendInterfaceEvidenceLink,
  interfaceEvidenceMatrix,validateInterfaceEvidenceLinks} from './core/interface_evidence_v23.mjs';
-import {X500_PART_REFERENCES} from './core/interface_registry_v21.mjs';
 const host=document.getElementById('v22-inspection');
 if(host){
  let record=null,journal=null,links=null,cadProposal=null;
@@ -46,6 +45,11 @@ if(host){
    const group=make('details'),sum=make('summary',edge.edgeId.replaceAll('-',' ')+' · '+
     edge.checks.filter(x=>x.currentEvidenceCount>0).length+'/'+edge.checks.length+' with receipts');
    group.append(sum);
+   for(const url of edge.sourceUrls??[]){
+    if(!/^https:\/\//.test(url))continue;
+    const a=make('a','Manufacturer source ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+    group.append(a,make('span','  '));
+   }
    const ul=make('ul');
    for(const c of edge.checks){
     const row=make('li',c.requirement+' · '+
@@ -55,8 +59,22 @@ if(host){
       ' / motor '+cadProposal.motor.sourceSha256.slice(0,12)+
       '. Mounting datums remain unresolved; this does not count as inspection evidence.'));
     }
-    for(const l of c.links)row.append(make('p',l.observationId+' · '+l.status+
-     (l.reviewRecorded?' · second-person review note':'')+' · '+l.rationale));
+    for(const l of c.links){
+     row.append(make('p',l.observationId+' · '+l.status+
+      (l.reviewRecorded?' · second-person review note':'')+' · '+l.rationale));
+     if(l.status==='CHECK_DEFINITION_CHANGED'||l.status==='LEGACY_CHECK_BINDING_REQUIRED')
+      row.append(make('p','Historical association only. Re-link this observation to the current requirement after review.'));
+    }
+    const attach=make('button','Select this check');
+    attach.type='button';
+    attach.addEventListener('click',()=>{
+     edgeSelect.value=edge.edgeId;
+     render();
+     checkSelect.value=String(c.checkIndex);
+     form.scrollIntoView({block:'nearest'});
+     obsSelect.focus();
+    });
+    row.append(attach);
     ul.append(row);
    }
    group.append(ul);sections.append(group);
