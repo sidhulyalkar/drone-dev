@@ -112,11 +112,11 @@ test('changing battery series also stales all revision-bound observations',()=>{
 test('import validation rejects rewritten approvals and altered or reordered event payloads',()=>{
  const r=rec(),j=appendInspectionObservation(startInspectionJournal(r),r,entry());
  const forged=structuredClone(j);forged.events[0].payload.notes='tampered';
- assert.throws(()=>validateInspectionJournal(forged),/differs/);
+ assert.throws(()=>validateInspectionJournal(forged),/checksum mismatch/);
  const reordered=structuredClone(j);reordered.events[0].id='evt-0025';
  assert.throws(()=>validateInspectionJournal(reordered),/IDs/);
  const imported=structuredClone(j);imported.events.push({...j.events[0],id:'evt-0002'});
- assert.throws(()=>validateInspectionJournal(imported),/differs/);
+ assert.throws(()=>validateInspectionJournal(imported),/checksum mismatch/);
  assert.throws(()=>validateInspectionJournal({schema:'not-a-journal'}));
 });
 test('canonical X500 export can include the journal summary without becoming a qualified machine',()=>{
