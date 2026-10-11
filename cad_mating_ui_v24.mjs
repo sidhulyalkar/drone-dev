@@ -9,7 +9,7 @@ if(host){
  const el=(tag,label='')=>{const n=document.createElement(tag);n.textContent=label;return n;};
  const panel=el('details'),heading=el('summary','20 / Frame ↔ motor CAD registration study');
  panel.id='cad-v24-pair';panel.className='cad-v24-pair';
- const lead=el('p','Verify BOTH original STEP files against their local GLB manifests, then annotate a proposed motor-to-frame placement. Neither source filenames nor hashes authenticate the manufacturer; no physical fit is approved.');
+ const lead=el('p','Verify BOTH original STEP files against their local GLB manifests, then enter actual inspected frame/motor mounting coordinates. No coordinates or mounting dimensions are prefilled. Filenames and hashes do not authenticate the manufacturer; no physical fit is approved.');
  const fileGrid=el('div');fileGrid.className='cad-v24-files';
  const parts={};
  function picker(label,accept){
@@ -34,11 +34,13 @@ if(host){
  const inputMap={};
  function field(key,label,type='text',defaultValue=''){
   const input=el(type==='textarea'?'textarea':'input');if(type!=='textarea')input.type=type;
-  input.value=defaultValue;input.required=true;if(type==='number')input.step='any';
+  input.value=defaultValue;input.required=true;
+  if(type==='number'){input.step='any';input.min='0.001';input.max='100';}
+  if(key==='frameMountKernelMm'||key==='motorMountKernelMm')input.placeholder='x, y, z (no inferred defaults)';
   const l=el('label',label);l.append(input);inputMap[key]=input;form.append(l);return input;
  }
- field('frameMountKernelMm','Frame mount center XYZ in native STEP mm (comma separated)','text','0, 0, 0');
- field('motorMountKernelMm','Motor base origin XYZ in native STEP mm (comma separated)','text','0, 0, 0');
+ field('frameMountKernelMm','Frame mount center XYZ in native STEP mm (comma separated)','text','');
+ field('motorMountKernelMm','Motor base origin XYZ in native STEP mm (comma separated)','text','');
  const axis=el('select');
  for(const [key,label] of [
   ['+X,+Y,+Z','Identity rotation (+X,+Y,+Z)'],
@@ -48,8 +50,8 @@ if(host){
   const opt=el('option',label);opt.value=key;axis.append(opt);
  }
  const axLabel=el('label','Motor-to-frame axis hypothesis');axLabel.append(axis);form.append(axLabel);
- field('framePatternMm','Observed frame hole spacing hypothesis (mm)','number','16');
- field('motorPatternMm','Observed motor mounting hole spacing hypothesis (mm)','number','16');
+ field('framePatternMm','Observed frame hole spacing hypothesis (mm)','number','');
+ field('motorPatternMm','Observed motor mounting hole spacing hypothesis (mm)','number','');
  field('observer','Observer or inspection label','text','');
  field('datumNotes','Source of selected mounting datums','textarea','');
  field('fastenerNotes','Known unknowns: shaft, mounting face, fastener engagement','textarea','');
