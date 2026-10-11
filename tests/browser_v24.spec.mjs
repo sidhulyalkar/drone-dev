@@ -48,6 +48,10 @@ test('dual source CAD research needs both matching original STEP files and leave
  await choose(page,1,motor);
  await page.getByRole('button',{name:'Verify two source packages'}).click();
  await expect(page.locator('#cad-v24-pair')).toContainText('Two local STEP and GLB digests matched');
+ await page.locator('#cad-v24-pair form input[type=text]').nth(0).fill('250, 0, 20');
+ await page.locator('#cad-v24-pair form input[type=text]').nth(1).fill('0, 0, 0');
+ await page.locator('#cad-v24-pair form input[type=number]').nth(0).fill('16');
+ await page.locator('#cad-v24-pair form input[type=number]').nth(1).fill('19');
  await page.locator('#cad-v24-pair form input[type=text]').nth(2).fill('Engineer A');
  await page.locator('#cad-v24-pair form textarea').nth(0).fill(
   'Synthetic source-frame feature hypotheses for browser software testing only.');
