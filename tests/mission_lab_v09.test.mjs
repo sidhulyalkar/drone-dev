@@ -72,11 +72,11 @@ test('unknown module, inappropriate scenario module, corrupt input is rejected',
  assert.throws(()=>analyzeMission('solar-roof',['vtol-wing']));
  assert.throws(()=>analyzeMission('solar-roof',new Array(41).fill('rid')));
 });
-test('optional topology incompatibility is blocked, not quietly counted as compatible',()=>{
- const x=analyzeMission('garden-mapper',['parachute-class']);
+test('supported optional module respects topology; unsupported scenario substitution is rejected',()=>{
+ const x=analyzeMission('habitat-vtol',['parachute-class']);
  assert.equal(x.counts.blocks,0);
- // Every selected module has an explicit architecture listing and evidence hold.
  for(const m of x.modules)assert.ok(m.topologies.includes(x.concept.topology));
+ assert.throws(()=>analyzeMission('garden-mapper',['parachute-class']));
 });
 test('mission comparisons report real set differences without attributing safety scores',()=>{
  const x=compareMissions('indoor-inventory','habitat-vtol');
