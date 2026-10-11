@@ -4,10 +4,10 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / INSPECT / LEARN</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.2 · TRUST & WORKFLOW</span></div>
+ <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.3 · CAD SOURCE PIPELINE</span></div>
  <div class="header-right"><a href="https://github.com/sidhulyalkar/worcester-longboard" target="_blank" rel="noreferrer">Worcester DNA ↗</a><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
 <nav class="workflow-v12" id="workflow-v12" aria-label="AeroForge workflow navigation">
@@ -23,7 +23,7 @@
    <a href="#x500-kit-lab">X500 hardware</a>
    <a href="#qualification-console">Qualification</a>
    <a href="#v05-program-lab">Simulation</a>
-   <a href="#dimensional-v11">CAD inspection</a>
+   <a href="#dimensional-v11">CAD inspection</a><a href="#cad-package-v13">Real CAD viewer</a>
   </div>
   <output id="workflow-v12-status" class="workflow-v12-status" aria-live="polite">Select a workflow</output>
  </div>
@@ -380,4 +380,44 @@
  </div>
  <p class="dim-v11-caution">A file hash identifies bytes; it does not prove vendor origin, dimensions, physical registration, measured CG, motor mapping, structural strength, electrical fit, commissioning or airworthiness. Real PX4 rotor coordinates are FRD metres relative to measured whole-aircraft CG, not an arbitrary drawing datum.</p>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script></body></html>
+
+<section id="cad-package-v13" class="cad-v13" aria-label="Local manufacturer CAD visual package">
+ <header class="cad-v13-header">
+  <div><span class="cad-v13-kicker">17 / CAD SOURCE → LOCAL 3D INSPECTION</span>
+  <h2>See the actual geometry.<br/><em>Keep the evidence attached.</em></h2>
+  <p>Use the local STEP-to-GLB conversion tool to create a visual package. Load its exact GLB and manifest, optionally with the original STEP. AeroForge verifies binary hashes before rendering and preserves the unregistered-axis warning. File data stays in this browser session.</p></div>
+  <aside class="cad-v13-status-chip">LOCAL FILES ONLY<br/>MANUFACTURER AUTHENTICITY NOT PROVEN<br/>NO FLIGHT AUTHORITY</aside>
+ </header>
+ <div class="cad-v13-form">
+  <div class="cad-v13-files">
+   <label>Visual-package manifest (.json)<input type="file" id="cad-v13-manifest" accept=".json,application/json"/></label>
+   <label>Converted model (.glb)<input type="file" id="cad-v13-glb" accept=".glb,model/gltf-binary"/></label>
+   <label>Original STEP (.step/.stp), optional source identity check<input type="file" id="cad-v13-step" accept=".step,.stp"/></label>
+  </div>
+  <div class="cad-v13-actions">
+   <button type="button" id="cad-v13-inspect">Verify hashes and inspect locally</button>
+   <button type="button" id="cad-v13-export" disabled>↓ Export local evidence JSON</button>
+   <button type="button" id="cad-v13-reset">↺ Clear loaded files</button>
+   <span id="cad-v13-status" role="status" aria-live="polite">Choose local package files to inspect.</span>
+  </div>
+ </div>
+ <div class="cad-v13-main">
+  <div class="cad-v13-theater">
+   <div class="cad-v13-canvas" id="cad-v13-canvas"><p class="cad-v13-empty">The 3D model appears here after both GLB and manifest hashes match. CAD axes remain unregistered, and this cannot validate a physical fit.</p></div>
+   <div class="cad-v13-viewport-controls">
+    <label>EXPLODE INDIVIDUAL MESHES <input type="range" min="0" max="100" step="1" value="0" disabled id="cad-v13-explode"/> <output id="cad-v13-explode-value">0%</output></label>
+    <small>Drag to orbit · scroll to zoom · click a mesh</small>
+   </div>
+  </div>
+  <aside class="cad-v13-inspector">
+   <h3>UNREGISTERED CAD MESH LIST</h3>
+   <div id="cad-v13-parts" class="cad-v13-parts"></div>
+   <output id="cad-v13-selected">No mesh selected</output>
+   <div id="cad-v13-package-evidence" class="cad-v13-proof">No local package validated.</div>
+  </aside>
+ </div>
+ <footer class="cad-v13-footer">
+  This is a preview of source-derived tessellated geometry, not measured aircraft placement. Sha-256 identifies specific bytes but never authenticates source ownership, scale, axes, physical registration, rotor centers, swept disks or safety. Only source files that you are permitted to use should be converted or shared.
+ </footer>
+</section>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script></body></html>

@@ -1,8 +1,14 @@
-# AeroForge v1.2 · Trustworthy Drone Engineering Workbench
+# AeroForge v1.3 · Source-Linked Drone CAD Workbench
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
+
+## New in v1.3: Source-linked Local CAD Packages
+
+Section 17 now previews locally converted STEP geometry with hash-verified **GLB plus manifest** and optional original STEP byte matching, individual solid selection, orbit, zoom and exploded views. The new local `tools/cad_visual_package_v13.py` fails closed on source SHA-256 mismatches, requires revision and licensing notes, and creates an unqualified visual source manifest. The browser rejects mismatched/malformed GLB bytes and external model dependencies.
+
+No manufacturer STEP assets or CAD-derived meshes were bundled, downloaded, authenticated, axis-registered or physically qualified. The preview cannot grant CAD fit, PX4, power or flight authorization. See [v1.3 CAD visual package guide](docs/V13_CAD_VISUAL_PACKAGE.md).
 
 ## New in v1.2: Reliability & Engineering Audit
 
