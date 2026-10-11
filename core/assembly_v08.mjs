@@ -145,7 +145,7 @@ export function recordObservation(session,plan,id,evidence){
  if(receipts.length>=20)throw Error('Too many observations; export session before continuing');
  const receipt={kind,note:note.trim(),value,unit,source:source.trim(),trust:'SELF_REPORTED_UNREVIEWED',
   recordedAt:new Date().toISOString(),stepId:id,dependencyKey:s.dependencyKey};
- return {...session,entries:{...session.entries,[id]:{track:plan.track,dependencyKey:s.dependencyKey,receipts:[...receipts,receipt]}}},updateCount:session.updateCount+1};
+ return {...session,entries:{...session.entries,[id]:{track:plan.track,dependencyKey:s.dependencyKey,receipts:[...receipts,receipt]}},updateCount:session.updateCount+1};
 }
 export function stepStatus(session,plan,id){
  assertSession(session,plan);
