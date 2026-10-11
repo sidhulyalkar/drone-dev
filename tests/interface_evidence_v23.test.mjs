@@ -125,3 +125,16 @@ test('earlier definition-bound exports lacking a receipt checksum become histori
   'LEGACY_RECEIPT_BINDING_REQUIRED');
  assert.equal(interfaceEvidenceMatrix(appendInterfaceEvidenceLink(legacy,j,r,args),j,r).checksWithReceipts,1);
 });
+
+test('import cannot smuggle approval flags in arbitrary root, link or context properties',()=>{
+ const r=rec(),j=appendInspectionObservation(startInspectionJournal(r),r,entry());
+ const l=appendInterfaceEvidenceLink(startInterfaceEvidenceLinks(r),j,r,
+  {observationId:'evt-0001',edgeId:'motor-esc',checkIndex:0,
+   rationale:'The physical connector inspection remains a self-reported observation.'});
+ const root=structuredClone(l);root.airworthinessApproved=true;
+ const link=structuredClone(l);link.links[0].flightApproved=true;
+ const context=structuredClone(l);context.links[0].context.powerApproved=true;
+ for(const forged of [root,link,context])
+  assert.throws(()=>validateInterfaceEvidenceLinks(forged));
+ assert.equal(interfaceEvidenceMatrix(l,j,r).flightApproved,false);
+});
