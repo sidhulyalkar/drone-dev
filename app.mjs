@@ -14,6 +14,7 @@ function loadLocal(key,fallback){try{const value=JSON.parse(localStorage.getItem
 function storeLocal(key,value){try{localStorage.setItem(storagePrefix+key,JSON.stringify(value))}catch{}}
 function initialDesign(){try{return validateSettings(loadLocal('design',null))}catch{return {...presets.find(p=>p.id===DEFAULT_ID).settings,groundKit:'digital'}}}
 let state=initialDesign(),current=evaluate(state),viewer=null,selectedPreset=null,plannerResult=null;
+export function getCurrentDesign(){return current;}
 let saved=loadLocal('saved',[]);if(!Array.isArray(saved))saved=[];
 saved=saved.map(s=>{try{return validateSettings(s)}catch{return null}}).filter(Boolean).slice(-3);
 let notesTimer=null;
@@ -90,6 +91,7 @@ function render(){
  $('bom-rows').innerHTML=airRows.join('');$('bom-total').textContent='$'+m.budgetUSD;
  renderAssembly();renderComparison();renderEvidence();renderSensitivity();renderArchitecture();renderChecklist();
  if(viewer)viewer.update(current);else renderFallback();
+ window.dispatchEvent(new CustomEvent('aeroforge:design-updated',{detail:{result:current}}));
 }
 function renderFallback(){
  const {frame,prop}=current.parts;

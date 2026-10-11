@@ -4,7 +4,7 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-</head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / VERIFY / FLY</small></div></div>
  <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V0.5 · PX4 PROGRAM LAB</span></div>
@@ -50,6 +50,23 @@
    <p class="footnote">Models are illustrative. No manufacturer thrust testing, airworthiness approval, sourcing check, or operating authorization is implied.</p>
   </aside>
  </section>
+ <section id="showcase-v07" class="showcase-v07" aria-label="Exploded component showcase">
+ <div class="section-heading"><span class="number">13</span> EXPLODED ASSEMBLY SHOWCASE <span class="section-help">Interactive procedural parts, inspection tour, and transparent geometry authority.</span></div>
+ <div class="showcase-head"><div><span class="ref-kicker">AEROFORGE / VISUAL ENGINEERING LAB</span><h2>See how the machine fits together.</h2><p>Pull apart every component, zoom into its role, and reassemble the drone. The selected design stays in sync with the configurator above.</p></div><span class="showcase-flag">ILLUSTRATIVE GEOMETRY · NOT CAD</span></div>
+ <div class="showcase-layout">
+  <div class="showcase-theater"><div class="showcase-bar"><b id="showcase-airframe">CURRENT AIRFRAME</b><span id="showcase-geometry">BUILDING GEOMETRY...</span></div>
+   <div class="showcase-viewport-wrap"><div id="showcase-viewport" class="showcase-viewport" aria-label="3D component assembly viewer"></div><div id="showcase-fallback" class="showcase-fallback"></div><div class="showcase-watermark">◈ EXPLODED ENGINEERING / PROXY GEOMETRY</div></div>
+   <div class="showcase-controls"><button type="button" id="showcase-assemble" class="active" aria-pressed="true">▣ Reassemble</button><button type="button" id="showcase-explode" aria-pressed="false">↗ Explode</button><button type="button" id="showcase-play" class="showcase-primary" aria-pressed="false">▶ Play tour</button><button type="button" id="showcase-prev">← Previous</button><button type="button" id="showcase-next">Next →</button></div>
+   <div class="showcase-seek"><label for="showcase-subsystem">Subsystem <select id="showcase-subsystem"><option value="all">All systems</option></select></label><label for="showcase-speed">Tour speed <input type="range" id="showcase-speed" min="0.5" max="2" step="0.25" value="1"/><output id="showcase-speed-label" for="showcase-speed">1.00×</output></label><span id="showcase-renderer-status">Loading interactive viewer...</span></div>
+   <div id="showcase-motion-warning" class="showcase-motion-warning" aria-live="polite"></div>
+  </div>
+  <aside class="showcase-inspector"><div class="showcase-panel-heading"><b id="showcase-phase" aria-live="polite">ASSEMBLED</b><span id="showcase-progress">01 / 01</span></div>
+   <div class="showcase-detail"><small id="showcase-part-evidence">PROCEDURAL · NOT VERIFIED CAD</small><h3 id="showcase-part-title">Choose a component</h3><p id="showcase-part-desc">Select a part or press Play Tour to zoom through the full build.</p><div class="showcase-specs" id="showcase-part-specs"></div></div>
+   <div id="showcase-parts" class="showcase-parts" aria-label="Selectable components"></div><div class="showcase-meta"><span>Every listed component can be inspected individually</span><button type="button" id="showcase-export" class="showcase-export">↓ Manifest JSON</button></div>
+  </aside>
+ </div>
+ <p class="showcase-notice"><strong>Engineering boundary:</strong> These meshes are educational, schematic interpretations of the illustrative catalog. They do not represent manufacturer STEP data, verified dimensions, approved wiring, component availability, or a flight-qualified assembly. Detailed CAD is imported and qualified separately in the Reference Lab.</p>
+</section>
  <section class="lower"><div class="bom"><div class="lower-heading"><div><span class="number">04</span><b> BILL OF MATERIALS</b><p>One design, every major component accounted for.</p></div><div class="bom-actions"><button id="compare-btn" class="quiet">＋ Save design</button><button id="csv-btn" class="quiet">↓ BOM CSV</button><button id="import-btn" class="quiet">↑ Import JSON</button><input id="import-file" type="file" accept=".json,application/json" hidden><button id="export-btn" class="primary">↓ Export JSON</button></div></div>
  <div class="bom-scroll"><table><thead><tr><th>COMPONENT</th><th>SELECTION</th><th>QTY</th><th>MASS</th><th>EST. COST</th></tr></thead><tbody id="bom-rows"></tbody></table></div><div class="bom-total"><span>ASSUMED AIRFRAME PARTS COST (USD · NOT LIVE PRICING)</span><strong id="bom-total">$0</strong></div><div class="evidence-note">No live purchasing links in this version. Catalog slots represent unverified component *classes*, not vendor SKUs. See the evidence queue below.</div></div>
  <div class="right-lower"><div class="method"><div class="lower-heading"><div><span class="number">05</span><b> ASSEMBLY PATH</b><p>From design hypothesis to a testable airframe.</p></div></div><div id="assembly"></div></div><div class="compare"><div class="lower-heading"><div><span class="number">06</span><b> DESIGN COMPARISON</b><p>Save a baseline, then experiment with swaps.</p></div></div><div id="compare-output" class="empty-compare">No saved designs yet. Save up to three variations for side-by-side review.</div><button id="clear-btn" class="quiet minor">Clear saved designs</button></div></div></section>
@@ -150,4 +167,4 @@
   </div>
   <p class="q-bottom-note">Research-only engineering evidence. The platform does not approve component purchasing, battery charging, propeller spin-up, bench energization or physical flight.</p>
  </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script></body></html>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script></body></html>

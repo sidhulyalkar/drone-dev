@@ -1,4 +1,8 @@
-# AeroForge v0.6 · Evidence-first Drone Engineering Workbench
+# AeroForge v0.7 · Evidence-first Drone Engineering Workbench
+
+## v0.7: Exploded Assembly Showcase
+
+Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
 
 ## v0.6: Holybro X500 V2 hardware qualification
 
