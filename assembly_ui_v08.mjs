@@ -1,12 +1,21 @@
 import {getCurrentDesign} from './app.mjs';
 import {compileBuildPlan,newBuildSession,reconcileBuildSession,recordObservation,stepStatus,sessionSummary,buildPacket} from './core/assembly_v08.mjs';
+import {emptyWorkspace,readWorkspace,planIdentity,getStoredSession,storeSession,migrateLegacySession} from './core/workspace_v12.mjs';
 
 const $=id=>document.getElementById(id);
 const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const STORAGE='aeroforge.assembly.v08.local-only';
+const STORAGE_V12='aeroforge.assembly.v12.revision-archive';
+const STORAGE_RECOVERY='aeroforge.assembly.v12.corrupt-backup';
 const host=$('assembly-v08');
 if(host){
- let design=getCurrentDesign(),plan=null,session=null,active=0;
+ let design=getCurrentDesign(),plan=null,session=null,active=0,archive=emptyWorkspace(),archiveWarning=null;
+ try{archive=readWorkspace(localStorage.getItem(STORAGE_V12));}
+ catch(e){
+  archiveWarning='Stored revision archive could not be loaded ('+e.message+'). A local backup was attempted.';
+  try{const raw=localStorage.getItem(STORAGE_V12);if(raw)localStorage.setItem(STORAGE_RECOVERY,raw);}catch{}
+  archive=emptyWorkspace();
+ }
  const exportText=(data,name,type)=>{
   const url=URL.createObjectURL(new Blob([data],{type}));const link=document.createElement('a');
   link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
@@ -30,19 +39,32 @@ if(host){
  }
  function settings(){return{track:$('assembly-track').value,videoSystem:$('assembly-video').value,variant:$('assembly-variant').value,selection:chooseParts()};}
  function persist(){
-  try{localStorage.setItem(STORAGE,JSON.stringify(session));$('assembly-storage').textContent='Saved locally on this browser';}
-  catch(e){$('assembly-storage').textContent='Local save unavailable; use export to retain your work.';}
- }
- function saved(){
-  try{const s=localStorage.getItem(STORAGE);if(!s||s.length>400000)return null;return JSON.parse(s);}catch{return null;}
+  try{
+   archive=storeSession(archive,plan,session);
+   localStorage.setItem(STORAGE_V12,JSON.stringify(archive));
+   $('assembly-storage').textContent=archiveWarning||
+    'Saved locally · '+archive.entries.length+' independent revision workspaces';
+  }catch(e){$('assembly-storage').textContent='Local save unavailable ('+e.message+'). Export your current work.';}
  }
  function rebuild(){
   try{
-   const previous=plan;plan=compileBuildPlan(settings());
-   if(!session){const stored=saved();session=stored?reconcileBuildSession(stored,plan):newBuildSession(plan);}
-   else if(previous?.key!==plan.key)session=reconcileBuildSession(session,plan);
+   const candidate=compileBuildPlan(settings());
+   if(plan&&session&&planIdentity(candidate)!==planIdentity(plan)){
+    // Keep the previous exact revision, even when a new plan invalidates old notes.
+    archive=storeSession(archive,plan,session);
+   }
+   const found=getStoredSession(archive,candidate);
+   let next=found;
+   if(!next&&session&&plan&&planIdentity(candidate)!==planIdentity(plan)){
+    next=reconcileBuildSession(session,candidate);
+   }
+   if(!next&&!plan){
+    const legacy=migrateLegacySession(localStorage.getItem(STORAGE),candidate);
+    next=legacy||newBuildSession(candidate);
+   }
+   plan=candidate;session=next||session||newBuildSession(plan);
    active=Math.max(0,Math.min(plan.steps.length-1,active));persist();render();
-  }catch(e){$('assembly-alert').textContent='Assembly plan error: '+e.message;}
+  }catch(e){$('assembly-alert').textContent='Assembly plan or archive error: '+e.message;}
  }
  function current(){return plan.steps[active];}
  function sourceAnchor(source){
@@ -54,7 +76,8 @@ if(host){
   if(!plan||!session)return;
   const summary=sessionSummary(session,plan),step=current(),status=stepStatus(session,plan,step.id),entry=session.entries[step.id];
   $('assembly-plan-heading').textContent=(plan.track==='px4'?'PX4 / X500 V2 evidence path':'FPV / Betaflight learning path')+' · '+plan.steps.length+' stages';
-  $('assembly-plan-key').textContent='Plan '+plan.key+' · '+plan.modelAuthority.replaceAll('_',' ');
+  $('assembly-plan-key').textContent='Plan '+plan.key+' · '+archive.entries.length+
+  ' stored revisions · '+plan.modelAuthority.replaceAll('_',' ');
   $('assembly-progress').textContent=summary.withNotes+'/'+summary.total+' steps have observations · '+summary.invalidated+' invalidated records';
   $('assembly-alert').textContent='Neither records nor tutorial completion validate physical electrical safety or permit power-on/flight. All '+summary.unresolvedSafetyGates+' safety-relevant stages require independent external review.';
   $('assembly-step-rail').innerHTML=plan.steps.map((s,i)=>{
@@ -114,6 +137,14 @@ if(host){
  $('assembly-save').addEventListener('click',saveObservation);
  $('assembly-export-json').addEventListener('click',()=>exportText(JSON.stringify({plan,session,summary:sessionSummary(session,plan)},null,2)+'\n','aeroforge-assembly-'+plan.key+'.json','application/json'));
  $('assembly-export-md').addEventListener('click',()=>exportText(buildPacket(session,plan),'aeroforge-build-packet-'+plan.key+'.md','text/markdown'));
+ $('assembly-export-all').addEventListener('click',()=>
+  exportText(JSON.stringify({workspace:archive,notice:'All notes are self-reported unverified observations. No physical approvals.'},null,2)+'\n','aeroforge-all-assembly-revisions-v12.json','application/json'));
+ $('assembly-clear-archive').addEventListener('click',()=>{
+  if(!window.confirm('ERASE ALL LOCALLY SAVED ASSEMBLY REVISIONS? Export all revisions first. This cannot be undone.'))return;
+  archive=emptyWorkspace();session=newBuildSession(plan);
+  try{localStorage.removeItem(STORAGE);localStorage.removeItem(STORAGE_V12);}catch{}
+  persist();navigate(0);
+ });
  $('assembly-reset').addEventListener('click',()=>{
   if(!window.confirm('Archive your current notes with Export first. Reset local assembly observations?'))return;
   session=newBuildSession(plan);persist();navigate(0);

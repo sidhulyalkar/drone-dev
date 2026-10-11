@@ -43,3 +43,7 @@
 @media(max-width:980px){.dim-v11-grid{grid-template-columns:1fr}}
 @media(max-width:600px){.dim-v11-head{display:block;padding:18px}.dim-v11-head aside{margin-top:13px;max-width:none}.dim-v11-grid{padding:10px}.dim-v11-fields{grid-template-columns:1fr}.dim-v11-panel{padding:13px}}
 @media(prefers-reduced-motion:reduce){.dim-v11 *{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+
+/* v1.2: visible stale-result guardrails */
+.dim-v11-review-proof{font:11px/1.6 ui-monospace,monospace;color:#f2d4aa;background:#3d3028;border-left:3px solid #e0aa6a;padding:10px 13px;border-radius:4px;overflow-wrap:anywhere}
+.dim-v11-actions button:disabled{opacity:.35;cursor:not-allowed;filter:grayscale(.65)}

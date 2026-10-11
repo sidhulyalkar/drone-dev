@@ -4,11 +4,37 @@
  */
 import {GEOMETRY_SCHEMA,FRAME,SOURCE_CATALOG,normalizeDimensionalInput,evaluateDimensionalInput,
  px4GeometryHandoff,inspectionPacket,syntheticExample} from './core/dimensional_v11.mjs';
+import {HASH_ORIGINS,newReviewState,invalidateReview,bindInspection,getCurrentReview,
+ exportReviewPacket,importReviewMeasurements} from './core/review_v12.mjs';
 const $=id=>document.getElementById(id);
 const root=$('dimensional-v11');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 if(root){
  let sourceHash=null,mode='USER_MEASURED_UNREVIEWED',evaluation=null;
+ let sourceHashOrigin=HASH_ORIGINS.NONE,reviewState=newReviewState(),hashToken=0;
+ const downloadIds=['dim-export','dim-px4','dim-report'];
+ function setDownloads(enabled){for(const id of downloadIds)$(id).disabled=!enabled;}
+ function invalidate(reason,dropHash=false){
+  ++hashToken;reviewState=invalidateReview(reviewState,reason);evaluation=null;
+  if(dropHash){sourceHash=null;sourceHashOrigin=HASH_ORIGINS.NONE;
+   $('dim-source-status').textContent='Source changed · local SHA-256 must be recalculated';
+  }
+  $('dim-result').textContent='STALE / REINSPECTION REQUIRED';
+  $('dim-numbers').textContent='Current fields have not been evaluated';
+  $('dim-mass').textContent='Last evaluation invalidated';
+  $('dim-checks').replaceChildren();
+  $('dim-plot').textContent='Re-run dimensional screening to inspect these exact values.';
+  $('dim-review-proof').textContent='Review invalidated ('+reason+'). No export of previous results.';
+  setDownloads(false);
+ }
+ function checked(){
+  if(!evaluation)throw Error('Inspection is stale; run the dimensional screen first');
+  return getCurrentReview(reviewState,snapshot());
+ }
+ function currentExport(){
+  const bound=checked();
+  return {review:exportReviewPacket(reviewState,snapshot()),evaluation:bound.evaluation};
+ }
  const defUrl=SOURCE_CATALOG[0].sourceUrl;
  $('dim-source-url').value=defUrl;
  function notify(message){$('dim-alert').textContent=message;}
@@ -88,11 +114,18 @@ if(root){
  }
  function render(e){
   evaluation=e;
+  setDownloads(true);
+  $('dim-review-proof').textContent='CURRENT · '+(sourceHashOrigin===HASH_ORIGINS.LOCAL?
+   'SHA-256 computed from local file bytes; manufacturer identity not authenticated':
+   sourceHashOrigin===HASH_ORIGINS.CLAIM?'SHA-256 imported as an unverified claim':
+   'no source-file hash')+' · independent geometry inspection NOT verified';
   $('dim-result').textContent=e.status.replaceAll('_',' ');
   $('dim-numbers').textContent=e.counts.conflicts+' projected conflicts · '+e.counts.interferenceCandidates+
    ' AABB overlap candidates · '+e.counts.holds+' holds';
   $('dim-source-status').textContent=e.design.source.sha256?
-   'Local file SHA-256 registered · NOT authenticity verified':'No source-file SHA-256 registered';
+   (sourceHashOrigin===HASH_ORIGINS.LOCAL?'LOCAL BYTES HASHED; NOT AUTHENTICATED: ':
+    'IMPORTED HASH CLAIM; NOT RECHECKED: ')+e.design.source.sha256:
+   'No source-file SHA-256 registered';
   $('dim-mass').textContent=e.knownComponentMass.subtotalG+' g known component subtotal · '+
    e.knownComponentMass.measuredCount+'/'+e.knownComponentMass.componentCount+' masses entered · NOT AUW or qualified CG';
   $('dim-checks').innerHTML=e.checks.map(c=>
@@ -106,13 +139,27 @@ if(root){
   a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1800);
  }
  function inspect(){
-  try{render(evaluateDimensionalInput(snapshot()));}
-  catch(e){evaluation=null;$('dim-result').textContent='INPUT INCOMPLETE';
-   $('dim-numbers').textContent=e.message;notify('No geometry evaluation was created: '+e.message);}
+  try{
+   const input=snapshot();
+   reviewState=bindInspection(reviewState,input,sourceHashOrigin);
+   render(getCurrentReview(reviewState,input).evaluation);
+  }catch(e){
+   invalidate('INSPECTION_FAILED');$('dim-result').textContent='INPUT INCOMPLETE';
+   $('dim-numbers').textContent=e.message;
+   notify('No geometry evaluation was created: '+e.message);
+  }
+ }
+ // Any edit invalidates prior results. Source identity edits also unbind the local
+ // file digest; an unverified filename must never retain the former file's hash.
+ for(const id of ['dim-source-label','dim-file-name','dim-source-url','dim-datum',
+                   'dim-gap','dim-rotors','dim-parts','dim-notes']){
+  $(id).addEventListener('input',()=>invalidate('FIELD_EDITED:'+id,
+   ['dim-source-label','dim-file-name','dim-source-url'].includes(id)));
  }
  $('dim-inspect').addEventListener('click',inspect);
  $('dim-example').addEventListener('click',()=>{
-  const d=syntheticExample();mode='SYNTHETIC_DEMO';sourceHash=null;
+  invalidate('LOAD_SYNTHETIC_EXAMPLE',true);
+  const d=syntheticExample();mode='SYNTHETIC_DEMO';sourceHash=null;sourceHashOrigin=HASH_ORIGINS.NONE;
   $('dim-source-label').value=d.source.label;$('dim-file-name').value=d.source.fileName;
   $('dim-source-url').value='';$('dim-datum').value=d.frameReference;
   $('dim-gap').value=String(d.minimumGapMm);$('dim-notes').value=d.notes;
@@ -120,7 +167,8 @@ if(root){
   notify('SYNTHETIC example only. This is not downloaded or measured Holybro geometry.');
  });
  $('dim-clear').addEventListener('click',()=>{
-  mode='USER_MEASURED_UNREVIEWED';evaluation=null;sourceHash=null;
+  invalidate('RESET_MEASUREMENTS',true);
+  mode='USER_MEASURED_UNREVIEWED';evaluation=null;sourceHash=null;sourceHashOrigin=HASH_ORIGINS.NONE;
   for(const id of ['dim-datum','dim-rotors','dim-parts','dim-notes','dim-file-name'])$(id).value='';
   $('dim-file').value='';$('dim-source-label').value='Holybro X500 V2 CAD, not verified';
   $('dim-source-url').value=defUrl;$('dim-gap').value='5';
@@ -131,6 +179,8 @@ if(root){
  });
  $('dim-file').addEventListener('change',async e=>{
   const f=e.target.files?.[0];
+  invalidate('SOURCE_FILE_SELECTED',true);
+  const token=hashToken;
   if(!f)return;
   // Large CAD may exceed browser memory. No upload or parsing is attempted.
   if(f.size>90*1024*1024){notify('File exceeds 90 MiB hash limit; use the local CLI to hash it.');return;}
@@ -138,7 +188,9 @@ if(root){
   try{
    $('dim-source-status').textContent='Computing SHA-256 locally…';
    const digest=await crypto.subtle.digest('SHA-256',await f.arrayBuffer());
+   if(token!==hashToken)return; // File/metadata changed while hashing: discard stale result.
    sourceHash=Array.from(new Uint8Array(digest)).map(b=>b.toString(16).padStart(2,'0')).join('');
+   sourceHashOrigin=HASH_ORIGINS.LOCAL;
    $('dim-file-name').value=f.name;
    $('dim-source-status').textContent='Local SHA-256: '+sourceHash+' · FILE CONTENT NOT PARSED';
    notify('File hashed locally. Bytes were NOT imported into CAD. Authenticity and coordinate transforms remain unverified.');
@@ -148,8 +200,10 @@ if(root){
   const f=e.target.files?.[0];if(!f)return;
   if(f.size>256*1024){notify('Measurement JSON too large (>256 KiB).');return;}
   try{
-   const d=normalizeDimensionalInput(JSON.parse(await f.text()));
-   mode=d.mode;sourceHash=d.source.sha256;
+   const imported=importReviewMeasurements(JSON.parse(await f.text()));
+   invalidate('IMPORT_MEASUREMENTS',true);
+   const d=imported.input;
+   mode=d.mode;sourceHash=d.source.sha256;sourceHashOrigin=imported.sourceHashOrigin;
    $('dim-source-label').value=d.source.label;$('dim-file-name').value=d.source.fileName;
    $('dim-source-url').value=d.source.sourceUrl||'';$('dim-datum').value=d.frameReference||'';
    $('dim-gap').value=String(d.minimumGapMm);$('dim-notes').value=d.notes;
@@ -158,16 +212,18 @@ if(root){
   }catch(error){notify('Import rejected: '+error.message);}
  });
  $('dim-export').addEventListener('click',()=>{
-  if(!evaluation)return notify('Run the dimensional inspection before exporting.');
-  save(JSON.stringify(evaluation,null,2)+'\n','aeroforge-dimensional-inspection-v11.json','application/json');
+  try{save(JSON.stringify(currentExport().review,null,2)+'\n','aeroforge-dimensional-review-v12.json','application/json');}
+  catch(e){invalidate('EXPORT_REJECTED_STALE');notify(e.message);}
  });
  $('dim-px4').addEventListener('click',()=>{
-  if(!evaluation)return notify('Run inspection before exporting.');
-  save(JSON.stringify(px4GeometryHandoff(evaluation),null,2)+'\n','aeroforge-px4-geometry-blocked-v11.json','application/json');
+  try{save(JSON.stringify(px4GeometryHandoff(currentExport().evaluation),null,2)+'\n','aeroforge-px4-geometry-blocked-v11.json','application/json');}
+  catch(e){invalidate('EXPORT_REJECTED_STALE');notify(e.message);}
  });
  $('dim-report').addEventListener('click',()=>{
-  if(!evaluation)return notify('Run inspection before exporting.');
-  save(inspectionPacket(evaluation),'aeroforge-dimensional-report-v11.md','text/markdown');
+  try{save(inspectionPacket(currentExport().evaluation),'aeroforge-dimensional-report-v11.md','text/markdown');}
+  catch(e){invalidate('EXPORT_REJECTED_STALE');notify(e.message);}
  });
+ setDownloads(false);
+ $('dim-review-proof').textContent='NO CURRENT INSPECTION · exports disabled until exact fields are screened.';
  notify('No source CAD imported. Enter real manufacturer-derived dimensions or select the explicitly synthetic demo.');
 }

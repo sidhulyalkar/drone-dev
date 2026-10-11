@@ -1,0 +1,14 @@
+/* v1.2 product wayfinding */
+.workflow-v12{position:sticky;top:0;z-index:35;background:#101f28f2;backdrop-filter:blur(12px);border-bottom:1px solid #42615b;box-shadow:0 6px 18px #03090b40}
+.workflow-v12-inner{max-width:1730px;margin:auto;padding:8px 4.3%;display:flex;gap:12px;align-items:center}
+.workflow-v12-label{flex-shrink:0;white-space:nowrap;display:flex;align-items:center;gap:8px;font:10px ui-monospace,monospace;color:#c5e8ad;letter-spacing:.08em}
+.workflow-v12-label:before{content:'◈';color:#b8e5a2;font-size:16px}
+.workflow-v12-links{display:flex;gap:6px;overflow:auto hidden;scrollbar-width:thin;scrollbar-color:#43675e transparent;flex:1;min-width:0;overscroll-behavior-x:contain}
+.workflow-v12-links a{font-size:11px;color:#b4c7c6;display:inline-block;white-space:nowrap;border:1px solid transparent;border-radius:6px;padding:8px 10px;transition:color .15s,background .15s}
+.workflow-v12-links a:hover{color:#e5f5d8;background:#294238}
+.workflow-v12-links a[aria-current=location]{color:#d4fac1;border-color:#718f70;background:#2c493c}
+.workflow-v12-status{font:10px ui-monospace,monospace;color:#8fac9d;max-width:145px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#mission-planner,#showcase-v07,#mission-v09,#mission-v10,#assembly-v08,#x500-kit-lab,#dimensional-v11,#qualification-console,#reference-lab,#v05-program-lab{scroll-margin-top:80px}
+@media(max-width:900px){.workflow-v12-inner{padding:6px 5%;gap:8px}.workflow-v12-label{font-size:9px}.workflow-v12-status{display:none}}
+@media(max-width:520px){.workflow-v12-label{display:none}.workflow-v12-links a{padding:9px 11px}}
+@media(prefers-reduced-motion:reduce){.workflow-v12 *{transition:none!important;scroll-behavior:auto!important}}

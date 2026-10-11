@@ -1,8 +1,20 @@
-# AeroForge v1.1 · Evidence-Driven Drone Engineering Workbench
+# AeroForge v1.2 · Trustworthy Drone Engineering Workbench
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
+
+## New in v1.2: Reliability & Engineering Audit
+
+The [v1.2 independent engineering audit](docs/V12_ENGINEERING_AUDIT.md) ranks AeroForge's current gaps and lays out measurable v1.3–v2.0 milestones. This release implements risk-focused improvements rather than adding more unverified drone variants:
+
+- **Snapshot-bound CAD inspections:** editing any inspected rotor, envelope, source identity or clearance field invalidates the old screen. Exports compare the exact normalized form to its inspected snapshot and reject stale results, including when browser events are missed.
+- **File hash provenance:** separate file bytes SHA-256 computed locally from unverified imported hash claims. Neither authenticates manufacturer origin or qualifies real CAD. Reopening v1.1 evaluation or v1.2 review JSON treats the stored hash only as an imported claim.
+- **Multi-revision assembly workspaces:** notes are keyed to the full design/step identity. Switching builds preserves prior revisions rather than overwriting the current session. Archived sessions can be exported all at once; hitting the 12-revision limit fails closed rather than discarding older work.
+- **Product navigation:** sticky workflow shortcuts to Design, 3D Showcase, Missions, Assembly, Hardware, PX4 and CAD Inspector.
+- **Honest metrics:** synthetic mass, endurance, thrust and cost are visibly labeled illustrative.
+
+No new manufacturer CAD was imported, and no hardware safety, regulatory, physical fit or flight qualification has been performed. Tests are software/geometry smoke tests, not full Playwright browser QA.
 
 ## New in v1.1: Dimensional CAD Evidence & Conservative Collision Screens
 

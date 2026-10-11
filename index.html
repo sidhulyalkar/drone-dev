@@ -4,12 +4,30 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/></head><body>
 <header class="site-header">
- <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / VERIFY / FLY</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.1 · DIMENSIONAL ENGINEERING</span></div>
+ <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / INSPECT / LEARN</small></div></div>
+ <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.2 · TRUST & WORKFLOW</span></div>
  <div class="header-right"><a href="https://github.com/sidhulyalkar/worcester-longboard" target="_blank" rel="noreferrer">Worcester DNA ↗</a><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
+<nav class="workflow-v12" id="workflow-v12" aria-label="AeroForge workflow navigation">
+ <div class="workflow-v12-inner">
+  <span class="workflow-v12-label">WORKFLOW</span>
+  <div class="workflow-v12-links">
+   <a href="#mission-planner">Design</a>
+   <a href="#showcase-v07">Exploded view</a>
+   <a href="#mission-v09">Missions</a>
+   <a href="#mission-v10">3D architectures</a>
+   <a href="#assembly-v08">Assembly</a>
+   <a href="#reference-lab">Reference parts</a>
+   <a href="#x500-kit-lab">X500 hardware</a>
+   <a href="#qualification-console">Qualification</a>
+   <a href="#v05-program-lab">Simulation</a>
+   <a href="#dimensional-v11">CAD inspection</a>
+  </div>
+  <output id="workflow-v12-status" class="workflow-v12-status" aria-live="polite">Select a workflow</output>
+ </div>
+</nav>
 <main>
  <section class="intro"><div class="eyebrow">YOUR AIRCRAFT, YOUR ARCHITECTURE <span class="eyebrow-line"></span> 001 / ENGINEERING STUDIO</div>
  <div class="intro-row"><div><h1>Build something <em>that flies.</em></h1><p>Explore airframes, swap real engineering parameters, and understand the tradeoffs before you buy a single part.</p></div>
@@ -40,9 +58,9 @@
    <div class="scene-bottom"><div class="viewer-controls"><button class="active" id="orbit-btn" aria-pressed="true">◉ Orbit</button><button id="top-btn" aria-pressed="false">⊞ Top</button><button id="explode-btn" aria-pressed="false">▤ Explode</button><button id="spin-btn" aria-pressed="false">↻ Spin props</button></div><span class="view-help" id="renderer-status">Loading 3D engine…</span></div>
    <div class="context-strip"><span><i>◈</i> PROCEDURAL 3D GEOMETRY</span><span><i>◈</i> DIMENSIONS TRACK PARTS</span><span><i>◈</i> NOT A CERTIFIED CAD ASSEMBLY</span></div>
   </section>
-  <aside class="panel metrics-panel"><div class="panel-heading"><div><span class="number">03</span><b> FLIGHT ENVELOPE</b><p>First-order engineering estimates.</p></div><span class="panel-decoration">⌁</span></div>
+  <aside class="panel metrics-panel"><div class="panel-heading"><div><span class="number">03</span><b> ILLUSTRATIVE FLIGHT MODEL</b><p>Synthetic catalog assumptions, not flight test evidence.</p></div><span class="panel-decoration">⌁</span></div>
    <div class="readiness"><span id="status-dot" class="status-dot"></span><div><small>DESIGN SCREENING</small><strong id="screening-status">CONCEPT</strong></div><span id="blocker-count">0 blockers</span></div>
-   <div class="metrics-grid"><div class="metric"><label>TAKEOFF WEIGHT</label><div><strong id="mass">0</strong><small>g</small></div></div><div class="metric"><label>EST. FLIGHT TIME</label><div><strong id="time">0</strong><small>min</small></div></div><div class="metric"><label>THRUST / WEIGHT</label><div><strong id="twr">0</strong><small>×</small></div></div><div class="metric"><label>EST. PARTS COST</label><div><small>$</small><strong id="cost">0</strong></div></div></div>
+   <div class="metrics-grid"><div class="metric"><label>ILLUSTRATIVE MASS</label><div><strong id="mass">0</strong><small>g</small></div></div><div class="metric"><label>ILLUSTRATIVE TIME</label><div><strong id="time">0</strong><small>min</small></div></div><div class="metric"><label>PLACEHOLDER T/W</label><div><strong id="twr">0</strong><small>×</small></div></div><div class="metric"><label>ILLUSTRATIVE COST</label><div><small>$</small><strong id="cost">0</strong></div></div></div>
    <div class="price-split"><div><span>GROUND & BENCH</span><b id="ground-cost">$0</b></div><div><span>STARTUP TOTAL</span><b id="startup-cost">$0</b></div></div>
    <div class="scenario-range"><span>ENDURANCE SENSITIVITY <i>(not confidence limits)</i></span><strong id="flight-range">0–0 min</strong><p>Two efficiency / usable-energy assumptions around the central estimate.</p></div>
    <div class="envelope"><div class="envelope-heading"><span>DESIGN ENVELOPE</span><small>ESTIMATED</small></div><div class="meter-label"><span>Thrust reserve</span><b id="thrust-value">0×</b></div><div class="meter"><div id="thrust-bar"></div></div><div class="meter-label"><span>Battery energy</span><b id="energy-value">0 Wh</b></div><div class="meter secondary"><div id="energy-bar"></div></div><div class="meter-label"><span>Hover power</span><b id="power-value">0 W</b></div><div class="meter tertiary"><div id="power-bar"></div></div></div>
@@ -215,7 +233,9 @@
    </article>
   </div>
   <footer class="assembly-footer"><b id="assembly-review-count">No stale observations recorded</b>Selections, notes, problems and open gates remain in the exported work record. Local observations aren't independent test results, and this feature makes no powered-operation or flight approval decisions.
-    <div class="assembly-actions"><button type="button" id="assembly-export-json">↓ Session JSON</button><button type="button" id="assembly-export-md">↓ Printable Markdown packet</button><button type="button" id="assembly-reset">↺ Reset local work</button></div>
+    <div class="assembly-actions"><button type="button" id="assembly-export-json">↓ Session JSON</button><button type="button" id="assembly-export-md">↓ Printable Markdown packet</button><button type="button" id="assembly-export-all">↓ Export all saved revisions</button>
+    <button type="button" id="assembly-reset">↺ Reset current revision</button>
+    <button type="button" id="assembly-clear-archive">Clear all saved revisions</button></div>
   </footer>
  </section>
 
@@ -315,6 +335,7 @@
     <label>Minimum projected gap (mm)<input id="dim-gap" type="number" min="0" max="250" step=".1" value="5"/></label>
    </div>
    <p id="dim-source-status" class="dim-v11-source-status">No source-file SHA-256 registered</p>
+   <p id="dim-review-proof" class="dim-v11-review-proof" role="status" aria-live="polite">NO CURRENT INSPECTION · exports disabled.</p>
    <h4>02 / Enter rotor coordinates and measured propeller sizes</h4>
    <p class="dim-v11-inline">BODY-FRD (+X FORWARD, +Y RIGHT, +Z DOWN), millimetres, relative to your documented datum. CSV rows: rotor ID, X, Y, Z, prop diameter. Empty until you supply data.</p>
    <label class="dim-label" for="dim-rotors">Rotor measurements</label>
@@ -359,4 +380,4 @@
  </div>
  <p class="dim-v11-caution">A file hash identifies bytes; it does not prove vendor origin, dimensions, physical registration, measured CG, motor mapping, structural strength, electrical fit, commissioning or airworthiness. Real PX4 rotor coordinates are FRD metres relative to measured whole-aircraft CG, not an arbitrary drawing datum.</p>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script></body></html>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script></body></html>
