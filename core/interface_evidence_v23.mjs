@@ -57,7 +57,7 @@ export function validateInterfaceEvidenceLinks(ledger){
   const l=ledger.links[i];
   if(!isObject(l)||l.id!=='link-'+String(i+1).padStart(4,'0')||
    !/^evt-[0-9]{4}$/.test(l.observationId)||!EDGE_IDS.includes(l.edgeId)||
-   !Number.isInteger(l.checkIndex)||l.checkIndex<0||l.checkIndex>2||
+   !Number.isInteger(l.checkIndex)||l.checkIndex<0||l.checkIndex>99||
    typeof l.rationale!=='string'||l.rationale.trim().length<12||
    l.rationale!==l.rationale.trim()||l.rationale.length>1200||
    l.authority!=='UNVERIFIED_USER_ASSOCIATION'||!validContext(l.context))
@@ -66,6 +66,9 @@ export function validateInterfaceEvidenceLinks(ledger){
   // receipt must pin both the requirement text and both interface endpoints.
   const hasRequirement=l.requirementSnapshot!==undefined;
   const hasEndpoint=l.edgeSignature!==undefined;
+  const hasReceipt=l.observationChecksum!==undefined;
+  if(hasReceipt&&(typeof l.observationChecksum!=='string'||!/^[a-f0-9]{16}$/.test(l.observationChecksum)))
+   throw Error('Invalid observation receipt checksum');
   if(hasRequirement!==hasEndpoint||
    (hasRequirement&&(typeof l.requirementSnapshot!=='string'||l.requirementSnapshot.length<8||
     l.requirementSnapshot.length>500||typeof l.edgeSignature!=='string'||
@@ -73,7 +76,7 @@ export function validateInterfaceEvidenceLinks(ledger){
    throw Error('Invalid check definition snapshot');
   const key=[l.context.revisionIdentity,l.context.variant,l.context.batteryCells,
    l.observationId,l.edgeId,l.checkIndex,l.requirementSnapshot??'LEGACY_UNBOUND',
-   l.edgeSignature??'LEGACY_UNBOUND'].join('::');
+   l.edgeSignature??'LEGACY_UNBOUND',l.observationChecksum??'LEGACY_RECEIPT'].join('::');
   if(seen.has(key))throw Error('Duplicate evidence link');
   seen.add(key);
  }
@@ -96,11 +99,13 @@ export function appendInterfaceEvidenceLink(ledger,journal,record,{observationId
  if(typeof rationale!=='string'||rationale.trim().length<12||rationale.length>1200)
   throw Error('Explain specifically how this receipt relates to the check');
  if(safe.links.some(l=>l.observationId===observationId&&l.edgeId===edgeId&&
-  l.checkIndex===checkIndex&&same(l.context,c)&&definitionMatches(l,edge,edge.items[checkIndex])))
+  l.checkIndex===checkIndex&&same(l.context,c)&&definitionMatches(l,edge,edge.items[checkIndex])&&
+  l.observationChecksum===obs.integrityChecksum))
   throw Error('Receipt already linked to this check');
  const id='link-'+String(safe.links.length+1).padStart(4,'0');
  return {...safe,links:[...safe.links,{id,observationId,edgeId,checkIndex,
   requirementSnapshot:edge.items[checkIndex],edgeSignature:edgeSignature(edge),
+  observationChecksum:obs.integrityChecksum,
   rationale:rationale.trim(),context:c,authority:'UNVERIFIED_USER_ASSOCIATION'}]};
 }
 export function interfaceEvidenceMatrix(ledger,journal,record){
@@ -115,9 +120,13 @@ export function interfaceEvidenceMatrix(ledger,journal,record){
     const current=!!o&&same(o.context,c)&&same(l.context,c)&&edge.partRefs.includes(o.payload.partRef);
     const status=!current?'STALE_OR_INVALID_EVIDENCE':
      l.requirementSnapshot===undefined?'LEGACY_CHECK_BINDING_REQUIRED':
-     definitionMatches(l,edge,name)?'SELF_REPORTED_EVIDENCE_LINKED':'CHECK_DEFINITION_CHANGED';
+     l.observationChecksum===undefined?'LEGACY_RECEIPT_BINDING_REQUIRED':
+     !definitionMatches(l,edge,name)?'CHECK_DEFINITION_CHANGED':
+     l.observationChecksum!==o.integrityChecksum?'RECEIPT_CHANGED_OR_REPLACED':
+     'SELF_REPORTED_EVIDENCE_LINKED';
     return {linkId:l.id,observationId:l.observationId,rationale:l.rationale,
      requirementAtLink:l.requirementSnapshot??null,edgeAtLink:l.edgeSignature??null,
+     recordedObservationChecksum:l.observationChecksum??null,
      kind:o?.payload.kind??null,
      reviewRecorded:current&&status==='SELF_REPORTED_EVIDENCE_LINKED'&&reviews.has(l.observationId),
      status};
