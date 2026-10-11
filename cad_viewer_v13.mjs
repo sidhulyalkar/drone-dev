@@ -148,7 +148,13 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
  };
  const ro=typeof ResizeObserver!=='undefined'?new ResizeObserver(resize):null;ro?.observe(host);resize();
  let raf=0;
- const render=()=>{if(dead)return;controls.update();renderer.render(scene,camera);raf=requestAnimationFrame(render);};
+ const render=()=>{
+  if(dead)return;
+  if(!document.hidden&&host.getClientRects().length>0&&host.clientWidth>1&&host.clientHeight>1){
+   controls.update();renderer.render(scene,camera);
+  }
+  raf=requestAnimationFrame(render);
+ };
  raf=requestAnimationFrame(render);
  function setSurfacePickHandler(callback){
   if(callback!==null&&typeof callback!=='function')throw Error('Expected a pick callback or null');

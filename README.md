@@ -1,9 +1,14 @@
-# AeroForge v1.7 · Minimal Drone Design & Engineering Workspaces
+# AeroForge v1.8 · Unified 3D Drone Build Studio
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
 
+## New in v1.8: Unified Build Viewer
+
+The Build workspace now uses **one primary Three.js canvas** with Aircraft, Exploded, and Local CAD modes. The first two modes retain the existing procedural aircraft and guided assembly tour. Local CAD becomes available only after a matching GLB and manifest are verified in the Engineering CAD tool; Build independently rechecks the GLB hash, then shows the source-derived **unregistered** solids in its existing scene. Changing or resetting source data invalidates the CAD view. Hidden viewers skip WebGL drawing without destroying controls or revision history.
+
+The source-space metrology viewer stays in Engineering, because its CAD point-picking and coordinate inspection are specialized tools. The app does not claim that source CAD and schematic geometry share an aircraft datum or verified physical fit. See [v1.8 3D Viewport Guide](docs/V18_UNIFIED_VIEWPORT.md).
 ## New in v1.7: Three Minimal Workspaces
 
 AeroForge now opens in **Explore**, with a small set of controls and an aircraft viewer. Primary workspaces: **Explore** (mission, presets, configurator), **Build** (exploded tour and assembly), and **Engineering** (source evidence, qualification, PX4, X500, dimensional and CAD labs). Detailed component settings, planner options and flight metrics are expandable; any blocking compatibility findings remain visible. No tools or aircraft records have been removed.

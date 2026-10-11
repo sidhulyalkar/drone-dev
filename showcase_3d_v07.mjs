@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 
 const vec=a=>new THREE.Vector3(...a);
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 const damp=(rate,dt)=>1-Math.exp(-rate*dt);
 
 /** Part-structured procedural viewer. 1 scene unit ~ 100 mm, never exact CAD. */
-export function createShowcaseViewer(host,manifest,onPick=()=>{}){
+export function createShowcaseViewer(host,manifest,onPick=()=>{},onCadPick=()=>{}){
  const scene=new THREE.Scene();scene.background=new THREE.Color(0x0b1720);scene.fog=new THREE.FogExp2(0x0b1720,.034);
  const camera=new THREE.PerspectiveCamera(38,1,.015,160);
  const gl=new THREE.WebGLRenderer({antialias:true,alpha:false,powerPreference:'high-performance'});
@@ -20,10 +21,86 @@ export function createShowcaseViewer(host,manifest,onPick=()=>{}){
  const table=new THREE.GridHelper(18,36,0x31565d,0x1a3543);table.position.y=-1.35;table.material.transparent=true;table.material.opacity=.30;scene.add(table);
  const ring=new THREE.Mesh(new THREE.RingGeometry(2.4,2.42,128),new THREE.MeshBasicMaterial({color:0x73a99d,transparent:true,opacity:.25,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=-1.32;scene.add(ring);
  const aircraft=new THREE.Group();scene.add(aircraft);
+ // One WebGL renderer for schematic and local source-derived CAD preview.
+ // CAD native units/axes are NOT registered to this illustrative aircraft.
+ const cadRoot=new THREE.Group();cadRoot.visible=false;scene.add(cadRoot);
+ const cadLoader=new GLTFLoader();
+ let cadMeshes=[],cadActive=false,cadSource=null,cadLoadToken=0;
  const controls=new OrbitControls(camera,gl.domElement);controls.enableDamping=true;controls.dampingFactor=.08;controls.minDistance=.24;controls.maxDistance=30;controls.enablePan=false;
  const dynamic=new Map();const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
  let manifestNow=manifest,live=true,state={mode:'assembled',partId:null,filter:'all',playing:false,phase:'idle'},spinning=false;
  let last=0,sceneTime=0,cameraOverride=false,disposed=false;
+ const releaseCad=()=>{
+  const geometries=new Set(),materials=new Set(),textures=new Set();
+  cadRoot.traverse(o=>{
+   if(!o.isMesh)return;
+   if(o.geometry)geometries.add(o.geometry);
+   for(const m of (Array.isArray(o.material)?o.material:[o.material])){
+    if(!m)continue;materials.add(m);
+    for(const key of ['map','normalMap','roughnessMap','metalnessMap','emissiveMap','aoMap'])
+     if(m[key])textures.add(m[key]);
+   }
+  });
+  geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());
+  cadRoot.clear();cadMeshes=[];cadSource=null;cadActive=false;
+  cadRoot.visible=false;aircraft.visible=true;
+ };
+ function setCadMode(enabled){
+  if(enabled&&!cadMeshes.length)throw Error('No locally verified CAD preview has been loaded');
+  if(cadActive===!!enabled)return;
+  cadActive=!!enabled;cadRoot.visible=cadActive;aircraft.visible=!cadActive;
+  if(cadActive){
+   controls.target.set(0,0,0);camera.position.set(4.2,2.8,4.9);
+   cameraOverride=true;controls.update();
+  }else{cameraOverride=false;controls.target.set(0,.1,0);}
+ }
+ async function loadCadPreview(buffer,identity){
+  if(disposed)throw Error('Viewer disposed');
+  if(!(buffer instanceof ArrayBuffer)||buffer.byteLength<20||buffer.byteLength>90*1024*1024)
+   throw Error('Unrecognized CAD preview bytes');
+  if(!identity||!/^[a-f0-9]{64}$/.test(identity.meshSha256)||typeof identity.sourceFile!=='string')
+   throw Error('Missing exact local CAD source identity');
+  // Binary and manifest hashes MUST have been checked by caller immediately before this method.
+  const token=++cadLoadToken;
+  const imported=await new Promise((resolve,reject)=>cadLoader.parse(buffer,'',resolve,reject));
+  if(disposed||token!==cadLoadToken)return [];
+  const root=imported.scene;
+  root.updateMatrixWorld(true);
+  const bounds=new THREE.Box3().setFromObject(root);
+  if(bounds.isEmpty())throw Error('Imported CAD model has no usable bounds');
+  const extent=bounds.getSize(new THREE.Vector3());
+  const size=Math.max(extent.x,extent.y,extent.z);
+  if(!Number.isFinite(size)||size<=0||size>1e6)throw Error('CAD model extent is invalid');
+  const meshes=[];root.traverse(o=>{if(o.isMesh)meshes.push(o);});
+  if(!meshes.length||meshes.length>500)throw Error('CAD model must have 1 to 500 renderable meshes');
+  releaseCad();
+  const center=bounds.getCenter(new THREE.Vector3());
+  const normalized=new THREE.Group();
+  normalized.position.copy(center).multiplyScalar(-1);
+  cadRoot.scale.setScalar(3/size);cadRoot.add(normalized);
+  normalized.add(root);
+  const originalMaterials=new Set();
+  for(const [index,mesh] of meshes.entries()){
+   mesh.userData.cadIndex=index;
+   const originals=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+   for(const m of originals)if(m)originalMaterials.add(m);
+   mesh.material=Array.isArray(mesh.material)?mesh.material.map(m=>m.clone()):mesh.material?.clone();
+  }
+  originalMaterials.forEach(m=>m.dispose());
+  cadMeshes=meshes;cadSource={meshSha256:identity.meshSha256,sourceFile:identity.sourceFile,
+   sourceRevision:identity.sourceRevision??'unspecified'};
+  cadRoot.visible=cadActive;aircraft.visible=!cadActive;
+  return meshes.map((mesh,index)=>({index,name:mesh.name||'CAD solid '+(index+1),
+   authority:'SOURCE_DERIVED_BUT_UNREGISTERED'}));
+ }
+ function clearCadPreview(){cadLoadToken++;releaseCad();}
+ function selectCadMesh(index){
+  if(!Number.isInteger(index)||index<0||index>=cadMeshes.length)throw Error('Unknown CAD solid');
+  for(const [i,mesh] of cadMeshes.entries()){
+   for(const mat of (Array.isArray(mesh.material)?mesh.material:[mesh.material]))
+    if(mat?.emissive){mat.emissive.setHex(i===index?0x345b45:0x000000);mat.emissiveIntensity=i===index?.55:0;}
+  }
+ }
  const makeMat=(color,metalness=0.45,roughness=.52)=>new THREE.MeshStandardMaterial({color,metalness,roughness,side:THREE.DoubleSide,transparent:true,opacity:1,emissive:0x000000});
  const carbon=()=>makeMat(0x233641,.33,.65),metal=()=>makeMat(0x97aeb8,.8,.27),pcb=()=>makeMat(0x235f54,.25,.49),accent=()=>makeMat(manifestNow.airframe.color,.4,.36),soft=()=>makeMat(0x2c4454,.3,.68),wire=()=>makeMat(0xd6ab79,.26,.48);
  function mesh(parent,geom,mat,x=0,y=0,z=0){const m=new THREE.Mesh(geom,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
@@ -130,7 +207,13 @@ export function createShowcaseViewer(host,manifest,onPick=()=>{}){
  }
  function pointerPick(event){const bounds=gl.domElement.getBoundingClientRect();if(!bounds.width||!bounds.height)return;
   pointer.x=(event.clientX-bounds.left)/bounds.width*2-1;pointer.y=-(event.clientY-bounds.top)/bounds.height*2+1;
-  raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects([...dynamic.values()].map(d=>d.node),true);
+  raycaster.setFromCamera(pointer,camera);
+  if(cadActive){
+   const hit=raycaster.intersectObjects(cadMeshes,false)[0];
+   if(hit){const index=hit.object.userData.cadIndex;selectCadMesh(index);onCadPick(index);}
+   return;
+  }
+  const hits=raycaster.intersectObjects([...dynamic.values()].map(d=>d.node),true);
   const id=hits.find(h=>h.object.userData.partId)?.object.userData.partId;
   if(id)onPick(id);
  }
@@ -138,7 +221,14 @@ export function createShowcaseViewer(host,manifest,onPick=()=>{}){
  gl.domElement.addEventListener('pointerdown',onDown);gl.domElement.addEventListener('pointerup',onUp);
  controls.addEventListener('start',()=>{cameraOverride=true;});
  function setState(next){if(next.partId!==state.partId||next.mode!==state.mode)cameraOverride=false;state=next}
- function frame(now){if(!live)return;requestAnimationFrame(frame);let dt=clamp((now-last)/1000||.016,0,.05);last=now;sceneTime+=dt;
+ function frame(now){
+  if(!live)return;
+  requestAnimationFrame(frame);
+  // Keep the scene/DOM mounted without rendering GPU frames while the workspace is hidden.
+  if(document.hidden||!host.isConnected||host.getClientRects().length===0||
+   host.clientWidth<2||host.clientHeight<2){last=now;return;}
+  if(cadActive){last=now;controls.update();gl.render(scene,camera);return;}
+  let dt=clamp((now-last)/1000||.016,0,.05);last=now;sceneTime+=dt;
   const explosion=state.mode==='assembled'?0:1;
   for(const {spec,node,mats} of dynamic.values()){
    const target=vec(spec.anchor).addScaledVector(vec(spec.explode),explosion);
@@ -164,7 +254,14 @@ export function createShowcaseViewer(host,manifest,onPick=()=>{}){
   }
   controls.update();gl.render(scene,camera);
  }
- const ro=new ResizeObserver(()=>{const width=host.clientWidth||800,height=host.clientHeight||440;camera.aspect=width/height;camera.updateProjectionMatrix();gl.setSize(width,height,false)});ro.observe(host);
+ const ro=new ResizeObserver(()=>{
+  if(!host.clientWidth||!host.clientHeight)return;
+  const width=host.clientWidth,height=host.clientHeight;
+  camera.aspect=width/height;camera.updateProjectionMatrix();gl.setSize(width,height,false);
+ });ro.observe(host);
  reset(manifest);requestAnimationFrame(frame);
- return {setManifest:reset,setState,setSpin(v){spinning=!!v},resetCamera(){cameraOverride=false},getPartIds(){return [...dynamic.keys()]},dispose(){if(disposed)return;disposed=true;live=false;ro.disconnect();controls.dispose();gl.domElement.removeEventListener('pointerdown',onDown);gl.domElement.removeEventListener('pointerup',onUp);aircraft.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of (Array.isArray(o.material)?o.material:[o.material]))m.dispose();}});table.geometry.dispose();table.material.dispose();ring.geometry.dispose();ring.material.dispose();gl.dispose();gl.domElement.remove()}};
+ return {setManifest:reset,setState,setCadMode,loadCadPreview,clearCadPreview,selectCadMesh,
+  getCadMeshes(){return cadMeshes.map((m,index)=>({index,name:m.name||'CAD solid '+(index+1)}));},
+  getCadIdentity(){return cadSource?{...cadSource}:null;},
+  setSpin(v){spinning=!!v},resetCamera(){cameraOverride=false},getPartIds(){return [...dynamic.keys()]},dispose(){if(disposed)return;disposed=true;live=false;ro.disconnect();releaseCad();controls.dispose();gl.domElement.removeEventListener('pointerdown',onDown);gl.domElement.removeEventListener('pointerup',onUp);aircraft.traverse(o=>{o.geometry?.dispose();if(o.material){for(const m of (Array.isArray(o.material)?o.material:[o.material]))m.dispose();}});table.geometry.dispose();table.material.dispose();ring.geometry.dispose();ring.material.dispose();gl.dispose();gl.domElement.remove()}};
 }

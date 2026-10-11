@@ -201,6 +201,49 @@ test('deep links reveal engineering and nested Explore views even from a conflic
  await expect(page.locator('#af-workspace-explore')).toHaveAttribute('aria-pressed','true');
  await expect(page.locator('#mission-v10')).toBeVisible();
 });
+
+test('Build has a single persistent viewer and uses aircraft/exploded modes without reconstructing it',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-build').click();
+ await expect(page.locator('#showcase-v07')).toBeVisible();
+ await expect(page.locator('#af-view-aircraft')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#af-view-cad')).toBeDisabled();
+ await page.locator('#af-view-exploded').click();
+ await expect(page.locator('#af-view-exploded')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#showcase-explode')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#af-view-aircraft').click();
+ await expect(page.locator('#af-view-aircraft')).toHaveAttribute('aria-pressed','true');
+ await page.locator('#af-workspace-engineering').click();
+ await expect(page.locator('#showcase-v07')).toBeHidden();
+ await page.locator('#af-workspace-build').click();
+ await expect(page.locator('#showcase-v07')).toBeVisible();
+ await expect(page.locator('#af-view-aircraft')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#showcase-viewport')).toHaveCount(1);
+});
+test('local CAD is shown in the same Build canvas only after rechecking hashes; reset revokes it',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-build').click();
+ await expect(page.locator('#showcase-renderer-status')).toContainText('3D active',{timeout:15000});
+ const canvasesBefore=await page.locator('#showcase-viewport canvas').count();
+ expect(canvasesBefore).toBe(1);
+ await page.locator('#af-workspace-engineering').click();
+ await upload(page,fixture(),false,true);
+ await page.locator('#cad-v13-inspect').click();
+ await expect(page.locator('#cad-v13-package-evidence')).toContainText('MATCH LOCAL FILE');
+ await page.locator('#af-workspace-build').click();
+ await expect(page.locator('#af-view-cad')).toBeEnabled({timeout:15000});
+ await page.locator('#af-view-cad').click();
+ await expect(page.locator('#af-view-cad')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#af-v18-cad-details')).toBeVisible();
+ await expect(page.locator('#af-v18-source')).toContainText('UNAUTHENTICATED');
+ expect(await page.locator('#showcase-viewport canvas').count()).toBe(1);
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v13-reset').click();
+ await page.locator('#af-workspace-build').click();
+ await expect(page.locator('#af-view-cad')).toBeDisabled();
+ await expect(page.locator('#af-view-aircraft')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('#af-v18-cad-details')).toBeHidden();
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{

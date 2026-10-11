@@ -1,0 +1,24 @@
+/* AeroForge v1.8: one everyday Build viewport for aircraft, exploded, and local CAD preview */
+.af-v18-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 14px;background:#0f222b;border-bottom:1px solid #35515a}
+.af-v18-toolbar button{font-size:12px;font-weight:600;color:#b8cccf;border:1px solid transparent;padding:10px 14px;border-radius:7px;background:transparent;cursor:pointer}
+.af-v18-toolbar button[aria-pressed=true]{background:#385549;border-color:#789d79;color:#edf9df}
+.af-v18-toolbar button:disabled{color:#667f7e;opacity:.55;cursor:not-allowed}
+.af-v18-toolbar button:focus-visible,.af-v18-cad-part:focus-visible,.af-v18-cad-link:focus-visible{outline:2px solid #d6eea9;outline-offset:2px}
+.af-v18-authority{margin-left:auto;font:10px/1.5 ui-monospace,monospace;max-width:280px;color:#ddc597;text-align:right}
+.af-v18-cad-details{padding:16px;border-bottom:1px solid #45616a;color:#d0e2dd;font-size:12px}
+.af-v18-cad-details[hidden]{display:none!important}
+.af-v18-cad-details strong{font-size:12px}
+.af-v18-cad-details p{line-height:1.6;color:#c6b894}
+.af-v18-cad-parts{display:grid;grid-template-columns:1fr 1fr;gap:5px;max-height:290px;overflow:auto}
+.af-v18-cad-part{text-align:left;background:#1f3540;border:1px solid #345663;color:#c7d6d5;font-size:11px;padding:11px 9px;border-radius:5px;overflow-wrap:anywhere;cursor:pointer}
+.af-v18-cad-part[aria-pressed=true]{background:#345749;border-color:#b2d6a1;color:#ecf9e6}
+.af-v18-cad-link{display:inline-block;margin-top:15px;padding:10px 12px;border:1px solid #54766a;border-radius:6px;color:#d7eccf;font-size:11px}
+#showcase-v07[data-af-view-mode=cad] #showcase-parts,
+#showcase-v07[data-af-view-mode=cad] .showcase-controls,
+#showcase-v07[data-af-view-mode=cad] .showcase-seek,
+#showcase-v07[data-af-view-mode=cad] .showcase-meta,
+#showcase-v07[data-af-view-mode=cad] .showcase-detail .showcase-specs{display:none!important}
+#showcase-v07[data-af-view-mode=cad] .showcase-inspector .showcase-detail{min-height:145px}
+#showcase-v07[data-af-view-mode=cad] .showcase-watermark{color:#dfc691}
+@media(max-width:700px){.af-v18-authority{order:2;margin:4px 0 0;max-width:100%;width:100%;text-align:left}.af-v18-toolbar button{padding:9px 11px;font-size:11px}.af-v18-cad-parts{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.af-v18-toolbar *, .af-v18-cad-details *{transition:none!important;animation:none!important}}

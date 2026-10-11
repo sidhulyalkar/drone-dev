@@ -44,6 +44,9 @@ if(root){
    if(ticket!==loading)return;
    checked=verified;
    window.dispatchEvent(new CustomEvent('aeroforge:cad-visual-package-verified',{detail:{preview:verified}}));
+   // The Build renderer independently verifies bytes again before enabling its CAD mode.
+   // Pass ephemeral in-memory ArrayBuffer only; source STEP never leaves this page.
+   window.dispatchEvent(new CustomEvent('aeroforge:cad-preview-ready',{detail:{preview:verified,glb}}));
    el('cad-v13-package-evidence').innerHTML=
     '<strong>'+esc(verified.manifest.source.fileName)+'</strong> / revision '+esc(verified.manifest.source.revision)+
     '<p>Source SHA-256: <code>'+esc(verified.manifest.source.sha256)+'</code></p>'+

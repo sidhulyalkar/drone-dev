@@ -167,6 +167,10 @@ export function createMissionSceneViewer(host,onSelect){
  let req=0,last=0;
  function loop(time){
   if(disposed)return;
+  // Do not render hidden workspaces; keep scene and part selection intact.
+  if(document.hidden||host.getClientRects().length===0||host.clientWidth<2||host.clientHeight<2){
+   last=time;req=requestAnimationFrame(loop);return;
+  }
   const dt=Math.min(.08,(time-last)/1000||0);last=time;
   const alpha=1-Math.exp(-dt*6);
   for(const [id,group] of groups){
