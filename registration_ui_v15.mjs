@@ -103,7 +103,7 @@ if(root){
   window.dispatchEvent(new CustomEvent('aeroforge:cad-registration-to-dimensions',
    {detail:{proposal}}));
   const location=el('dimensional-v11');
-  location?.scrollIntoView({behavior:'smooth',block:'start'});
+  location?.scrollIntoView({behavior:'instant',block:'start'});
   notes('Unverified CAD datum positions transferred to dimensional inspector. Run screening there; no automatic qualification.');
  });
  window.addEventListener('aeroforge:cad-visual-package-cleared',()=>{

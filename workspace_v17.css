@@ -59,3 +59,6 @@ html[data-af-workspace=explore] .intro-side{font-size:10px}
  .site-header .header-center{display:none}
 }
 @media(prefers-reduced-motion:reduce){.workflow-v12 *{animation:none!important;transition:none!important}}
+
+/* Avoid long-page smooth-scroll races between CAD review controls and sticky navigation. */
+html[data-af-workspace]{scroll-behavior:auto}

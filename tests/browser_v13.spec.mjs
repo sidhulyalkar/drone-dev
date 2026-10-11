@@ -46,6 +46,7 @@ test('screening an explicitly synthetic example, editing, and reinspection never
  await expect(page.locator('#dim-review-proof')).toContainText('CURRENT');
  await expect(page.locator('#dim-export')).toBeEnabled();
  await page.locator('#dim-gap').fill('12');
+ await page.locator('#dim-gap').press('Tab'); // Commit the number-field edit before review.
  await expect(page.locator('#dim-result')).toContainText('STALE');
  await expect(page.locator('#dim-export')).toBeDisabled();
  await page.locator('#dim-inspect').click();
