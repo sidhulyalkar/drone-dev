@@ -121,4 +121,5 @@ if(host){
   journal=e.detail?.journal??null;render();
  });
  window.dispatchEvent(new Event('aeroforge:x500-record-requested'));
+ window.dispatchEvent(new Event('aeroforge:inspection-journal-requested'));
 }
