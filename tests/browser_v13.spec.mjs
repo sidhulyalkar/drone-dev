@@ -1,0 +1,82 @@
+import {test,expect} from '@playwright/test';
+import {createHash} from 'node:crypto';
+
+function fixture(){
+ const json=JSON.stringify({asset:{version:'2.0',generator:'SYNTHETIC BROWSER TEST ONLY'},
+  scenes:[{nodes:[0]}],scene:0,nodes:[{mesh:0,name:'Synthetic test triangle'}],
+  meshes:[{primitives:[{attributes:{POSITION:0},mode:4}]}],
+  buffers:[{byteLength:36}],bufferViews:[{buffer:0,byteOffset:0,byteLength:36}],
+  accessors:[{bufferView:0,componentType:5126,count:3,type:'VEC3',min:[0,0,0],max:[1,1,0]}]});
+ const padded=json+' '.repeat((4-json.length%4)%4);
+ const glb=Buffer.alloc(12+8+padded.length+8+36);
+ glb.write('glTF',0);glb.writeUInt32LE(2,4);glb.writeUInt32LE(glb.length,8);
+ glb.writeUInt32LE(padded.length,12);glb.write('JSON',16);glb.write(padded,20);
+ const bin=20+padded.length;glb.writeUInt32LE(36,bin);glb.write('BIN\0',bin+4);
+ [0,0,0,1,0,0,0,1,0].forEach((x,i)=>glb.writeFloatLE(x,bin+8+i*4));
+ const step=Buffer.from('ISO-10303-21; BROWSER SYNTHETIC TEST FILE ONLY; END-ISO-10303-21;');
+ const sha=b=>createHash('sha256').update(b).digest('hex');
+ const manifest={
+  schema:'aeroforge/cad-visual-package/v1.3',
+  source:{fileName:'browser-fixture.step',sha256:sha(step),sizeBytes:step.length,
+   revision:'SYNTHETIC_FIXTURE',documentationUrl:'https://example.org/synthetic',
+   licenseNote:'Synthetic test-only fixture, no manufacturer data.',manufacturerIdentityVerified:false},
+  mesh:{fileName:'browser-fixture.glb',sha256:sha(glb),sizeBytes:glb.length,
+   format:'GLB_2',units:'m',assetGeometryIsCadDerived:true},
+  conversion:{engine:'Browser synthetic fixture',sourceUnitsDeclared:'mm',
+   coordinateFrame:'CAD_NATIVE_UNREGISTERED',scaleFromKernelToGLTF:.001,
+   solidCount:1,triangleCount:1,sourceAabbKernelMm:{min:[0,0,0],max:[1,1,0]}},
+  qualification:{manufacturerAuthenticated:false,axesRegisteredToFRD:false,
+   physicalFit:false,rotorCentersMeasured:false,flightReady:false},
+  scope:'VISUAL_GEOMETRY_ONLY_NOT_FIT_TESTED'
+ };
+ return {glb,step,manifest};
+}
+const upload=async (page,f,tamper=false,includeStep=false)=>{
+ await page.locator('#cad-v13-manifest').setInputFiles({name:'browser-fixture.visual-package.json',mimeType:'application/json',
+   buffer:Buffer.from(JSON.stringify(f.manifest))});
+ const raw=Buffer.from(f.glb);
+ if(tamper)raw[raw.length-1]^=1;
+ await page.locator('#cad-v13-glb').setInputFiles({name:'browser-fixture.glb',mimeType:'model/gltf-binary',buffer:raw});
+ if(includeStep)await page.locator('#cad-v13-step').setInputFiles({name:'browser-fixture.step',mimeType:'application/octet-stream',buffer:f.step});
+};
+test('screening an explicitly synthetic example, editing, and reinspection never preserves stale exports',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#dim-example').click();
+ await expect(page.locator('#dim-review-proof')).toContainText('CURRENT');
+ await expect(page.locator('#dim-export')).toBeEnabled();
+ await page.locator('#dim-gap').fill('12');
+ await expect(page.locator('#dim-result')).toContainText('STALE');
+ await expect(page.locator('#dim-export')).toBeDisabled();
+ await page.locator('#dim-inspect').click();
+ await expect(page.locator('#dim-review-proof')).toContainText('CURRENT');
+ await expect(page.locator('#dim-export')).toBeEnabled();
+});
+test('tampered local GLB remains rejected without rendering or export',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await upload(page,fixture(),true,true);
+ await page.locator('#cad-v13-inspect').click();
+ await expect(page.locator('#cad-v13-status')).toContainText('GLB SHA-256 mismatch');
+ await expect(page.locator('#cad-v13-export')).toBeDisabled();
+ await expect(page.locator('#cad-v13-parts button')).toHaveCount(0);
+});
+test('exact local mesh/source identity is exposed without claiming trusted manufacturer origin',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await upload(page,fixture(),false,true);
+ await page.locator('#cad-v13-inspect').click();
+ await expect(page.locator('#cad-v13-package-evidence')).toContainText('MATCH LOCAL FILE');
+ await expect(page.locator('#cad-v13-package-evidence')).toContainText('NO APPROVED PHYSICAL FIT');
+ await expect(page.locator('#cad-v13-export')).toBeEnabled();
+ await expect(page.locator('#cad-v13-status')).not.toContainText('Package rejected');
+});
+test.describe('small-screen workflow',()=>{
+ test.use({viewport:{width:390,height:844}});
+ test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{
+  await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#workflow-v12')).toBeVisible();
+  await page.locator('#workflow-v12 a[href="#dimensional-v11"]').click();
+  await expect(page.locator('#dimensional-v11')).toBeVisible();
+  await page.locator('#dim-example').click();
+  await expect(page.locator('#dim-result')).not.toContainText('INPUT INCOMPLETE');
+  await page.screenshot({path:'test-results/aeroforge-mobile-v13.png',fullPage:false});
+ });
+});

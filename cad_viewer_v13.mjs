@@ -17,6 +17,7 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
  renderer.toneMapping=THREE.ACESFilmicToneMapping;
  renderer.toneMappingExposure=1.4;
  renderer.domElement.setAttribute('aria-label','Interactive GLB CAD model viewer');
+ host.querySelector('.cad-v13-empty')?.remove();
  host.appendChild(renderer.domElement);
  const controls=new OrbitControls(camera,renderer.domElement);
  controls.enableDamping=true;controls.minDistance=.3;controls.maxDistance=20;

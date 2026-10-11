@@ -1,0 +1,38 @@
+name: Browser workflow smoke tests
+on: [push, pull_request]
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Playwright runner
+        run: npm install --no-save --ignore-scripts @playwright/test@1.56.1
+      - name: Install Chromium runtime
+        run: npx playwright install --with-deps chromium
+      - name: Start static AeroForge server
+        run: |
+          nohup python3 -m http.server 8080 --bind 127.0.0.1 > /tmp/aeroforge-http.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:8080/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/aeroforge-http.log
+          exit 1
+      - name: Exercise browser workflows
+        run: npx playwright test tests/browser_v13.spec.mjs --workers=1 --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: aeroforge-browser-traces
+          path: |
+            test-results/
+            /tmp/aeroforge-http.log
+          if-no-files-found: ignore
+          retention-days: 7
