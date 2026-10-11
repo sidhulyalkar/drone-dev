@@ -1,8 +1,14 @@
-# AeroForge v1.4 · Source-Linked Drone Engineering Workbench
+# AeroForge v1.5 · CAD Registration and Drone Engineering Workbench
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
+
+## New in v1.5: Source CAD Motor-Datum Registration
+
+Section 18 adds a source-identity-bound annotation workflow for the X500 V2 STEP: user-selected CAD→FRD axis mapping, source kernel datum, **four human-observed** motor centers, rotor disk screening, transparent nominal 500 mm wheelbase comparisons, and selectable marker overlays on the local source-derived 3D scene. Signed-axis conversion refuses reflections; editing a record or replacing the CAD invalidates its results. The unverified coordinates link to the X500 hardware identity and can be copied to Section 16 for a **new review-gated** clearance screen.
+
+**No Holybro STEP geometry was downloaded or independently measured for this release.** A local STEP hash is not manufacturer authentication. Manual source-space markers are not CG-relative PX4 motor positions or verified aircraft fit. See [v1.5 CAD Registration Bridge](docs/V15_CAD_REGISTRATION.md).
 
 ## New in v1.4: Canonical Hardware Reference
 

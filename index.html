@@ -4,7 +4,7 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / INSPECT / LEARN</small></div></div>
  <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.3 · CAD SOURCE PIPELINE</span></div>
@@ -432,8 +432,41 @@
    <div id="cad-v13-package-evidence" class="cad-v13-proof">No local package validated.</div>
   </aside>
  </div>
- <footer class="cad-v13-footer">
+ 
+<div id="cad-registration-v15" class="cad-v15" aria-label="X500 motor-datum evidence registration">
+ <div class="cad-v15-head">
+  <div><span class="cad-v13-kicker">18 / X500 SOURCE-DATUM REGISTRATION</span>
+  <h3>Give the CAD model a coordinate story.</h3>
+  <p>After verifying the original X500 STEP locally, annotate four motor-shaft centers from the source geometry. Declare the CAD-to-FRD axis rotation and a user-defined datum. The resulting positions can be screened but <strong>are never treated as independently measured or CG-relative.</strong></p></div>
+  <span>HUMAN ANNOTATION<br/>NO VERIFIED CAD DATUM</span>
+ </div>
+ <div class="cad-v15-form">
+  <div class="cad-v15-fields">
+   <label>CAD → FRD axis mapping<select id="cad-v15-axis">
+    <option value="+X,+Y,+Z">FRD X=CAD +X, Y=+Y, Z=+Z</option>
+    <option value="-Y,+X,+Z">FRD X=CAD -Y, Y=+X, Z=+Z</option>
+    <option value="+Y,-X,+Z">FRD X=CAD +Y, Y=-X, Z=+Z</option>
+    <option value="-X,-Y,+Z">FRD X=CAD -X, Y=-Y, Z=+Z</option>
+    <option value="+X,-Y,-Z">FRD X=CAD +X, Y=-Y, Z=-Z</option>
+   </select></label>
+   <label>Source CAD datum origin X,Y,Z (kernel mm)<input id="cad-v15-origin" value="0,0,0"/></label>
+   <label>Observer / measurement record label<input id="cad-v15-observer" placeholder="E.g. mechanical review v1"/></label>
+   <label>Motor shaft centers in source CAD mm, four rows<textarea id="cad-v15-rotors" spellcheck="false" rows="6" placeholder="R1, CAD_X, CAD_Y, CAD_Z, propDiameterMm&#10;R2, ...&#10;R3, ...&#10;R4, ..."></textarea></label>
+  </div>
+  <label>Where the coordinates came from / measured datum evidence<textarea id="cad-v15-notes" rows="3" placeholder="Describe STEP solids, chosen shaft-axis center and verified drawing dimensions. Do not enter guessed wheelbase-derived coordinates."></textarea></label>
+  <label class="cad-v15-check"><input type="checkbox" id="cad-v15-units"/> I have personally checked the STEP importer length-unit assumption against a source reference dimension. This is an unverified user declaration, not independent review.</label>
+  <div class="cad-v13-actions">
+   <button type="button" id="cad-v15-inspect" disabled>Inspect marked motor geometry</button>
+   <button type="button" id="cad-v15-export" disabled>↓ Export registration proposal</button>
+   <button type="button" id="cad-v15-transfer" disabled>↗ Screen in dimensional inspector</button>
+  </div>
+  <p id="cad-v15-status" class="cad-v15-status" role="status">Source STEP required.</p>
+  <output id="cad-v15-summary" class="cad-v15-summary">No current measured-coordinate proposal.</output>
+  <p class="cad-v15-caution">Manufacturer nominal references: 500 mm wheelbase; 144 mm body plate. Some Holybro documents show a 16 mm motor mounting pattern, while current listings also mention 19 mm. An approximate wheelbase match is only a consistency check, not source authentication, an aircraft datum registration or motor clearance approval.</p>
+ </div>
+</div>
+<footer class="cad-v13-footer">
   This is a preview of source-derived tessellated geometry, not measured aircraft placement. Sha-256 identifies specific bytes but never authenticates source ownership, scale, axes, physical registration, rotor centers, swept disks or safety. Only source files that you are permitted to use should be converted or shared.
  </footer>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script></body></html>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script></body></html>

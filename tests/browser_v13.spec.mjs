@@ -79,6 +79,39 @@ test('X500 canonical compatibility blockers stay visible and keep PX4 assembly s
  await expect(page.locator('#v14-connections')).toContainText('BLOCK_FAMILY_MISMATCH');
  await expect(page.locator('#v14-parts')).toContainText('Pixhawk 6X');
 });
+
+test('verified local X500-named STEP accepts human annotations but blocks physical qualification',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ const f=fixture(); // Entirely synthetic test bytes, NOT manufacturer STEP
+ f.manifest.source.fileName='x500v2-frame.step';
+ await page.locator('#cad-v13-manifest').setInputFiles({name:'fixture.visual-package.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify(f.manifest))});
+ await page.locator('#cad-v13-glb').setInputFiles({name:'browser-fixture.glb',mimeType:'model/gltf-binary',buffer:f.glb});
+ await page.locator('#cad-v13-step').setInputFiles({name:'x500v2-frame.step',mimeType:'application/octet-stream',buffer:f.step});
+ await page.locator('#cad-v13-inspect').click();
+ await expect(page.locator('#cad-v15-inspect')).toBeEnabled();
+ await page.locator('#cad-v15-observer').fill('SYNTHETIC BROWSER QA');
+ await page.locator('#cad-v15-notes').fill('Motor shaft positions are fabricated browser fixture values; not manufacturer CAD evidence.');
+ await page.locator('#cad-v15-units').check();
+ await page.locator('#cad-v15-rotors').fill(
+  'R1,200,150,0,254\nR2,-200,150,0,254\nR3,-200,-150,0,254\nR4,200,-150,0,254');
+ await page.locator('#cad-v15-inspect').click();
+ await expect(page.locator('#cad-v15-summary')).toContainText('500 / 500 mm');
+ await expect(page.locator('#cad-v15-summary')).toContainText('NO VERIFIED AIRCRAFT DATUM');
+ await expect(page.locator('#cad-v15-export')).toBeEnabled();
+ await expect(page.locator('#v14-identity')).toContainText('linked but UNVERIFIED');
+ await page.locator('#cad-v15-transfer').click();
+ await expect(page.locator('#dim-rotors')).toHaveValue(/R1, 200, 150, 0, 254/);
+ await expect(page.locator('#dim-export')).toBeDisabled();
+ await page.locator('#dim-inspect').click();
+ await expect(page.locator('#dim-review-proof')).toContainText('CURRENT');
+ await page.locator('#cad-v15-rotors').fill('R1,201,150,0,254\nR2,-200,150,0,254\nR3,-200,-150,0,254\nR4,200,-150,0,254');
+ await expect(page.locator('#cad-v15-export')).toBeDisabled();
+ await expect(page.locator('#cad-v15-summary')).toContainText('No current');
+ await page.locator('#cad-v13-reset').click();
+ await expect(page.locator('#cad-v15-inspect')).toBeDisabled();
+ await expect(page.locator('#v14-identity')).toContainText('not linked');
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{

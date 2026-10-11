@@ -1,9 +1,10 @@
 import {qualifyKit,simulationHandoff,assemblyPacket} from './core/kit_v06.mjs';
 import {compileX500Record,attachX500Cad,compareX500Records} from './core/x500_record_v14.mjs';
+import {attachX500Registration} from './core/registration_v15.mjs';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const config={variant:'six_c',power:'auto',batteryCells:4,batterySku:'',radioSku:'',receiverSku:'',chargerSku:'',cadImported:false,physicalInspected:false};
-let last=null,record=null,cadPreview=null;
+let last=null,record=null,cadPreview=null,registration=null;
 function file(text,name,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 function show(){
  try{
@@ -11,8 +12,8 @@ function show(){
  const previous=record;
  record=compileX500Record(config);
  if(cadPreview){
-  try{record=attachX500Cad(record,cadPreview);}
-  catch{cadPreview=null;}
+  try{record=registration?attachX500Registration(record,cadPreview,registration):attachX500Cad(record,cadPreview);}
+  catch{cadPreview=null;registration=null;}
  }
  $('v14-identity').textContent=record.variant+' · '+record.graphStatus+
   ' · local frame CAD '+(record.geometry.sourceHash?'linked but UNVERIFIED':'not linked');
@@ -57,7 +58,19 @@ function init(){if(!$('v06-kit-variant'))return;
    cadPreview=preview;show();
   }
  });
- $('v06-download-json').onclick=()=>{if(last)file(JSON.stringify(last,null,2)+'\n','aeroforge-v06-x500-kit-qualification.json','application/json');};
+ window.addEventListener('aeroforge:cad-visual-package-cleared',()=>{
+  if(cadPreview||registration){cadPreview=null;registration=null;show();}
+ });
+ window.addEventListener('aeroforge:x500-registration-cleared',()=>{
+  if(registration){registration=null;show();}
+ });
+  window.addEventListener('aeroforge:x500-registration-proposed',e=>{
+  if(e.detail?.proposal?.schema==='aeroforge/x500-registration-proposal/v1.5'&&
+     e.detail?.preview?.manifest?.source?.sha256===cadPreview?.manifest?.source?.sha256){
+   registration=e.detail.proposal;show();
+  }
+ });
+  $('v06-download-json').onclick=()=>{if(last)file(JSON.stringify(last,null,2)+'\n','aeroforge-v06-x500-kit-qualification.json','application/json');};
  $('v06-download-assembly').onclick=()=>file(assemblyPacket(config),'aeroforge-v06-assembly-evidence.md','text/markdown');
  $('v06-download-sim').onclick=()=>file(JSON.stringify(simulationHandoff(config),null,2)+'\n','aeroforge-v06-generic-sitl-handoff.json','application/json');
  show();

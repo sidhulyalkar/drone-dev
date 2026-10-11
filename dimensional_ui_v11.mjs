@@ -211,7 +211,24 @@ if(root){
    notify('Imported user measurement JSON; existing SHA digest remains a CLAIM until file bytes are independently matched.');
   }catch(error){notify('Import rejected: '+error.message);}
  });
- $('dim-export').addEventListener('click',()=>{
+ window.addEventListener('aeroforge:cad-registration-to-dimensions',e=>{
+  const p=e.detail?.proposal;
+  if(p?.schema!=='aeroforge/x500-registration-proposal/v1.5')return;
+  try{
+   const d=normalizeDimensionalInput(p.dimensionalDraft);
+   invalidate('USER_ANNOTATED_CAD_DATUM_TRANSFER',true);
+   mode=d.mode;sourceHash=d.source.sha256;sourceHashOrigin=HASH_ORIGINS.CLAIM;
+   $('dim-source-label').value=d.source.label;
+   $('dim-file-name').value=d.source.fileName;
+   $('dim-source-url').value=d.source.sourceUrl||'';
+   $('dim-datum').value=d.frameReference||'';
+   $('dim-gap').value=String(d.minimumGapMm);$('dim-notes').value=d.notes;
+   encodeRows(d);
+   $('dim-source-status').textContent='CAD SHA-256 transferred as an unverified cross-tool identity claim';
+   notify('Human-annotated CAD coordinates copied; re-run screening. No source-axis, CG or motor position review was authenticated.');
+  }catch(error){invalidate('CAD_TRANSFER_REJECTED',true);notify('CAD transfer rejected: '+error.message);}
+ });
+  $('dim-export').addEventListener('click',()=>{
   try{save(JSON.stringify(currentExport().review,null,2)+'\n','aeroforge-dimensional-review-v12.json','application/json');}
   catch(e){invalidate('EXPORT_REJECTED_STALE');notify(e.message);}
  });

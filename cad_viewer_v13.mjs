@@ -25,6 +25,7 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
  const light=new THREE.DirectionalLight(0xffffff,3.2);light.position.set(5,7,6);scene.add(light);
  const fill=new THREE.DirectionalLight(0x89b8e8,1.2);fill.position.set(-4,3,-3);scene.add(fill);
  const roots=new THREE.Group();scene.add(roots);
+ const markers=new THREE.Group();roots.add(markers);
  let parts=[],center=new THREE.Vector3(),extent=1,explode=0,selected=-1,dead=false;
  const ray=new THREE.Raycaster(),xy=new THREE.Vector2();
  const loader=new GLTFLoader();
@@ -35,7 +36,7 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
    for(const m of (Array.isArray(obj.material)?obj.material:[obj.material]))if(m)materials.add(m);
   });
   geometry.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());
-  roots.clear();parts=[];selected=-1;
+  roots.clear();roots.add(markers);markers.clear();parts=[];selected=-1;
  }
  function layout(){
   for(const part of parts){
@@ -80,7 +81,23 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
   return parts.map((p,i)=>({id:i,label:meshes[i].name||p.name,
    sourcePartIdentity:'UNREGISTERED_GLTF_MESH',units:'UNVERIFIED_SOURCE_TO_GLTF_METERS'}));
  }
- function setExplode(v){
+ function setMotorMarkers(rotors){
+  for(const o of [...markers.children]){markers.remove(o);o.geometry?.dispose();o.material?.dispose();}
+  if(!Array.isArray(rotors)||rotors.length>12)throw new Error('Invalid annotation markers');
+  if(!rotors.length)return;
+  const material=()=>new THREE.MeshStandardMaterial({color:0xf9c873,emissive:0x75501b,emissiveIntensity:.3});
+  const radius=Math.max(.002,extent*.012);
+  for(const item of rotors){
+   if(!Array.isArray(item.centerKernelMm)||item.centerKernelMm.length!==3||
+    item.centerKernelMm.some(x=>typeof x!=='number'||!Number.isFinite(x)))
+    throw new Error('Invalid unregistered marker position');
+   const mesh=new THREE.Mesh(new THREE.SphereGeometry(radius,16,12),material());
+   mesh.position.set(...item.centerKernelMm.map(v=>v*.001));
+   mesh.userData.annotationId=item.id;
+   markers.add(mesh);
+  }
+ }
+  function setExplode(v){
   if(typeof v!=='number'||!Number.isFinite(v)||v<0||v>1)throw new Error('Invalid explosion distance');
   explode=v;layout();
  }
@@ -119,7 +136,7 @@ export function createCadPackageViewer(host,onSelect=()=>{}){
  let raf=0;
  const render=()=>{if(dead)return;controls.update();renderer.render(scene,camera);raf=requestAnimationFrame(render);};
  raf=requestAnimationFrame(render);
- return{load,select,setExplode,dispose(){
+ return{load,select,setExplode,setMotorMarkers,dispose(){
   if(dead)return;dead=true;cancelAnimationFrame(raf);
   renderer.domElement.removeEventListener('pointerdown',pointerDown);
   renderer.domElement.removeEventListener('pointerup',pointerUp);

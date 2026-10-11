@@ -9,6 +9,7 @@ if(root){
   el('cad-v13-status').textContent=message;el('cad-v13-status').dataset.kind=kind;
  };
  function clear(){
+  window.dispatchEvent(new CustomEvent('aeroforge:cad-visual-package-cleared'));
   checked=null;meshList=[];viewer?.dispose();viewer=null;
   el('cad-v13-canvas').querySelectorAll('canvas').forEach(c=>c.remove());
   el('cad-v13-parts').replaceChildren();
@@ -95,6 +96,11 @@ if(root){
   ++loading;clear();for(const id of fileIds)el(id).value='';
   say('Select a manifest and its exact GLB, plus optional matching STEP, to start.');
  });
- window.addEventListener('beforeunload',()=>viewer?.dispose(),{once:true});
+ window.addEventListener('aeroforge:cad-motor-annotation-updated',e=>{
+  const proposal=e.detail?.proposal;
+  if(!proposal)viewer?.setMotorMarkers([]);
+  else if(proposal.schema==='aeroforge/x500-registration-proposal/v1.5')viewer?.setMotorMarkers(proposal.rotors);
+ });
+  window.addEventListener('beforeunload',()=>viewer?.dispose(),{once:true});
  say('No CAD source or derived GLB has been imported or registered on this device.');
 }

@@ -1,0 +1,21 @@
+/* v1.5 Human-observed source CAD to FRD datum registration */
+.cad-v15{border-top:1px solid #4d6d62;background:#18333a;padding:20px 24px;color:#d6e5da}
+.cad-v15 *{box-sizing:border-box}
+.cad-v15-head{display:flex;align-items:start;justify-content:space-between;gap:20px;border-bottom:1px solid #3f6158;padding-bottom:17px}
+.cad-v15-head h3{font-size:clamp(20px,3vw,30px);margin:7px 0;color:#e9f4df;letter-spacing:-.025em}
+.cad-v15-head p{font-size:12px;color:#b7d1c4;line-height:1.7;max-width:750px}
+.cad-v15-head>span{font:10px/1.7 ui-monospace,monospace;color:#eccba5;background:#423528;border:1px solid #776044;border-radius:6px;padding:11px;flex-shrink:0}
+.cad-v15-form{padding-top:14px;display:grid;gap:10px}
+.cad-v15-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cad-v15 label{display:grid;gap:6px;color:#c2d5c7;font-size:11px;line-height:1.6}
+.cad-v15 input,.cad-v15 select,.cad-v15 textarea{width:100%;background:#0e232b;border:1px solid #52756a;border-radius:6px;padding:10px;color:#e3f2e5;font:12px/1.5 ui-monospace,monospace;min-width:0}
+.cad-v15 textarea{resize:vertical;min-height:68px}
+.cad-v15-check{display:flex!important;align-items:flex-start;gap:9px;background:#2f3c35;padding:13px;border-radius:6px;border:1px solid #557364}
+.cad-v15-check input{width:auto;margin:4px 0;flex-shrink:0;accent-color:#bceba4}
+.cad-v15-status{font:11px/1.65 ui-monospace,monospace;color:#edd19e;margin:0}
+.cad-v15-summary{font:12px/1.7 ui-monospace,monospace;display:block;background:#273e38;color:#e0edca;border:1px solid #4a6b57;padding:12px;border-radius:7px}
+.cad-v15-caution{font-size:11px;line-height:1.65;color:#ebd2ad;background:#40352b;padding:12px;border-left:3px solid #cd9e65}
+.cad-v15 button:disabled{opacity:.42;cursor:not-allowed}
+.cad-v15 button:focus-visible,.cad-v15 input:focus-visible,.cad-v15 select:focus-visible,.cad-v15 textarea:focus-visible{outline:2px solid #c8ecab;outline-offset:3px}
+@media(max-width:850px){.cad-v15-head{display:block}.cad-v15-head>span{display:inline-block;margin-top:8px}}
+@media(max-width:560px){.cad-v15{padding:14px}.cad-v15-fields{grid-template-columns:1fr}}
