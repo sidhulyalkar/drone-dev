@@ -91,3 +91,37 @@ test('malformed half-snapshot cannot be imported as linked evidence',()=>{
  const forged=structuredClone(links);delete forged.links[0].edgeSignature;
  assert.throws(()=>validateInterfaceEvidenceLinks(forged),/definition snapshot/);
 });
+
+test('journal replacement with a different evt-0001 payload cannot inherit an old evidence link',()=>{
+ const r=rec(),base=startInspectionJournal(r);
+ const a=appendInspectionObservation(base,r,entry());
+ const alternate=entry();alternate.notes='An entirely different connector observation in another journal export.';
+ const b=appendInspectionObservation(base,r,alternate);
+ assert.equal(a.events[0].id,b.events[0].id);
+ assert.notEqual(a.events[0].integrityChecksum,b.events[0].integrityChecksum);
+ const args={observationId:'evt-0001',edgeId:'motor-esc',checkIndex:0,
+  rationale:'Visual connector observation was recorded on this specific inspection event.'};
+ const linked=appendInterfaceEvidenceLink(startInterfaceEvidenceLinks(r),a,r,args);
+ assert.equal(interfaceEvidenceMatrix(linked,a,r).checksWithReceipts,1);
+ const replaced=interfaceEvidenceMatrix(linked,b,r);
+ assert.equal(replaced.checksWithReceipts,0);
+ assert.equal(replaced.edges.find(x=>x.edgeId==='motor-esc').checks[0].links[0].status,
+  'RECEIPT_CHANGED_OR_REPLACED');
+ const rebound=appendInterfaceEvidenceLink(linked,b,r,args);
+ assert.equal(interfaceEvidenceMatrix(rebound,b,r).checksWithReceipts,1);
+});
+test('earlier definition-bound exports lacking a receipt checksum become historical only',()=>{
+ const r=rec(),j=appendInspectionObservation(startInspectionJournal(r),r,entry());
+ const args={observationId:'evt-0001',edgeId:'motor-esc',checkIndex:0,
+  rationale:'This inspection is associated with one explicit connector observation.'};
+ const links=appendInterfaceEvidenceLink(startInterfaceEvidenceLinks(r),j,r,args);
+ assert.match(links.links[0].observationChecksum,/^[a-f0-9]{16}$/);
+ const legacy=structuredClone(links);
+ delete legacy.links[0].observationChecksum;
+ assert.doesNotThrow(()=>validateInterfaceEvidenceLinks(legacy));
+ const matrix=interfaceEvidenceMatrix(legacy,j,r);
+ assert.equal(matrix.checksWithReceipts,0);
+ assert.equal(matrix.edges.find(x=>x.edgeId==='motor-esc').checks[0].links[0].status,
+  'LEGACY_RECEIPT_BINDING_REQUIRED');
+ assert.equal(interfaceEvidenceMatrix(appendInterfaceEvidenceLink(legacy,j,r,args),j,r).checksWithReceipts,1);
+});
