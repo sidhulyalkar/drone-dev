@@ -24,6 +24,26 @@ npm test         # engineering unit and contract tests, no dependencies
 ```
 
 
+## macOS / Homebrew Python: local CAD dependencies
+
+Homebrew Python blocks global pip installs (`externally-managed-environment`, PEP 668). Do not use `--break-system-packages`. The local `.venv/` is ignored by Git.
+
+```sh
+npm run setup:cad   # Creates .venv and installs pinned smoke-test dependencies
+npm run test:cad    # Uses .venv Python automatically when available
+```
+
+Manual alternative:
+
+```sh
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements-cad.txt
+npm run test:cad
+```
+
+The smoke tests require `ezdxf`, `trimesh`, and `numpy` as pinned in `requirements-cad.txt`. Full STEP-to-GLB conversion needs additional optional CAD libraries and is not covered by `setup:cad`.
+
 ## New in v0.5: separated PX4 autonomy and FPV research tracks
 
 **Section 11 / PX4 Program Lab** adds an Atlas PX4 Explorer research architecture, Source Two as a distinct FPV benchmark, mission/budget/payload requirement screening, six blocked engineering milestones, a source-evidence ledger contract, a strict calibration audit, a synthetic 1D flight-dynamics playground, and revision-aware JSON exports. The synthetic experiment does not use PX4, Gazebo, real measurements or a calibrated flight controller. No target is flight qualified. Start with [v0.5 PX4 Program](docs/V05_PX4_PROGRAM.md).
