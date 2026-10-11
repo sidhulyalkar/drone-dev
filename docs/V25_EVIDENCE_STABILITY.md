@@ -4,7 +4,7 @@
 
 A versioned observation can remain genuinely attached to the historical interface requirement that triggered it, even if the current research registry updates that requirement. v2.3 linked an observation to `edgeId:checkIndex` alone, which is not sufficient when an engineering checklist is edited or reordered.
 
-The v2.5 change preserves the **v2.3 import schema**, while strengthening newly created links with immutable, exact-text `requirementSnapshot` and `edgeSignature` (interface role and expected part endpoints). These are user-declared associations and not authenticated signatures.
+The v2.5 change preserves the **v2.3 import schema**, while strengthening newly created links with immutable, exact-text `requirementSnapshot` and `edgeSignature` (interface role and expected part endpoints), as well as `observationChecksum` (the existing v2.2 event receipt's noncryptographic integrity checksum). This prevents accidental reassociation when a different imported journal reuses an event ID. These remain user-declared associations, not authenticated signatures. The v2.2 FNV-style checksum detects accidental mismatch, **not adversarial tampering**.
 
 ### Status semantics
 
@@ -14,6 +14,8 @@ The v2.5 change preserves the **v2.3 import schema**, while strengthening newly 
 | `STALE_OR_INVALID_EVIDENCE` | Aircraft context changed, the observation is missing or no longer matches the interface. | No |
 | `LEGACY_CHECK_BINDING_REQUIRED` | Historical v2.3 file has no definition snapshot. Can be imported, but must be reviewed and relinked manually. | No |
 | `CHECK_DEFINITION_CHANGED` | Requirement text or interface role/endpoints no longer match the snapshot in the link. | No |
+| `LEGACY_RECEIPT_BINDING_REQUIRED` | The export has a requirement snapshot, but no event receipt checksum. | No |
+| `RECEIPT_CHANGED_OR_REPLACED` | A different observation event reused the old ID, or the original receipt changed. | No |
 
 Relinking appends a new association, retains the previous link for audit, and never overwrites the v2.2 journal. Neither recorded receipt nor second-person review closes hardware checks or sets power, purchase or flight approvals.
 
