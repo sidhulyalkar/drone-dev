@@ -1,4 +1,8 @@
-# AeroForge v0.5 · Evidence-first Drone Engineering Workbench
+# AeroForge v0.6 · Evidence-first Drone Engineering Workbench
+
+## v0.6: Holybro X500 V2 hardware qualification
+
+Section 12 includes a manufacturer-evidenced kit variant checker (Pixhawk 6C + analog PM02 V3 versus Pixhawk 6X + digital PM02D), 4S ESC limits, source-annotated hold/fail states and exported assembly/SITL handoffs. Read [the X500 qualification guide](docs/V06_X500_KIT.md). Generic PX4 Gazebo x500 is an external simulation baseline and **not** a calibrated Holybro digital twin. No physical flight authority is implied.
 
 A browser-based platform for designing, comparing and screening DIY quadcopters. Inspired by the [Worcester Longboard platform](https://github.com/sidhulyalkar/worcester-longboard), built as an **independent, open-source MIT-licensed codebase**.
 

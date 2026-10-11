@@ -123,4 +123,31 @@
     <article class="q-card"><h3>04 / Vertical dynamics playground</h3><p>A simple 1D numerical force balance with an idealized first-order motor response. Intentionally separate from PX4/Gazebo, without attitude, controller tuning or wind.</p><label>Additional payload (g) <input type="range" min="0" max="800" value="0" step="50" id="v05-demo-payload"></label><label>Uniform motor throttle (%) <input type="range" min="0" max="100" value="50" step="5" id="v05-demo-throttle"></label><div id="v05-demo-chart" class="v05-plot"></div><p id="v05-demo-result" role="status"></p><button id="v05-export-demo" class="quiet">↓ Export SYNTHETIC experiment</button></article>
    </div><p class="q-bottom-note">Future milestone: measured hardware and a real PX4/Gazebo model with validated actuator mapping. No generated aircraft is ready to procure, assemble, power on or fly.</p>
  </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script></body></html>
+
+ <section class="reference-lab v06-lab" id="x500-kit-lab">
+  <div class="section-heading"><span class="number">12</span> X500 V2 HARDWARE QUALIFICATION <span class="section-help">Real manufacturer kit variants, incompatible power-module checks and source-backed unresolved interfaces.</span></div>
+  <div class="q-hero"><div><span class="ref-kicker">PX4 EXPLORER / EVIDENCE-GATED KIT</span><h2>A documented kit is not a qualified aircraft.</h2><p>Holybro X500 V2 provides a real 500 mm-class reference with a supported PX4 development kit. Preserve the exact Pixhawk/power-module pairing, current kit revision, missing CAD and physical test evidence.</p></div><div class="q-hero-right"><span id="v06-status" class="q-main-status q-hold">INCOMPLETE EVIDENCE</span><small>NOT FLIGHT QUALIFIED</small></div></div>
+  <p id="v06-alert" class="q-caution" role="status">Loading source-aware compatibility...</p>
+  <div class="q-metrics v06-metrics"><div><span>SCREENING RESULTS</span><b id="v06-metrics">Calculating...</b></div><div><span>SELECTED FLIGHT ELECTRONICS</span><b id="v06-module">Checking...</b></div></div>
+  <div class="q-grid">
+   <article class="q-card"><h3>01 / Lock exact hardware variant</h3><p>Changing the autopilot does not silently update unrelated module specifications. Selecting an incompatible power supply produces a hard blocker.</p>
+     <div class="q-row-fields">
+      <label>Kit variant<select id="v06-kit-variant"><option value="six_c">Pixhawk 6C / analog kit</option><option value="six_x">Pixhawk 6X / digital kit</option></select></label>
+      <label>Power module<select id="v06-kit-power"><option value="auto">Matched to kit</option><option value="pm02v3">PM02 V3 analog</option><option value="pm02d">PM02D digital I2C</option></select></label>
+      <label>Battery series count<select id="v06-kit-cells"><option value="3">3S</option><option value="4">4S · documented ESC match</option><option value="6">6S</option></select></label>
+      <label>Battery SKU (not auto-verified)<input id="v06-battery-sku" placeholder="Exact product ID / optional"/></label>
+      <label>Radio transmitter SKU<input id="v06-radio-sku" placeholder="Ground radio / optional"/></label>
+      <label>Receiver SKU<input id="v06-rx-sku" placeholder="Compatible RX / optional"/></label>
+      <label>Charger SKU<input id="v06-charger-sku" placeholder="Chemistry-compatible charger"/></label>
+     </div>
+     <label class="v06-check"><input id="v06-cad-flag" type="checkbox"/> I imported CAD (unverified user attestation only)</label>
+     <label class="v06-check"><input id="v06-physical-flag" type="checkbox"/> I inspected the aircraft (unverified user attestation only)</label>
+     <div class="q-button-row"><button class="primary" type="button" id="v06-download-json">↓ Qualification JSON</button><button class="quiet" type="button" id="v06-download-assembly">↓ Assembly evidence packet</button><button class="quiet" type="button" id="v06-download-sim">↓ PX4 baseline handoff</button></div>
+   </article>
+   <article class="q-card"><h3>02 / Real kit components</h3><p>Listed as manufacturer-specified component families. Exact stock, delivered revision, manufacturer STEP and actual pin-level wiring still need checking.</p><ul id="v06-components" class="v05-text-list"></ul><h4>Source ledger</h4><ul id="v06-provenance" class="v06-sources"></ul></article>
+   <article class="q-card"><h3>03 / Typed compatibility findings</h3><p>Manufacturer-documented facts are visually distinct from fails, holds, and missing evidence. Expand any finding to see why it remains open.</p><div id="v06-findings" class="v06-findings"></div></article>
+   <article class="q-card"><h3>04 / PX4 simulation bridge</h3><p id="v06-sim" class="q-caution"></p><p>PX4 maintains an upstream Gazebo x500 simulator with separate depth-camera and visual-odometry targets. You can run that baseline in a separate properly configured PX4 checkout, but it does not simulate the measured behavior of this exact Holybro kit.</p><p>Custom model calibration is blocked until real rotor geometry, inertia, motor coefficients, ESC mapping and battery tests have source-backed records.</p><a href="https://docs.px4.io/main/en/sim_gazebo_gz/vehicles" target="_blank" rel="noopener noreferrer">PX4 Gazebo model documentation ↗</a></article>
+  </div>
+  <p class="q-bottom-note">Research-only engineering evidence. The platform does not approve component purchasing, battery charging, propeller spin-up, bench energization or physical flight.</p>
+ </section>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script></body></html>

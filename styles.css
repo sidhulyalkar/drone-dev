@@ -21,3 +21,19 @@
 
 /* PX4 Program Lab v0.5 */
 .v05-lab{margin-top:28px}.v05-grid{margin-top:14px}.v05-text-list,.v05-audit-list{font-size:12px;line-height:1.75;color:#bacdd3;padding-left:20px}.v05-audit-list{max-height:210px;overflow:auto}.v05-gate{border:1px solid #364f5d;padding:11px;border-radius:6px;margin:8px 0}.v05-gate strong{font-size:12px}.v05-gate .q-rule-state{float:right}.v05-gate p{clear:both;margin:6px 0 0}.v05-plot{overflow:hidden;border-radius:6px;margin-top:8px}.v05-plot svg{width:100%;height:auto;display:block}.v05-state{display:block;color:#ffcf92;font-size:12px;overflow-wrap:anywhere;margin:13px 0}.v05-lab h4{margin:15px 0 7px;font-size:12px;color:#c9e2d2}
+
+/* X500 V2 hardware qualification / v0.6 */
+.v06-lab{margin-top:32px}.v06-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+.v06-metrics b{font-size:clamp(12px,1.5vw,18px);line-height:1.45;overflow-wrap:anywhere}
+.v06-sources{list-style:none;padding:0;margin:10px 0;display:grid;gap:9px;font-size:12px}
+.v06-sources li{border-bottom:1px solid #345061;padding-bottom:7px;display:flex;gap:9px;flex-wrap:wrap}
+.v06-sources small{color:#9cb4c3}.v06-sources a{color:#d1e9b1}
+.v06-check{display:flex!important;flex-direction:row;align-items:start;gap:8px}
+.v06-check input{width:auto!important;margin:1px 0!important}
+.v06-findings{max-height:550px;overflow-y:auto;display:grid;gap:6px}
+.v06-finding{border:1px solid #365363;border-radius:8px;padding:9px 11px;font-size:12px;overflow-wrap:anywhere}
+.v06-finding summary{cursor:pointer;display:flex;align-items:center;gap:12px}
+.v06-finding p{max-width:none;margin:8px 0}.v06-finding small{color:#9cb5be}
+.v06-chip{padding:4px 7px;font-size:10px;flex-shrink:0;border-radius:4px}
+.v06-documented{color:#caecad;background:#234638}.v06-fail{color:#ffc5bb;background:#6b2932}.v06-hold{color:#f9d8a4;background:#57452e}
+@media(max-width:650px){.v06-metrics{grid-template-columns:minmax(0,1fr)}.v06-finding summary{align-items:start;flex-direction:column;gap:6px}}
