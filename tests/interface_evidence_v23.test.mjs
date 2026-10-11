@@ -44,3 +44,50 @@ test('import rejects false approval and malformed links',()=>{
  assert.throws(()=>validateInterfaceEvidenceLinks({...l,flightApproved:true}),/Invalid interface evidence ledger/);
  assert.throws(()=>validateInterfaceEvidenceLinks({...l,links:[{id:'evil'}]}),/Malformed/);
 });
+
+test('legacy v2.3 associations remain importable but no longer count without a requirement snapshot',()=>{
+ const r=rec(),j=appendInspectionObservation(startInspectionJournal(r),r,entry());
+ const args={observationId:'evt-0001',edgeId:'motor-esc',checkIndex:0,
+  rationale:'Inspection photographs identify a phase connector family only.'};
+ const current=appendInterfaceEvidenceLink(startInterfaceEvidenceLinks(r),j,r,args);
+ const legacy=structuredClone(current);
+ delete legacy.links[0].requirementSnapshot;
+ delete legacy.links[0].edgeSignature;
+ assert.doesNotThrow(()=>validateInterfaceEvidenceLinks(legacy));
+ const stale=interfaceEvidenceMatrix(legacy,j,r);
+ assert.equal(stale.checksWithReceipts,0);
+ assert.equal(stale.edges.find(x=>x.edgeId==='motor-esc').checks[0].links[0].status,
+  'LEGACY_CHECK_BINDING_REQUIRED');
+ const rebound=appendInterfaceEvidenceLink(legacy,j,r,args);
+ assert.equal(interfaceEvidenceMatrix(rebound,j,r).checksWithReceipts,1);
+ assert.equal(rebound.links.length,2);
+ assert.equal(rebound.links[1].requirementSnapshot,
+  stale.edges.find(x=>x.edgeId==='motor-esc').checks[0].requirement);
+});
+test('changed check wording or edge endpoints invalidate old link without losing audit trail',()=>{
+ const r=rec(),j=appendInspectionObservation(startInspectionJournal(r),r,entry());
+ const args={observationId:'evt-0001',edgeId:'motor-esc',checkIndex:0,
+  rationale:'A visual connector comparison remains self-reported and untested.'};
+ const original=appendInterfaceEvidenceLink(startInterfaceEvidenceLinks(r),j,r,args);
+ assert.equal(interfaceEvidenceMatrix(original,j,r).checksWithReceipts,1);
+ for(const change of [
+  x=>x.links[0].requirementSnapshot='Hypothetical source requirement that is no longer used',
+  x=>x.links[0].edgeSignature='motor-drive:x500-esc20|x500-frame'
+ ]){
+  const historical=structuredClone(original);change(historical);
+  const m=interfaceEvidenceMatrix(historical,j,r);
+  assert.equal(m.checksWithReceipts,0);
+  assert.equal(m.edges.find(x=>x.edgeId==='motor-esc').checks[0].links[0].status,
+   'CHECK_DEFINITION_CHANGED');
+  const rebound=appendInterfaceEvidenceLink(historical,j,r,args);
+  assert.equal(interfaceEvidenceMatrix(rebound,j,r).checksWithReceipts,1);
+ }
+});
+test('malformed half-snapshot cannot be imported as linked evidence',()=>{
+ const r=rec(),j=appendInspectionObservation(startInspectionJournal(r),r,entry());
+ const links=appendInterfaceEvidenceLink(startInterfaceEvidenceLinks(r),j,r,
+  {observationId:'evt-0001',edgeId:'motor-esc',checkIndex:0,
+   rationale:'The MR30 visual observation is only a family-level hypothesis.'});
+ const forged=structuredClone(links);delete forged.links[0].edgeSignature;
+ assert.throws(()=>validateInterfaceEvidenceLinks(forged),/definition snapshot/);
+});
