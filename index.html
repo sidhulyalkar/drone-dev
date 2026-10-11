@@ -4,10 +4,10 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/><link rel="stylesheet" href="./feature_v16.css"/><link rel="stylesheet" href="./workspace_v17.css"/><link rel="stylesheet" href="./viewport_v18.css"/><link rel="stylesheet" href="./inspector_v19.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/><link rel="stylesheet" href="./dimensional_v11.css"/><link rel="stylesheet" href="./workflow_v12.css"/><link rel="stylesheet" href="./cad_v13.css"/><link rel="stylesheet" href="./registration_v15.css"/><link rel="stylesheet" href="./feature_v16.css"/><link rel="stylesheet" href="./workspace_v17.css"/><link rel="stylesheet" href="./viewport_v18.css"/><link rel="stylesheet" href="./inspector_v19.css"/><link rel="stylesheet" href="./source_catalog_v20.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / INSPECT / LEARN</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> AIRCRAFT STUDIO <span class="version">V1.9</span></div>
+ <div class="header-center"><span class="pulse-dot"></span> AIRCRAFT STUDIO <span class="version">V2.0</span></div>
  <div class="header-right"><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
 <nav class="workflow-v12" id="workflow-v12" aria-label="AeroForge workspaces">
@@ -230,6 +230,39 @@
     <div id="v14-connections" class="v06-findings"></div>
    </article>
   </div>
+
+  <details id="v20-source-catalog" class="v20-source-catalog">
+   <summary><span>Source catalog</span> <small>Documented SKUs, vendor specs & unresolved ordering checks</small></summary>
+   <div class="v20-content">
+    <header class="v20-header">
+     <div><span class="ref-kicker">V2.0 / MANUFACTURER-REFERENCE RESEARCH</span>
+      <h3>From concept to documented part.</h3>
+      <p>Choose a published manufacturer SKU, compare its exact variants and examine what's still required before using it in a real build. Listings are a dated research snapshot, not live product availability or a qualified bill of materials.</p>
+     </div><output id="v20-linked" class="v20-linked" aria-live="polite">No exact kit SKU linked</output>
+    </header>
+    <div class="v20-control-row">
+     <label>Manufacturer reference<select id="v20-primary" aria-label="Source catalog primary SKU"></select></label>
+     <div class="v20-actions">
+      <button type="button" id="v20-export">Export research evidence ↓</button>
+      <button type="button" id="v20-use">Link as research candidate</button>
+     </div>
+    </div>
+    <div class="v20-detail">
+     <div><strong id="v20-title"></strong><p id="v20-subtitle"></p><p id="v20-listing"></p>
+      <span class="v20-status" id="v20-status">Published reference, not fit-validated</span></div>
+     <div id="v20-facts" class="v20-facts"></div>
+    </div>
+    <details class="v20-holds"><summary>Required checks and source discrepancies</summary><ul id="v20-holds"></ul></details>
+    <div class="v20-source-footer"><a id="v20-official-source" target="_blank" rel="noopener noreferrer" href="https://holybro.com/products/px4-development-kit-x500-v2">Manufacturer reference ↗</a>
+     <span id="v20-reviewed"></span></div>
+    <p id="v20-feedback" role="status" aria-live="polite" class="v20-feedback">Exact SKU identities are useful for research; purchasing and flight remain unqualified.</p>
+    <details id="v20-compare-toggle" class="v20-comparison"><summary>Compare two published SKUs</summary>
+     <label>Second manufacturer reference<select id="v20-secondary"></select></label>
+     <div class="v20-compare-scroll"><table><thead><tr><th>Claim</th><th>Selected</th><th>Compared</th></tr></thead><tbody id="v20-compare-table"></tbody></table></div>
+     <p id="v20-compare-caption"></p>
+    </details>
+   </div>
+  </details>
 <p class="q-bottom-note">Research-only engineering evidence. The platform does not approve component purchasing, battery charging, propeller spin-up, bench energization or physical flight.</p>
  </section>
 
@@ -524,4 +557,4 @@
   This is a preview of source-derived tessellated geometry, not measured aircraft placement. Sha-256 identifies specific bytes but never authenticates source ownership, scale, axes, physical registration, rotor centers, swept disks or safety. Only source files that you are permitted to use should be converted or shared.
  </footer>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./inspector_ui_v19.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script></body></html>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./sourcing_ui_v20.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./inspector_ui_v19.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script><script type="module" src="./dimensional_ui_v11.mjs"></script><script type="module" src="./navigator_ui_v12.mjs"></script><script type="module" src="./cad_package_ui_v13.mjs"></script><script type="module" src="./registration_ui_v15.mjs"></script><script type="module" src="./feature_ui_v16.mjs"></script></body></html>

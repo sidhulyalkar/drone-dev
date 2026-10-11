@@ -281,6 +281,50 @@ test('a real-world candidate remains labeled research-only, never a qualified or
  await expect(page.locator('#af-v19-source-list')).toContainText('Unresolved');
  await expect(page.locator('#af-v19-status')).toContainText('NO VERIFIED SKU');
 });
+
+test('source SKU research separates a variant mismatch and allows only a matching X500 research reference',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#v20-source-catalog > summary').click();
+ await expect(page.locator('#v20-primary')).toBeVisible();
+ await page.locator('#v20-primary').selectOption('30200');
+ await expect(page.locator('#v20-status')).toContainText('blocking mismatch');
+ await expect(page.locator('#v20-use')).toBeDisabled();
+ await page.locator('#v06-kit-variant').selectOption('six_x');
+ await expect(page.locator('#v20-use')).toBeEnabled();
+ await page.locator('#v20-use').click();
+ await expect(page.locator('#v14-identity')).toContainText('source SKU 30200');
+ await expect(page.locator('#v20-linked')).toContainText('30200');
+ await expect(page.locator('#v20-feedback')).toContainText('RESEARCH ONLY');
+ await page.locator('#v06-kit-cells').selectOption('3');
+ await expect(page.locator('#v20-linked')).toContainText('No exact kit SKU linked');
+ await expect(page.locator('#v20-use')).toBeDisabled();
+});
+test('source catalog marks discontinued stacks without enabling kit-link action',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#v20-source-catalog > summary').click();
+ await page.locator('#v20-primary').selectOption('SB-F4V4-55-STACK');
+ await expect(page.locator('#v20-subtitle')).toContainText('MANUFACTURER DISCONTINUED');
+ await expect(page.locator('#v20-status')).toContainText('blocking mismatch');
+ await expect(page.locator('#v20-use')).toBeHidden();
+ await page.locator('.v20-holds > summary').click();
+ await expect(page.locator('#v20-holds')).toContainText('discontinued');
+ await expect(page.locator('#v20-official-source')).toHaveAttribute('href',/speedybee.com/);
+});
+test('two published kit variants can be compared and exported as unapproved research',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#v20-source-catalog > summary').click();
+ await page.locator('#v20-primary').selectOption('30189');
+ await page.locator('#v20-compare-toggle > summary').click();
+ await page.locator('#v20-secondary').selectOption('30200');
+ await expect(page.locator('#v20-compare-table')).toContainText('powerFamily');
+ const downloadPromise=page.waitForEvent('download');
+ await page.locator('#v20-export').click();
+ const downloaded=await downloadPromise;
+ expect(downloaded.suggestedFilename()).toContain('30189');
+});
 test.describe('small-screen workflow',()=>{
  test.use({viewport:{width:390,height:844}});
  test('navigation, dimensional input and source picker are usable on mobile',async({page})=>{

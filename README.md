@@ -1,9 +1,16 @@
-# AeroForge v1.9 · Contextual Drone Component Build Studio
+# AeroForge v2.0 · Source-Aware Drone Build Studio
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
 
+## New in v2.0: Source-Aware SKU Research
+
+The X500 Engineering workspace now has a compact, collapsed-by-default **Source catalog**. It records six exact manufacturer SKU identities: four Holybro X500 V2 kit controller/radio variants, the X500 V2 frame-kit SKU, and a SpeedyBee F405 V4 stack that the manufacturer lists as discontinued. Compare options and follow their official specification pages, review revision-specific unresolved interfaces, and export a dated research-only evidence packet.
+
+A compatible published X500 kit SKU can be linked as a **research reference** to the canonical aircraft record. Mismatched controller family and unsupported battery cell selection prevent linking. Changing an already-linked variant invalidates that link. No listed price is live, and no procurement, fit, wiring, or flight authority is granted by a SKU match.
+
+See [v2.0 Source SKU Catalog](docs/V20_SOURCE_SKU_CATALOG.md).
 ## New in v1.9: One Contextual Component Inspector
 
 Selecting a procedural part in the Build 3D viewer now opens a compact class-level inspector with current specifications, candidate alternatives re-screened through the full design engine, available source-backed research candidates, and **exact current-revision Assembly Copilot steps**. The detailed part browser and extra material are collapsed by default. Changing a catalog candidate updates the active aircraft and recalculates compatibility blockers without losing the part focus.

@@ -1,22 +1,28 @@
 import {qualifyKit,simulationHandoff,assemblyPacket} from './core/kit_v06.mjs';
 import {compileX500Record,attachX500Cad,compareX500Records} from './core/x500_record_v14.mjs';
 import {attachX500Registration} from './core/registration_v15.mjs';
+import {attachSourcingReference,findSourceSku} from './core/source_catalog_v20.mjs';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const config={variant:'six_c',power:'auto',batteryCells:4,batterySku:'',radioSku:'',receiverSku:'',chargerSku:'',cadImported:false,physicalInspected:false};
-let last=null,record=null,cadPreview=null,registration=null;
+let last=null,record=null,cadPreview=null,registration=null,sourcingSku=null;
 function file(text,name,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);}
 function show(){
  try{
  last=qualifyKit(config);
  const previous=record;
  record=compileX500Record(config);
+ if(sourcingSku){
+  try{record=attachSourcingReference(record,sourcingSku);}
+  catch{ sourcingSku=null; }
+ }
  if(cadPreview){
   try{record=registration?attachX500Registration(record,cadPreview,registration):attachX500Cad(record,cadPreview);}
   catch{cadPreview=null;registration=null;}
  }
  $('v14-identity').textContent=record.variant+' · '+record.graphStatus+
-  ' · local frame CAD '+(record.geometry.sourceHash?'linked but UNVERIFIED':'not linked');
+  ' · local frame CAD '+(record.geometry.sourceHash?'linked but UNVERIFIED':'not linked')+
+  ' · source SKU '+(record.sourceCatalogCandidate?.sku||'unresolved');
  $('v14-parts').innerHTML=Object.values(record.parts).map(p=>
   '<li>'+p.qty+' × '+esc(p.label)+' <small>['+esc(p.familyId)+'] · revision UNKNOWN · '+(p.sourceUrl?
    '<a target="_blank" rel="noopener noreferrer" href="'+esc(p.sourceUrl)+'">source ↗</a>':'source unresolved')+
@@ -46,11 +52,24 @@ function show(){
 }
 function init(){if(!$('v06-kit-variant'))return;
  const selectIds={variant:'v06-kit-variant',power:'v06-kit-power',batteryCells:'v06-kit-cells'};
- for(const [k,id] of Object.entries(selectIds)){$(id).value=config[k];$(id).addEventListener('change',e=>{config[k]=k==='batteryCells'?Number(e.target.value):e.target.value;show();});}
+ for(const [k,id] of Object.entries(selectIds)){$(id).value=config[k];$(id).addEventListener('change',e=>{
+  config[k]=k==='batteryCells'?Number(e.target.value):e.target.value;
+  if(sourcingSku&&(findSourceSku(sourcingSku)?.variant!==config.variant||config.batteryCells!==4))sourcingSku=null;
+  show();
+ });}
  const optional={batterySku:'v06-battery-sku',radioSku:'v06-radio-sku',receiverSku:'v06-rx-sku',chargerSku:'v06-charger-sku'};
  for(const [k,id] of Object.entries(optional))$(id).addEventListener('input',e=>{config[k]=e.target.value.trim();show();});
  for(const [k,id] of [['cadImported','v06-cad-flag'],['physicalInspected','v06-physical-flag']])$(id).addEventListener('change',e=>{config[k]=e.target.checked;show();});
- $('v14-download').onclick=()=>{if(record)file(JSON.stringify(record,null,2)+'\n',
+ window.addEventListener('aeroforge:sourcing-reference-selected',e=>{
+  const sku=e.detail?.sku;
+  if(typeof sku!=='string')return;
+  const item=findSourceSku(sku);
+  if(!item||item.group!=='complete-kit'||item.variant!==config.variant||config.batteryCells!==4){
+   $('v06-alert').textContent='Source research SKU rejected: resolve variant and 4S pack screening first.';return;
+  }
+  sourcingSku=sku;show();
+ });
+  $('v14-download').onclick=()=>{if(record)file(JSON.stringify(record,null,2)+'\n',
   'aeroforge-x500-revision-record-v14.json','application/json');};
  window.addEventListener('aeroforge:cad-visual-package-verified',e=>{
   const preview=e.detail?.preview;
