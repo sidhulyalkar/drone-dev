@@ -4,10 +4,10 @@
 <meta name="description" content="AeroForge: a modular 3D drone design and engineering screening studio."/>
 <link rel="stylesheet" href="./styles.css"/>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/></head><body>
+<link rel="stylesheet" href="./showcase_v07.css"/><link rel="stylesheet" href="./assembly_v08.css"/><link rel="stylesheet" href="./mission_lab_v09.css"/><link rel="stylesheet" href="./mission_v10.css"/></head><body>
 <header class="site-header">
  <div class="brand"><div class="brand-glyph"><span>✣</span></div><div><strong>AEROFORGE</strong><small>DESIGN / VERIFY / FLY</small></div></div>
- <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V0.9 · MISSION ARCHITECTURES</span></div>
+ <div class="header-center"><span class="pulse-dot"></span> CONFIGURATOR <span class="version">V1.0 · 3D MISSION SYSTEMS</span></div>
  <div class="header-right"><a href="https://github.com/sidhulyalkar/worcester-longboard" target="_blank" rel="noreferrer">Worcester DNA ↗</a><button id="export-header" class="primary small">Export design <span>↗</span></button></div>
 </header>
 <main>
@@ -226,7 +226,37 @@
   <p>Build around a real-world need, not only motor size. Explore six distinct concepts, adapt sensor and safety modules, compare architectures, and export source-aware engineering questions before committing to hardware.</p>
   </div><aside class="mission-v09-count"><strong>06</strong>EVERYDAY MISSION CONCEPTS<br/>40 MODULE CLASSES<br/>FOUR AIRFRAME TOPOLOGIES</aside></header>
  <div id="mission-v09-cards" class="mission-v09-cards" aria-label="Select a drone mission concept"></div>
- <div class="mission-v09-layout">
+ 
+ <section id="mission-v10" class="mission-v10" aria-label="Three-dimensional mission architecture studio">
+  <div class="mission-v10-top"><div><div class="mission-v10-label">v1.0 · 3D AIRCRAFT SYSTEMS</div><h3 id="mission-v10-title">Conceptual aircraft engineering scene</h3></div><div id="mission-v10-authority" class="mission-v10-authority">NORMALIZED / ILLUSTRATIVE / NOT CAD</div></div>
+  <div class="mission-v10-grid">
+   <div class="mission-v10-theater">
+    <div id="mission-v10-canvas" class="mission-v10-canvas"><div id="mission-v10-fallback" class="mission-v10-fallback">3D engine requires Three.js and WebGL. The 2D schematic below remains available.</div></div>
+    <div class="mission-v10-theater-controls">
+     <label for="mission-v10-explode">PART SEPARATION <input type="range" id="mission-v10-explode" min="0" max="100" value="0" step="1"/><output id="mission-v10-explode-value">0%</output></label>
+     <button type="button" id="mission-v10-reset">↺ Reassemble / Reset focus</button>
+     <span id="mission-v10-render-status" class="mission-v10-render-status">3D engine initializing; 2D fallback below</span>
+    </div>
+   </div>
+   <aside class="mission-v10-inspector"><h4>CLICK A COMPONENT TO INSPECT</h4>
+    <div id="mission-v10-part-list" class="mission-v10-parts"></div>
+    <div class="mission-v10-chosen"><b id="mission-v10-selected">Choose a module or rotor</b><span id="mission-v10-selected-status">UNVERIFIED REFERENCE GEOMETRY</span><div id="mission-v10-details"></div></div>
+   </aside>
+  </div>
+  <div id="mission-v10-stats" class="mission-v10-stats" role="status">Computing hypothetical mount plan</div>
+  <div class="mission-v10-work"><h4>ENGINEERING WORKLIST · EVIDENCE REQUIRED</h4>
+   <p>Every physical component needs a measured mounting envelope, exact hardware identity, source-backed connector/pinout, load and thermal assessment before the design can progress. This mission-specific worklist is separate from the v0.8 quad-only Assembly Copilot.</p>
+   <div id="mission-v10-worklist" class="mission-v10-worklist"></div>
+   <p id="mission-v10-unassigned" class="mission-v10-unassigned">Mount candidates have not been calculated.</p>
+   <div class="mission-v10-export">
+    <button type="button" id="mission-v10-export-layout">↓ Scene & mount layout JSON</button>
+    <button type="button" id="mission-v10-export-worklist">↓ Engineering handoff JSON</button>
+    <button type="button" id="mission-v10-export-md">↓ Printable assembly worklist</button>
+   </div>
+  </div>
+  <div class="mission-v10-caveat">GEOMETRY AUTHORITY: every coordinate is a dimensionless storyboard position, not manufacturer CAD. A visual fit, propeller spacing, estimated mount, completed checklist or generic simulator does not certify mechanical compatibility or authorize powering or flight.</div>
+ </section>
+<div class="mission-v09-layout">
   <article class="mission-v09-panel"><div class="mission-v09-panel-inner">
     <div class="mission-v09-hero"><div><h3 id="mission-v09-title">Mission design</h3><div id="mission-v09-subtitle" class="mission-v09-subtitle"></div></div><span id="mission-v09-topology" class="mission-v09-tag"></span></div>
     <div id="mission-v09-drawing" class="mission-v09-canvas" aria-label="Schematic conceptual drone silhouette"></div>
@@ -264,4 +294,4 @@
    <p id="mission-v09-action-status" role="status" aria-live="polite"></p>
  </footer>
 </section>
-</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script></body></html>
+</main><script type="module" src="./app.mjs"></script><script type="module" src="./engineering_view.mjs"></script><script type="module" src="./qualification_ui.mjs"></script><script type="module" src="./program_ui.mjs"></script><script type="module" src="./kit_ui_v06.mjs"></script><script type="module" src="./showcase_ui_v07.mjs"></script><script type="module" src="./assembly_ui_v08.mjs"></script><script type="module" src="./mission_lab_ui_v09.mjs"></script><script type="module" src="./mission_scene_ui_v10.mjs"></script></body></html>

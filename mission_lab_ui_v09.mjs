@@ -62,6 +62,7 @@ if(host){
   $('mission-v09-comparison').innerHTML='<div><b>'+escapeHTML(sc.name)+'</b><span>'+a.counts.modules+' module families · '+escapeHTML(sc.topology)+'</span></div><div><b>'+escapeHTML(SCENARIO_BY_ID[compareWith].name)+'</b><span>'+c.counts.right.modules+' module families · '+escapeHTML(SCENARIO_BY_ID[compareWith].topology)+'</span></div><p>Shared: '+c.shared.length+' · Only left: '+c.onlyLeft.length+' · Only right: '+c.onlyRight.length+'</p><small>Comparison is architectural only. More components is not inherently safer or better.</small>';
   $('mission-v09-baseline').disabled=!sc.baseline;
   $('mission-v09-baseline').textContent=sc.baseline?'Open nearest illustrative quad ('+sc.baseline+') ↗':'No legacy quad model for this topology';
+  window.dispatchEvent(new CustomEvent('aeroforge:mission-updated',{detail:{report:a}}));
  }
  $('mission-v09-cards').addEventListener('click',e=>{
   const b=e.target.closest('[data-mission-id]');if(!b)return;active=b.dataset.missionId;

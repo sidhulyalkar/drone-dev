@@ -16,6 +16,7 @@ jobs:
           node --check qualification_ui.mjs
           node --check engineering_view.mjs
           for file in core/*.mjs; do node --check "$file"; done
+          for file in *_ui_v*.mjs mission_3d_v10.mjs mission_scene_ui_v10.mjs; do if [ -f "$file" ]; then node --check "$file"; fi; done
       - name: Run engineering regression tests
         run: npm test
       - uses: actions/setup-python@v5

@@ -1,8 +1,14 @@
-# AeroForge v0.9 · Mission-Driven Drone Engineering Workbench
+# AeroForge v1.0 · Mission-Driven Drone Engineering Workbench
 
 ## v0.7: Exploded Assembly Showcase
 
 Section 13 adds an interactive exploded assembly and guided camera tour for every illustrative airframe preset. Each visually distinct rotor, motor, ESC, battery, flight stack, frame, camera and wiring group has selectable detail cards, subsystem filtering, speed/pause/step controls, camera easing and a 2D fallback if WebGL is missing. See [the technical guide](docs/V07_EXPLODED_SHOWCASE.md). The generated geometry is **schematic, not source-verified manufacturer CAD**, and is not a collision or flight certification.
+
+## New in v1.0: Interactive 3D Mission Systems
+
+**Section 15** now contains an interactive Three.js aircraft layout and part inspector for guarded quads, quads, hexacopters and a conceptual VTOL (quadplane-style lift/pusher hypothesis). Change the mission or optional modules to refresh the scene, separate components, inspect individual mount proposals and export a structured mission-specific assembly worklist. Every visualization is **dimensionless and schematic, not CAD**, and every electrical/physical value requiring a source remains `null`.
+
+Mount slots are illustrative, not evidence of compatibility. The separate v1.0 mission handoff does not promote hex/VTOL missions into the quad-only v0.8 Assembly Copilot. See [v1.0 3D Mission Systems](docs/V10_3D_MISSION_SYSTEMS.md).
 
 ## New in v0.9: Everyday Mission Architecture Studio
 
