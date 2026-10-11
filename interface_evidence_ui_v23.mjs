@@ -4,7 +4,7 @@ import {startInterfaceEvidenceLinks,reconcileInterfaceEvidenceLinks,appendInterf
 import {X500_PART_REFERENCES} from './core/interface_registry_v21.mjs';
 const host=document.getElementById('v22-inspection');
 if(host){
- let record=null,journal=null,links=null;
+ let record=null,journal=null,links=null,cadProposal=null;
  const make=(tag,text)=>{const n=document.createElement(tag);n.textContent=text??'';return n;};
  const panel=make('details'),head=make('summary','Interface evidence checklist · research only');
  panel.id='v23-checklist';
@@ -50,6 +50,11 @@ if(host){
    for(const c of edge.checks){
     const row=make('li',c.requirement+' · '+
      (c.currentEvidenceCount?'USER EVIDENCE LINKED, UNVERIFIED':'EVIDENCE MISSING'));
+    if(edge.edgeId==='frame-motor'&&c.checkIndex===1&&cadProposal?.schema==='aeroforge/x500-cad-mating-proposal/v2.4'){
+     row.append(make('p','Unverified dual-source CAD pose available: frame '+cadProposal.frame.sourceSha256.slice(0,12)+
+      ' / motor '+cadProposal.motor.sourceSha256.slice(0,12)+
+      '. Mounting datums remain unresolved; this does not count as inspection evidence.'));
+    }
     for(const l of c.links)row.append(make('p',l.observationId+' · '+l.status+
      (l.reviewRecorded?' · second-person review note':'')+' · '+l.rationale));
     ul.append(row);
@@ -86,7 +91,12 @@ if(host){
  });
  window.addEventListener('aeroforge:x500-record-updated',e=>{
   const r=e.detail?.record;if(r?.schema!=='aeroforge/x500-aircraft-record/v1.4')return;
+  const changed=record&&(record.revisionIdentity!==r.revisionIdentity||record.variant!==r.variant||record.selected.batteryCells!==r.selected.batteryCells);
+  if(changed)cadProposal=null;
   record=r;if(links)links=reconcileInterfaceEvidenceLinks(links,r);render();
+ });
+ window.addEventListener('aeroforge:cad-mating-proposal-updated',e=>{
+  cadProposal=e.detail?.proposal??null;render();
  });
  window.addEventListener('aeroforge:inspection-journal-updated',e=>{
   journal=e.detail?.journal??null;render();
