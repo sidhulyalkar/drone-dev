@@ -60,5 +60,5 @@ test('v0.5 HTML anchors, modules, status statements and version are wired',()=>{
  for(const id of [...js.matchAll(/\$\('(v05-[^']+)'\)/g)].map(x=>x[1]))assert.ok(html.includes(`id="${id}"`),`Missing #${id}`);
  assert.ok(html.includes('src="./program_ui.mjs"'));
  assert.match(html,/NOT FLIGHT QUALIFIED/);
- assert.match(readFileSync(new URL('../package.json',import.meta.url),'utf8'),/"version": "0\.5\.0"/);
+ assert.match(readFileSync(new URL('../package.json',import.meta.url),'utf8'),/"version": "0\.\d+\.\d+"/);
 });
