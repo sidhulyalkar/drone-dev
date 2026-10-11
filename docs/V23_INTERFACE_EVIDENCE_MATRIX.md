@@ -21,9 +21,9 @@ The ledger is a research association layer, **not cryptographically authenticate
 
 ## Still needed
 
-1. A collapsed check-level UI and explicit, consent-based save/export/import for association records.
+1. Manual browser/accessibility review of the new collapsed checklist, and optional explicit device persistence if needed.
 2. Recorded manufacturer pin-level drawings, polarity and independently checked reviewer artifacts.
 3. Genuine X500 frame STEP and motor CAD ingestion, hashes, source licenses and independently recorded mechanical datum comparisons.
 4. Physical assembly inspection and calibrated measurement by a qualified practitioner.
 
-**Current release scope:** core check-level association model + automated regression tests, not a flight qualification or physical-CAD validation.
+**Current release scope:** core check-level association model, collapsed interface checklist in Engineering, explicit local JSON link export/import, and automated regression tests. Links remain in the current browser session unless exported. This is not a flight qualification or physical-CAD validation.
