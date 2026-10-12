@@ -52,13 +52,14 @@ def recognize_obround(edges,radius,straight):
             "fastenerHoleIdentityVerified":False}
 
 def import_solids(source,role):
-    import cadquery as cq
     expected_name,expected_hash,expected_count=ORIGINAL[role]
     source=Path(source)
     require(source.is_file() and not source.is_symlink() and
             source.name==expected_name,"Original "+role+" STEP filename/file required")
     require(source.stat().st_size<=120*1024*1024 and
             fingerprint(source)==expected_hash,role+" original STEP bytes changed")
+    # Fail on wrong original bytes before loading optional heavy CAD packages.
+    import cadquery as cq
     imported=cq.importers.importStep(str(source))
     solids=[]
     for obj in imported.objects:
