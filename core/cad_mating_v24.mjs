@@ -53,9 +53,12 @@ export function proposeX500CadMating(framePreview,motorPreview,input){
  if(frame.sourceSha256===motor.sourceSha256)fail('Frame and motor must be independent STEP assets');
  if(!isObj(input))fail('Two-part datum observations required');
  const allowed=['frameMountKernelMm','motorMountKernelMm','axisMap','observer','datumNotes',
-  'sourceUnitsReviewed','framePatternMm','motorPatternMm','fastenerNotes'];
+  'sourceUnitsReviewed','framePatternMm','motorPatternMm','fastenerNotes','displayAxisNative'];
  if(Object.keys(input).some(k=>!allowed.includes(k)))fail('Unknown datum input');
  const matrix=signedAxisMatrix(input.axisMap);
+ const displayAxisNative=input.displayAxisNative??'+Z';
+ if(typeof displayAxisNative!=='string'||!/^[-+][XYZ]$/.test(displayAxisNative))
+  fail('Invalid render-only motor separation axis');
  const frameDatum=point(input.frameMountKernelMm,'frame mount');
  const motorDatum=point(input.motorMountKernelMm,'motor base mount');
  if(input.sourceUnitsReviewed!==true)fail('Explicit, self-declared source-unit inspection required');
@@ -74,6 +77,7 @@ export function proposeX500CadMating(framePreview,motorPreview,input){
   frame,motor,observer,datumNotes,fastenerNotes,sourceUnitsReviewed:'USER_ATTESTED_ONLY',
   registration:{frameMountKernelMm:frameDatum,motorMountKernelMm:motorDatum,
    motorToFrameAxisMap:[...input.axisMap],axisMatrix:matrix,
+   displaySeparationAxisNative:displayAxisNative,
    motorToFrameTranslationMm:translation,provenance:'USER_SELECTED_NOT_INDEPENDENTLY_REGISTERED'},
   patternHypotheses:{frameMm:patterns[0],motorMm:patterns[1],
    frameMinusMotorMm:round(patterns[0]-patterns[1]),
