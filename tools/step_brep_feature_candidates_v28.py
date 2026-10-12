@@ -43,7 +43,8 @@ def inspect_brep(path,expected_sha,max_solids=500,max_faces=30000):
         raise ValueError("Source size outside limits")
     if len(expected_sha)!=64 or any(c not in "0123456789abcdef" for c in expected_sha):
         raise ValueError("Expected lowercase SHA-256 required")
-    digest=hashlib.file_digest(path.open("rb"),"sha256").hexdigest()
+    with path.open("rb") as handle:
+        digest=hashlib.file_digest(handle,"sha256").hexdigest()
     if digest!=expected_sha:raise ValueError("Exact source STEP SHA-256 mismatch")
     try:
         import cadquery as cq
