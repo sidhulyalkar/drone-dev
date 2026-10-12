@@ -1,4 +1,8 @@
-# AeroForge v2.9 Draft · Source-Bound Hardware Research Studio
+# AeroForge v3.0 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.0: Actual BREP planar face adjacency
+
+Original-source CadQuery/OCP inspection now finds the two actual CAD planes sharing topological edges with all four outer frame cylindrical patterns: native **Y = 15.5 and 17.0 mm**, faces **105 and 103**, respectively. Critically, **no single motor axial plane** shares edges with all eight selected motor cylindrical faces, so there is no automatically inferred mounting seat or axial motor datum. The new local `tools/x500_brep_plane_adjacency_v30.py` tool records exact source face indices, adjacency and nearby planes, while the browser verifies both original STEP/GLB sources plus the v2.9 JSON byte digest before displaying its report. An optional eight-dot marker overlay highlights *frame-source* face coordinates in the 3D preview, without generating motor face markers or changing any safety flags. [Full v3.0 BREP inspection and workflow](docs/V30_X500_BREP_PLANAR_ADJACENCY.md).
 
 ## New in v2.9: BREP-source mounting pattern candidate review
 
