@@ -7,3 +7,11 @@ venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Manufacturer CAD and any locally generated derivatives remain private until license cleared.
+.cad-local/
+private-cad/
+*.step
+*.STEP
+*.stp
+*.STP
