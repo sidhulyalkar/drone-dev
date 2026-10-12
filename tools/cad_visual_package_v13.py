@@ -17,6 +17,12 @@ MAX_STEP_BYTES = 120 * 1024 * 1024
 MAX_GLB_BYTES = 90 * 1024 * 1024
 MAX_SOLIDS = 500
 MAX_TRIANGLES = 1200000
+# Bounded web preview tessellation calibrated against an actual locally uploaded
+# 244-solid X500 V2 STEP source: 0.25 mm/0.18 rad exceeded the triangle cap,
+# whereas 1.5 mm/0.5 rad fit under the existing limits without dropping solids.
+# These are display settings, emphatically not dimensional metrology tolerances.
+PREVIEW_LINEAR_DEFLECTION_MM = 1.5
+PREVIEW_ANGULAR_DEFLECTION_RAD = 0.5
 
 
 def sha256_file(path):
@@ -88,6 +94,9 @@ def build_manifest(source, glb, *, expected_sha, revision, url, license_note,
             "sourceUnitsDeclared": "mm (STEP importer assumption, NOT independently audited)",
             "scaleFromKernelToGLTF": 0.001, "coordinateFrame": "CAD_NATIVE_UNREGISTERED",
             "solidCount": solids, "triangleCount": triangles,
+            "tessellation": {"linearDeflectionMm": PREVIEW_LINEAR_DEFLECTION_MM,
+                             "angularDeflectionRad": PREVIEW_ANGULAR_DEFLECTION_RAD,
+                             "purpose": "WEB_PREVIEW_NOT_DIMENSIONAL_METROLOGY"},
             "sourceAabbKernelMm": check_bounds(source_bounds)},
         "requiredEvidence": [
             "Confirm manufacturer revision and license before sharing derivative meshes",
@@ -133,7 +142,7 @@ def convert(source, glb, *, expected_sha, revision, url, license_note):
         check_bounds([lower, upper])
         bounds_min = [min(a, b) for a, b in zip(bounds_min, lower)]
         bounds_max = [max(a, b) for a, b in zip(bounds_max, upper)]
-        vertices, triangles = solid.tessellate(0.25, 0.18)
+        vertices, triangles = solid.tessellate(PREVIEW_LINEAR_DEFLECTION_MM, PREVIEW_ANGULAR_DEFLECTION_RAD)
         if not vertices or not triangles:
             continue
         total_faces += len(triangles)
