@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {verifyCadPairViewerAssets} from './core/cad_pair_view_guard_v25.mjs';
 export function createCadPairViewer(host){
  if(!host)throw Error('Missing paired CAD host');
  const scene=new THREE.Scene();scene.background=new THREE.Color(0x101c24);
@@ -36,6 +37,8 @@ export function createCadPairViewer(host){
   if(proposal?.schema!=='aeroforge/x500-cad-mating-proposal/v2.4'||
    proposal.mechanicalFitApproved!==false||proposal.independentlyQualified!==false)
    throw Error('Unverified two-part pose is required');
+  await verifyCadPairViewerAssets(frameBytes,motorBytes,proposal);
+  if(dead)return;
   const [frame,motor]=await Promise.all([parse(frameBytes),parse(motorBytes)]);
   if(dead)return;
   // Keep each file's own GLB mesh geometry and transform; no inferred components.
