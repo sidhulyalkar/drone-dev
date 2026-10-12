@@ -85,6 +85,7 @@ def frame_obround_wires(solid,candidate):
         located=[]
         for wire_index,wire in enumerate(planar.Wires()):
             if wire.wrapped.IsSame(outer):continue
+            require(wire.IsClosed(),"Frame loop not topologically closed")
             edges=wire.Edges()
             segments=[]
             for edge in edges:
@@ -123,6 +124,14 @@ def frame_obround_wires(solid,candidate):
                              candidate["centerTransverseMm"])
             require(near(radial,8.75,.02),"Actual slot centers moved in source CAD")
         observations.extend(located)
+    # Both physical plate faces must describe the very same four obround
+    # transverse centers; a pattern coincidence on only one side is insufficient.
+    for cylinder_id in candidate["supportingFaceIndices"]:
+        twins=[x for x in observations if x["selectedCylinderFaceIndex"]==cylinder_id]
+        require(len(twins)==2 and
+                math.dist([twins[0]["nativeCenterMm"][i] for i in (0,2)],
+                          [twins[1]["nativeCenterMm"][i] for i in (0,2)])<.002,
+                "Source obround contours disagree across plate thickness")
     return {"id":candidate["id"],"sourceSolidIndex":candidate["solidIndex"],
             "shapeFamily":"FOUR_OBROUND_SLOT_CONTOURS",
             "sourcePlaneWireContours":observations,"planeFaceIndices":[105,103],
@@ -230,6 +239,12 @@ def build(frame_step,motor_step,candidates_path,topology_path):
     for report in (cand,topo):
         for key in ("procurementApproved","powerApproved","flightApproved"):
             require(report[key] is False,"Report asserts unauthorized "+key)
+    require(cand.get("candidateCount")==5 and topo.get("candidateCount")==5 and
+            topo.get("topologicalSharedEdgesTested") is True and
+            topo.get("verifiedPhysicalMountingFaceCount")==0 and
+            topo.get("verifiedPhysicalFastenerHoleCount")==0 and
+            all(topo.get(k) is False for k in ("tolerancedFitTested","collisionCertified")),
+            "Unsupported CAD topology result or claimed physical qualification")
     require(len(cand["candidates"])==5 and len(topo["candidates"])==5,
             "Incomplete candidate evidence family")
     loaded={"frame":import_solids(frame_step,"frame"),"motor":import_solids(motor_step,"motor")}
