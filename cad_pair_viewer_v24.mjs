@@ -23,6 +23,7 @@ export function createCadPairViewer(host){
  const models=new THREE.Group();scene.add(models);
  const axes=new THREE.AxesHelper(.1);models.add(axes);
  const datums=new THREE.Group();scene.add(datums);
+ const planeTopologyDots=new THREE.Group();scene.add(planeTopologyDots);
  const loader=new GLTFLoader();
  let dead=false,raf=0,activeProposal=null,motorRoot=null,separationMm=0,markersVisible=true;
  function resize(){
@@ -106,6 +107,48 @@ export function createCadPairViewer(host){
   }
   return pose;
  }
+ function setTopologyEvidence(review){
+  if(!activeProposal)throw Error('Load an original-source mating study first');
+  if(review?.schema!=='aeroforge/x500-plane-topology-browser-review/v3.0'||
+    review.authority!=='LOCAL_BREP_EDGE_ANALYSIS_REPORTED_NOT_INDEPENDENTLY_VERIFIED'||
+    review.mechanicalFitApproved!==false||review.flightApproved!==false||
+    review.candidates?.length!==5||
+    activeProposal.frame?.sourceSha256!==X500_SOURCE_OBSERVATIONS_V28.frame.sha256||
+    activeProposal.motor?.sourceSha256!==X500_SOURCE_OBSERVATIONS_V28.motor.sha256)
+    throw Error('Only matching original-source unqualified BREP plane evidence is displayable');
+  const points=[];
+  for(const c of review.candidates){
+   if(c.role!=='frame')continue; // motor has no established shared axial plane
+   if(c.sharedPlanarFaces?.length!==2||
+     !['frame-quadrant-nn','frame-quadrant-np','frame-quadrant-pp','frame-quadrant-pn'].includes(c.id))
+    throw Error('Invalid frame plane landmark family');
+   const quadrant={
+    'frame-quadrant-nn':[-176.876,-176.876],
+    'frame-quadrant-np':[-176.876,176.876],
+    'frame-quadrant-pp':[176.876,176.876],
+    'frame-quadrant-pn':[176.876,-176.876],
+   }[c.id];
+   for(const plane of c.sharedPlanarFaces){
+    if(![15.5,17].includes(plane.axialNativeCoordinateMm)||
+       plane.geometryIsPhysicalMount!==false)
+      throw Error('Source BREP plane evidence claims a physical mate');
+    points.push({position:[quadrant[0]/1000,plane.axialNativeCoordinateMm/1000,quadrant[1]/1000],
+     lower:plane.axialNativeCoordinateMm===15.5});
+   }
+  }
+  if(points.length!==8)throw Error('Expected exactly eight unqualified frame planar markers');
+  for(const object of planeTopologyDots.children){object.geometry?.dispose();object.material?.dispose();}
+  planeTopologyDots.clear();
+  for(const point of points){
+   const marker=new THREE.Mesh(new THREE.SphereGeometry(.003,12,8),
+    new THREE.MeshBasicMaterial({color:point.lower?0xf6a75d:0xb8a6fa,depthTest:false}));
+   marker.position.set(...point.position);
+   marker.renderOrder=4;planeTopologyDots.add(marker);
+  }
+  return {sourcePlanarMarkers:points.length,sourceFrameOnly:true,
+   motorMatingPlaneLocated:false,physicalFitApproved:false,
+   legend:'Orange = native Y 15.5 mm; violet = Y 17.0 mm. Both source-only planar faces, NOT actual mating approvals.'};
+ }
  function setSeparation(value){
   if(dead||!activeProposal)throw Error('Load a valid CAD research proposal first');
   // Reject invalid values BEFORE changing a working render state.
@@ -125,7 +168,7 @@ export function createCadPairViewer(host){
   raf=requestAnimationFrame(draw);
  }
  draw();
- return {load,setSeparation,setDatumMarkersVisible,dispose(){
+ return {load,setSeparation,setDatumMarkersVisible,setTopologyEvidence,dispose(){
   if(dead)return;dead=true;cancelAnimationFrame(raf);observer?.disconnect();
   const geometries=new Set(),materials=new Set();
   models.traverse(o=>{
@@ -137,6 +180,8 @@ export function createCadPairViewer(host){
    dot.geometry?.dispose();dot.material?.dispose();
   }
   datums.clear();
+  for(const dot of planeTopologyDots.children){dot.geometry?.dispose();dot.material?.dispose();}
+  planeTopologyDots.clear();
   axes.geometry.dispose();axes.material.dispose();
   orbit.dispose();renderer.dispose();renderer.domElement.remove();
  }};
