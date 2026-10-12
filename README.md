@@ -1,4 +1,10 @@
-# AeroForge v2.8 Draft · Source-Bound Hardware Research Studio
+# AeroForge v2.9 Draft · Source-Bound Hardware Research Studio
+
+## New in v2.9: BREP-source mounting pattern candidate review
+
+The actual 244-solid X500 V2 frame and four-solid AIR2216II motor CAD files now support a reproducible **five-candidate BREP face-pattern research report**. Four outer-frame cylindrical-face quartets have native X/Z centers at approximately (±176.876, ±176.876) mm and a **19 mm diagonal, not a 19 mm square side**. The motor CAD shows two separate opposite cylindrical-face pairs spanning **16 and 19 mm**. These patterns remain **unclassified geometry**, not certified fastener holes or demonstrated compatibility.
+
+The local `tools/x500_mount_feature_candidates_v29.py` tool builds a compact report from both complete original-source BREP inventories and refuses incomplete/mismatched source fingerprints. In Engineering, upload the private v2.9 report after verifying both STEP + GLB packages, inspect five patterns in the collapsed panel, and optionally copy only transverse native coordinates to a research draft. The missing along-axis mating plane must be independently supplied by the reviewer. No source mesh or STEP binary is committed. [See the v2.9 BREP review guide](docs/V29_X500_MOUNT_FEATURE_REVIEW.md).
 
 ## New in v2.8: Original source files imported and visualized
 
