@@ -49,3 +49,16 @@
 #cad-v31-contour-review small{display:block;margin:10px 0;line-height:1.45}
 #cad-v31-copy-transverse{max-width:100%;white-space:normal;text-align:left}
 @media(max-width:600px){#cad-v31-contour-review{padding:9px}}
+
+/* v3.2 native-plane candidate solver, intentionally subordinate to source evidence. */
+#cad-v32-planar-fit{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v32-planar-fit>summary{cursor:pointer;font-weight:650}
+#cad-v32-planar-fit .cad-v32-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0}
+#cad-v32-planar-fit label{display:flex;flex-direction:column;gap:7px;font-size:.85rem}
+#cad-v32-planar-fit select,#cad-v32-planar-fit input[type=range]{width:100%;max-width:100%;box-sizing:border-box}
+#cad-v32-planar-fit output{font-variant-numeric:tabular-nums}
+#cad-v32-planar-diagram{display:block;width:min(100%,460px);height:auto;margin:12px auto;border:1px solid #6c8592;border-radius:9px;background:#101d2a}
+#cad-v32-planar-fit small{display:block;margin:8px 0;line-height:1.5}
+#cad-v32-nominal-summary{font-size:.9rem;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#cad-v32-export{max-width:100%;white-space:normal}
+@media(max-width:600px){#cad-v32-planar-fit{padding:9px}}
