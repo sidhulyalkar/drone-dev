@@ -26,6 +26,14 @@ Those names are identity hints for choosing the right published files, **not evi
 7. Create the proposed transform; observe preliminary AABB screen and mount-pattern discrepancy; optionally view the two CAD-derived meshes together and export the JSON research proposal.
 8. The unverified CAD proposal appears next to the unresolved `frame-motor:1` checklist item but **does not increment recorded inspection counts**. A change to the proposed values clears the rendered pose/export. An aircraft configuration change clears the checklist's association.
 
+## v2.5 follow-up: Source identity at render time and aircraft-revision scoping
+
+The v2.4 proposal is now associated with the active canonical X500 record at the moment it is created. The association stores the full `revisionIdentity`, controller variant and battery series. Only a proposal with a matching `aircraftScope` and unchanged source fingerprints may appear in the open `frame-motor:1` evidence checklist. An old or unscoped proposal never counts as current, and switching kit variant clears the in-tab proposal and disables its export. The locally verified source files can be reused, but the **datum proposal must be explicitly recreated**.
+
+In `core/cad_pair_view_guard_v25.mjs`, the 3D viewer now independently rechecks the two in-memory GLB byte hashes against those recorded in the selected proposal **before** parsing the source meshes. Swapped, altered or unrelated mesh buffers fail closed even if a previous UI check had succeeded.
+
+The guard is a second *local identity check*, not a trusted manufacturer signature or independent dimensional validation. It does not grant mechanical fit, purchasing, energizing or flight authority. Node regression tests cover both the scope invalidation and GLB mutation cases; browser tests exercise variant-swapping after a self-reported pose has been created.
+
 ## Engineering math
 
 Let `p_f` be the chosen frame mounting point in frame-native millimetres, `p_m` the motor's mounting origin, and `R` a **right-handed signed-axis permutation**. The proposed motor position in the frame-native axes is
