@@ -3,7 +3,7 @@
  * Does not persist binary files, and never grants mechanical or flight authority.
  */
 import {verifyCadPackage,validateCadManifest} from './core/cad_package_v13.mjs';
-import {proposeX500CadMating} from './core/cad_mating_v24.mjs';
+import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
 if(host){
  const el=(tag,label='')=>{const n=document.createElement(tag);n.textContent=label;return n;};
@@ -68,7 +68,7 @@ if(host){
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
  panel.append(heading,lead,fileGrid,controls,form,viewButton,viewerHost,result,warning);host.append(panel);
- let verified=null,proposal=null,viewer=null,token=0;
+ let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
   proposal=null;exportBtn.disabled=true;viewButton.disabled=true;result.textContent='No current mating proposal. Reevaluate changed values.';
@@ -120,12 +120,13 @@ if(host){
   try{
    if(!verified)throw Error('First verify two original source packages');
    const x=Object.fromEntries(Object.entries(inputMap).map(([key,input])=>[key,input.value]));
-   proposal=proposeX500CadMating(verified.frame.preview,verified.motor.preview,{
+   const proposed=proposeX500CadMating(verified.frame.preview,verified.motor.preview,{
     frameMountKernelMm:coords(x.frameMountKernelMm),motorMountKernelMm:coords(x.motorMountKernelMm),
     axisMap:axis.value.split(','),observer:x.observer,datumNotes:x.datumNotes,
     sourceUnitsReviewed:units.checked,framePatternMm:Number(x.framePatternMm),
     motorPatternMm:Number(x.motorPatternMm),fastenerNotes:x.fastenerNotes
    });
+   proposal=scopeX500CadMating(proposed,aircraftRecord);
    result.textContent='Source fingerprints: frame '+proposal.frame.sourceSha256+' / motor '+proposal.motor.sourceSha256+
     '\nHypothesis translation (mm): '+proposal.registration.motorToFrameTranslationMm.join(', ')+
     '\nMount hole spacing difference (mm): '+proposal.patternHypotheses.frameMinusMotorMm+
@@ -145,6 +146,8 @@ if(host){
   try{
    viewer?.dispose();viewer=null;
    const {createCadPairViewer}=await import('./cad_pair_viewer_v24.mjs');
+   if(!proposal||!verified||!cadMatingAppliesToRecord(proposal,aircraftRecord))
+    throw Error('Aircraft selection changed before CAD preview could start');
    viewerHost.hidden=false;
    viewer=createCadPairViewer(viewerHost);
    await viewer.load(verified.frame.glbBytes,verified.motor.glbBytes,proposal);
@@ -153,5 +156,15 @@ if(host){
    result.textContent+='\n3D preview unavailable: '+err.message;
   }
  });
+ window.addEventListener('aeroforge:x500-record-updated',e=>{
+  const incoming=e.detail?.record;
+  if(incoming?.schema!=='aeroforge/x500-aircraft-record/v1.4')return;
+  aircraftRecord=incoming;
+  if(proposal&&!cadMatingAppliesToRecord(proposal,incoming)){
+   clearProposal();
+   verifyStatus.textContent='Aircraft selection changed. CAD pose evidence was invalidated; source files stay locally verified.';
+  }
+ });
+ window.dispatchEvent(new Event('aeroforge:x500-record-requested'));
  window.addEventListener('beforeunload',()=>viewer?.dispose(),{once:true});
 }
