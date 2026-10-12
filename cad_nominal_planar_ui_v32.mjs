@@ -66,7 +66,6 @@ export function createX500NominalFitPanel(){
   diagram.append(axes);
   for(const match of chosen.fourIndividualSlotMatches){
    const relative=[match.slotCenterNativeMm[0]-center[0],match.slotCenterNativeMm[1]-center[1]];
-   const unit=Math.hypot(...relative);
    const angle=Math.atan2(-relative[1],relative[0])*180/Math.PI;
    const [sx,sy]=mapped(relative);
    const rect=svg('rect',{x:-3.65*scale,y:-2.9*scale,width:7.3*scale,height:5.8*scale,
@@ -83,10 +82,11 @@ export function createX500NominalFitPanel(){
    const dot=svg('circle',{cx:mx,cy:my,r:2.2,fill:'#f8c4b9'});
    diagram.append(rect,connector,circle,dot);
   }
-  diagram.append(svg('text',{x:16,y:24,fill:'#a9cbd5','font-size':12})).textContent=
-   'Frame native X →  |  Z ↑  |  mm';
-  diagram.append(svg('text',{x:16,y:407,fill:'#c2d3d9','font-size':12})).textContent=
-   'SOURCE-NATIVE 2D STUDY • NO VERIFIED MOUNT';
+  const topLabel=svg('text',{x:16,y:24,fill:'#a9cbd5','font-size':12});
+  topLabel.textContent='Frame native X →  |  Z ↑  |  mm';diagram.append(topLabel);
+  const bottomLabel=svg('text',{x:16,y:407,fill:'#c2d3d9','font-size':12});
+  bottomLabel.textContent='SOURCE-NATIVE 2D STUDY • NO VERIFIED MOUNT';
+  diagram.append(bottomLabel);
  }
  function solve(){
   if(!evidence)return;
