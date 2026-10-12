@@ -76,7 +76,7 @@ if(host){
  const featureSelectLabel=el('label','Select the actual source-axis pattern for inspection');
  featureSelectLabel.append(featureSelect);
  const featureReadout=el('p','No CAD feature candidate selected');
- const copyCandidate=el('button','Use transverse coordinates in draft (axial position still required)');
+ const copyCandidate=el('button','Use original pattern center as research origin (NOT a confirmed hole center)');
  copyCandidate.type='button';copyCandidate.id='cad-v29-copy-transverse';
  const featureCaution=el('small','Draft coordinate transfer deliberately leaves the cylinder AXIAL coordinate blank. Independently inspect the actual mounting surface before entering that value; no fit is certified.');
  featurePanel.append(featureSelectLabel,featureReadout,copyCandidate,featureCaution);
@@ -148,7 +148,7 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
@@ -231,6 +231,10 @@ if(host){
    }
    verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview};build.disabled=false;
    contourPanel.hidden=!contourReview;
+   // A v2.9 half-cylinder axis pattern center is not a frame slot center.
+   // Once exact v3.1 contours are available, prevent using the ambiguous v2.9
+   // centroid as if it represented an individual mounting hole.
+   copyCandidate.disabled=Boolean(contourReview);
    contourChoice.replaceChildren();
    if(contourReview){
     contourSummary.textContent='Exact original BREP: 16 frame obround contours (5.8 × 7.3 mm), four motor 2.5 mm circular passages with 2.3 mm wall extent. No thread or fit qualifications.';
