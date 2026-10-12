@@ -109,9 +109,25 @@ class TestGenuineIntakeContracts(unittest.TestCase):
     def test_failed_second_conversion_never_publishes_partial_pair(self):
         src=self.call_preflight()
         dest=self.path/"private-result"
-        with patch.object(intake,"convert",side_effect=[Path("placeholder"),RuntimeError("motor CAD failed")]):
-            with self.assertRaises((KeyError,FileNotFoundError,RuntimeError)):
+        calls=[]
+        def first_pass_then_motor_failure(source,glb,**kwargs):
+            calls.append(source.name)
+            if len(calls)==2:
+                raise RuntimeError("motor CAD failed after successful frame conversion")
+            glb.write_bytes(b"glTF"+b"x"*32)
+            manifest=glb.with_suffix(".visual-package.json")
+            manifest.write_text(json.dumps({
+                "source":{"sha256":kwargs["expected_sha"],"fileName":source.name},
+                "mesh":{"fileName":glb.name,"sha256":hashlib.sha256(glb.read_bytes()).hexdigest()},
+                "qualification":{"manufacturerAuthenticated":False,"flightReady":False},
+                "conversion":{"solidCount":1,"triangleCount":1,
+                              "sourceAabbKernelMm":{"min":[0,0,0],"max":[3,3,3]}}
+            }))
+            return manifest
+        with patch.object(intake,"convert",side_effect=first_pass_then_motor_failure):
+            with self.assertRaisesRegex(RuntimeError,"motor CAD failed"):
                 intake.convert_pair(self.frame,self.motor,src,dest,self.lic)
+        self.assertEqual(calls,[self.frame.name,self.motor.name])
         self.assertFalse(dest.exists())
         self.assertFalse(list(self.path.glob(".aeroforge-cad-intake-*")))
 
