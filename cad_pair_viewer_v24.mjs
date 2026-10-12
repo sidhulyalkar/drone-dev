@@ -101,6 +101,8 @@ export function createCadPairViewer(host){
  }
  function setSeparation(value){
   if(dead||!activeProposal)throw Error('Load a valid CAD research proposal first');
+  // Reject invalid values BEFORE changing a working render state.
+  deriveCadPairInspectionPose(activeProposal,value);
   separationMm=value;
   return updateInspectionPose();
  }
