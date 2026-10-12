@@ -50,7 +50,7 @@ function intakeReport(frame,motor){
  const conversion=(fixture)=>({
   glbName:fixture.manifest.mesh.fileName,
   glbSha256:fixture.manifest.mesh.sha256,
-  visualManifestName:fixture.manifest.mesh.fileName.replace(/\\.glb$/i,'.visual-package.json'),
+  visualManifestName:fixture.manifest.mesh.fileName.replace(/\.glb$/i,'.visual-package.json'),
   solidCount:fixture.manifest.conversion.solidCount,
   triangleCount:fixture.manifest.conversion.triangleCount,
   unreviewedGeometry:true
