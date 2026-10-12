@@ -47,6 +47,20 @@ The 3D renderer uses the resulting `R` and `T_mm / 1000` on the **locally genera
 
 The conservative axis-aligned bounding box comparison uses just source AABBs and this proposed transform. It is only a broad-phase review cue, not a mesh interference proof. AABB overlap is not a collision; disjoint AABBs do not validate a mating surface. The 16 vs 19 mm published hole-pattern alternatives are kept visible as **revision-dependent references**, not manufacturing tolerances. The difference between two entered hole-pattern hypotheses is never translated to `PASS` or `FIT`.
 
+## v2.6: Inspection-first 3D viewer
+
+After verifying two real local source packages and entering inspected mounting datums:
+
+- Click **Preview two source meshes in 3D**. Frame geometry stays fixed in its source-native frame; the motor receives the declared right-handed motor-to-frame transform.
+- Distinct frame and motor datum markers show the two *user-selected* mating points, rather than suggesting that a rounded nominal dimension is a measured mounting hole.
+- **Visual motor separation** from 0 to 100 mm slides the displayed motor along its assumed motor-native positive Z axis, transformed into the frame's native axes. This is intentionally labeled display-only. It does **not** edit the recorded assembly transform, any source coordinates or procurement/flight qualification state.
+- The datum markers can be hidden to make the mesh easier to inspect. The viewer remains usable without any exploded separation.
+- Any edited source files, annotation fields or aircraft revision dismisses the old 3D preview and disables export until a valid scoped proposal is reconstructed.
+
+The pure `deriveCadPairInspectionPose` contract verifies that axis mapping, 3×3 rotation, translation and selected mounting datums agree; forged approval flags, reflected transforms, nonfinite measurements and out-of-range separations fail closed. The browser viewer independently checks the GLB hashes again before parsing either mesh. Regression tests cover the numerical datum transform and the display-only separation contract.
+
+**Visual-only caveat:** motor positive Z is a user's *coordinate assumption*, not a verified motor-shaft direction, fastener datum, or mount normal. Rendered separation does not establish a physical clearance; even an exact rendered coincidence cannot prove real mechanical compatibility.
+
 ## QA and next milestone
 
 Pure regression coverage checks both source digests are required, non-reflecting axis maps, finite coordinates, malformed registration, invalid manufacturer/approval claims, tentative transformed envelopes and all-false qualification flags. Playwright covers the dual-file hashing flow, proposed research export and invalidation, plus rejection of an altered local original STEP.
