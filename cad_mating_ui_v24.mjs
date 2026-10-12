@@ -11,6 +11,11 @@ if(host){
  const panel=el('details'),heading=el('summary','20 / Frame ↔ motor CAD registration study');
  panel.id='cad-v24-pair';panel.className='cad-v24-pair';
  const lead=el('p','Verify BOTH original STEP files against their local GLB manifests, then enter actual inspected frame/motor mounting coordinates. No coordinates or mounting dimensions are prefilled. Filenames and hashes do not authenticate the manufacturer; no physical fit is approved.');
+ const officialSourceLink=el('p');
+ const officialAnchor=el('a','Open official Holybro X500 V2 frame + motor STEP downloads ↗');
+ officialAnchor.href='https://docs.holybro.com/drone-development-kit/px4-development-kit-x500v2/download';
+ officialAnchor.target='_blank';officialAnchor.rel='noopener noreferrer';
+ officialSourceLink.append(officialAnchor);
  const fileGrid=el('div');fileGrid.className='cad-v24-files';
  const parts={};
  function picker(label,accept){
@@ -84,7 +89,7 @@ if(host){
  visualControls.append(separationLabel,markerLabel,visualWarning);
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,fileGrid,receiptLabel,controls,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,controls,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
