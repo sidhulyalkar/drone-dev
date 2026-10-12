@@ -9,6 +9,7 @@ import {x500RightHandedAxisOptions} from './core/cad_orientation_options_v28.mjs
 import {checkX500MountCandidates} from './core/x500_mount_feature_review_v29.mjs';
 import {reviewX500PlaneTopology} from './core/x500_brep_topology_review_v30.mjs';
 import {reviewX500ContourGroups} from './core/x500_brep_contour_review_v31.mjs';
+import {createX500NominalFitPanel} from './cad_nominal_planar_ui_v32.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
 if(host){
@@ -136,9 +137,10 @@ if(host){
  markerLabel.append(markerToggle,document.createTextNode(' Show unverified mounting datum markers'));
  const visualWarning=el('small','The preview slides along the user-selected motor-native signed axis, which is NOT a verified shaft axis. Research registration and approval flags never change.');
  visualControls.append(separationLabel,markerLabel,visualWarning);
+ const nominalFitUI=createX500NominalFitPanel();
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -148,7 +150,7 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;nominalFitUI.reset();copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
@@ -179,7 +181,7 @@ if(host){
   return {preview,glbBytes};
  }
  verify.addEventListener('click',async()=>{
-  const ticket=++token;verified=null;build.disabled=true;clearProposal();verify.disabled=true;
+  const ticket=++token;verified=null;build.disabled=true;nominalFitUI.reset();clearProposal();verify.disabled=true;
   verifyStatus.textContent='Hashing frame and motor STEP/GLB files locally…';
   try{
    const frame=await load('Frame',parts.frame);if(ticket!==token)return;
@@ -230,6 +232,7 @@ if(host){
     if(ticket!==token)return;
    }
    verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview};build.disabled=false;
+   if(contourReview)nominalFitUI.setEvidence(contourReview);
    contourPanel.hidden=!contourReview;
    // A v2.9 half-cylinder axis pattern center is not a frame slot center.
    // Once exact v3.1 contours are available, prevent using the ambiguous v2.9
