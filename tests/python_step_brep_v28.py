@@ -15,11 +15,10 @@ class Point:
     def Y(self):return self.xyz[1]
     def Z(self):return self.xyz[2]
 class Cylinder:
-    class Axis:
+    class AxisData:
         def Location(self):return Point(1150,732,0)
         def Direction(self):return Point(1,0,0)
-    def Axis(self):return self.AxisType()
-    AxisType=Axis
+    def Axis(self):return self.AxisData()
     def Radius(self):return 2
 
 class TestBrepCandidates(unittest.TestCase):
