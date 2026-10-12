@@ -6,6 +6,7 @@ import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {verifyCadPairViewerAssets} from './core/cad_pair_view_guard_v25.mjs';
 import {deriveCadPairInspectionPose} from './core/cad_pair_pose_v26.mjs';
+import {X500_SOURCE_OBSERVATIONS_V28} from './core/x500_real_source_observations_v28.mjs';
 export function createCadPairViewer(host){
  if(!host)throw Error('Missing paired CAD host');
  const scene=new THREE.Scene();scene.background=new THREE.Color(0x101c24);
@@ -43,6 +44,12 @@ export function createCadPairViewer(host){
   if(dead)return;
   const [frame,motor]=await Promise.all([parse(frameBytes),parse(motorBytes)]);
   if(dead)return;
+  // For the exact two user-uploaded STEP fingerprints the two frame plates
+  // were observed at native Y=0 and Y=30. Set only the viewer camera up axis;
+  // never rotate original mesh coordinates or assert a calibrated FRD transform.
+  const matchingLocalSource=proposal.frame?.sourceSha256===X500_SOURCE_OBSERVATIONS_V28.frame.sha256&&
+    proposal.motor?.sourceSha256===X500_SOURCE_OBSERVATIONS_V28.motor.sha256;
+  camera.up.set(0,matchingLocalSource?1:0,matchingLocalSource?0:1);
   // Keep each file's own GLB mesh geometry and transform; no inferred components.
   const frameRoot=frame.scene;motorRoot=motor.scene;
   frameRoot.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshStandardMaterial({
