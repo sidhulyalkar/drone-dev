@@ -15,3 +15,10 @@ private-cad/
 *.STEP
 *.stp
 *.STP
+
+# Do not accidentally commit source-derived X500 meshes or local receipt outputs.
+x500v2-frame.glb
+AIR2216II_Motor_3D.glb
+x500v2-frame.visual-package.json
+AIR2216II_Motor_3D.visual-package.json
+x500-paired-source-intake.v27.json
