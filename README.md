@@ -1,4 +1,10 @@
-# AeroForge v2.4 Draft · Source-Bound Hardware Research Studio
+# AeroForge v2.7 Draft · Source-Bound Hardware Research Studio
+
+## New in v2.7: Actual manufacturer STEP intake pathway
+
+The official Holybro X500 V2 download page lists `x500v2-frame.step` and `AIR2216II_Motor_3D.STEP`. New local tooling (`tools/x500_source_intake_v27.py`) now validates the original files against deliberately recorded SHA-256 hashes, rejects invalid STEP envelopes, performs both CadQuery conversions in one fail-closed staging transaction, and emits a **paired source-intake receipt** alongside the hash-bound GLB manifests. The browser can optionally revalidate that receipt against both locally selected original STEPs and GLBs. Private source STEP files and generated CAD outputs are ignored by Git by default.
+
+**Important:** the original manufacturer STEP files have not yet been downloaded or independently inspected during this development session. This is a production-oriented source ingestion implementation plus synthetic-fixture tests, **not** an assertion of manufacturer-authenticated geometry, measured mounting centers, redistribution rights, or fit approval. Follow the exact [genuine X500 CAD intake guide](docs/V27_GENUINE_X500_CAD_INTAKE.md).
 
 ## New in v2.4: Two-Source X500 Frame + Motor CAD Study
 
