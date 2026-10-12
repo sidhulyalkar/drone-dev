@@ -56,7 +56,7 @@ export function proposeX500CadMating(framePreview,motorPreview,input){
   'sourceUnitsReviewed','framePatternMm','motorPatternMm','fastenerNotes','displayAxisNative'];
  if(Object.keys(input).some(k=>!allowed.includes(k)))fail('Unknown datum input');
  const matrix=signedAxisMatrix(input.axisMap);
- const displayAxisNative=input.displayAxisNative??'+Z';
+ const displayAxisNative=input.displayAxisNative===undefined?'+Z':input.displayAxisNative;
  if(typeof displayAxisNative!=='string'||!/^[-+][XYZ]$/.test(displayAxisNative))
   fail('Invalid render-only motor separation axis');
  const frameDatum=point(input.frameMountKernelMm,'frame mount');
