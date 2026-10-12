@@ -16,7 +16,8 @@ const eq=(a,b)=>Math.abs(a-b)<=0.0002;
 export const MAX_CAD_PREVIEW_SEPARATION_MM=100;
 /**
  * Transform source-native motor millimetres into frame-native coordinates.
- * The optional preview shift is aligned to the *user-declared* motor +Z axis.
+ * The optional preview shift is aligned to an explicit *display-only*,
+ * source-native signed motor axis. This never establishes a real shaft axis.
  */
 export function deriveCadPairInspectionPose(proposal,separationMm=0){
  if(proposal?.schema!==CAD_PAIR_SCHEMA||proposal.mechanicalFitApproved!==false||
@@ -39,7 +40,11 @@ export function deriveCadPairInspectionPose(proposal,separationMm=0){
  const translation=f.map((x,i)=>rounded(x-Rm[i]));
  if(translation.some((x,i)=>!eq(x,declared[i])))
   throw Error('CAD pose translation disagrees with recorded mounting datums');
- const axis=vec(R,[0,0,1]);
+ const axisToken=a.displaySeparationAxisNative??'+Z';
+ if(typeof axisToken!=='string'||!/^[-+][XYZ]$/.test(axisToken))
+  throw Error('Invalid motor display-only native separation axis');
+ const native=[0,0,0];native['XYZ'.indexOf(axisToken[1])]=axisToken[0]==='+'?1:-1;
+ const axis=vec(R,native);
  const shift=axis.map(x=>rounded(x*separationMm));
  const motorTranslation=translation.map((x,i)=>rounded(x+shift[i]));
  const motorDatumPreview=f.map((x,i)=>rounded(x+shift[i]));
@@ -50,11 +55,13 @@ export function deriveCadPairInspectionPose(proposal,separationMm=0){
   motorToFrameRotation:R,
   motorToFrameTranslationMm:translation,
   previewTranslationMm:motorTranslation,
-  motorNativePositiveZInFrame:axis,
+  motorNativePositiveZInFrame:axisToken==='+Z'?axis:null,
+  motorDisplaySeparationAxisNative:axisToken,
+  motorSelectedDisplayAxisInFrame:axis,
   displaySeparationMm:separationMm,
   previewOnly:true,registrationChanged:false,
   mechanicalFitApproved:false,flightApproved:false,
   matrix4RowMajor:rotAndTranslation.flat(),
-  warning:'Preview spacing follows assumed motor-native +Z. Display separation is not a physical installation or measured shaft axis.'
+  warning:'Preview spacing follows user-selected motor-native '+axisToken+'. This display-only axis does not establish shaft orientation, physical installation or clearance.'
  };
 }
