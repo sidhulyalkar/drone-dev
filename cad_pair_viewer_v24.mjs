@@ -25,7 +25,8 @@ export function createCadPairViewer(host){
  const datums=new THREE.Group();scene.add(datums);
  const planeTopologyDots=new THREE.Group();scene.add(planeTopologyDots);
  const loader=new GLTFLoader();
- let dead=false,raf=0,activeProposal=null,motorRoot=null,separationMm=0,markersVisible=true;
+ let dead=false,raf=0,activeProposal=null,frameRoot=null,motorRoot=null,separationMm=0,markersVisible=true;
+ const contourFrameMarks=new THREE.Group(),contourMotorMarks=new THREE.Group();
  function resize(){
   if(dead)return;
   const w=Math.max(200,host.clientWidth),h=Math.max(250,host.clientHeight);
@@ -52,7 +53,8 @@ export function createCadPairViewer(host){
     proposal.motor?.sourceSha256===X500_SOURCE_OBSERVATIONS_V28.motor.sha256;
   camera.up.set(0,matchingLocalSource?1:0,matchingLocalSource?0:1);
   // Keep each file's own GLB mesh geometry and transform; no inferred components.
-  const frameRoot=frame.scene;motorRoot=motor.scene;
+  frameRoot=frame.scene;motorRoot=motor.scene;
+  frameRoot.add(contourFrameMarks);motorRoot.add(contourMotorMarks);
   frameRoot.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshStandardMaterial({
    color:0x9daeb8,metalness:.12,roughness:.67,side:THREE.DoubleSide});});
   motorRoot.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshStandardMaterial({
@@ -149,6 +151,42 @@ export function createCadPairViewer(host){
    motorMatingPlaneLocated:false,physicalFitApproved:false,
    legend:'Orange = native Y 15.5 mm; violet = Y 17.0 mm. Both source-only planar faces, NOT actual mating approvals.'};
  }
+ function setContourEvidence(review){
+  if(!activeProposal||!frameRoot||!motorRoot||dead)
+   throw Error('Load a verified original-source CAD pair first');
+  if(review?.schema!=='aeroforge/x500-contour-review/v3.1'||
+   review.authority!=='HASH_BOUND_TOPOLOGICAL_RESEARCH_ONLY'||
+   review.mechanicalFitApproved!==false||review.flightApproved!==false||
+   review.annotations?.length!==20||
+   review.sourceStepHashes?.frame!==X500_SOURCE_OBSERVATIONS_V28.frame.sha256||
+   review.sourceStepHashes?.motor!==X500_SOURCE_OBSERVATIONS_V28.motor.sha256||
+   activeProposal.frame?.sourceSha256!==review.sourceStepHashes.frame||
+   activeProposal.motor?.sourceSha256!==review.sourceStepHashes.motor)
+   throw Error('Contours require the exact unqualified original frame and motor sources');
+  const slots=review.annotations.filter(a=>a.role==='frame');
+  const passages=review.annotations.filter(a=>a.role==='motor');
+  if(slots.length!==16||passages.length!==4||
+    slots.some(a=>a.contourType!=='OBROUND_INNER_WIRE'||a.axialMatingFaceQualified!==false)||
+    passages.some(a=>a.contourType!=='SPLIT_CIRCULAR_PASSAGE'||a.shaftOrThreadQualified!==false))
+   throw Error('Incomplete or altered source contour overlay');
+  for(const group of [contourFrameMarks,contourMotorMarks]){
+   for(const dot of group.children){dot.geometry?.dispose();dot.material?.dispose();}
+   group.clear();
+  }
+  function dot(native,color,parent){
+   if(!Array.isArray(native)||native.length!==3||
+    native.some(v=>typeof v!=='number'||!Number.isFinite(v)||Math.abs(v)>20000))
+    throw Error('Invalid source-native CAD contour center');
+   const mesh=new THREE.Mesh(new THREE.SphereGeometry(.0025,12,9),
+    new THREE.MeshBasicMaterial({color,depthTest:false}));
+   mesh.position.set(...native.map(v=>v/1000));mesh.renderOrder=5;parent.add(mesh);
+  }
+  for(const a of slots)dot(a.nativeCenterMm,0x6ddcb3,contourFrameMarks);
+  for(const a of passages)dot(a.nativeCenterMm,0xff8e79,contourMotorMarks);
+  return {originalFrameSlotMarkers:slots.length,originalMotorPassageMarkers:passages.length,
+   proposedMatingPlaneVerified:false,mechanicalFitApproved:false,
+   legend:'Green source-contour centers = 16 frame obround slots; coral = 4 motor circular passages. No thread/physical fit is verified.'};
+ }
  function setSeparation(value){
   if(dead||!activeProposal)throw Error('Load a valid CAD research proposal first');
   // Reject invalid values BEFORE changing a working render state.
@@ -168,7 +206,7 @@ export function createCadPairViewer(host){
   raf=requestAnimationFrame(draw);
  }
  draw();
- return {load,setSeparation,setDatumMarkersVisible,setTopologyEvidence,dispose(){
+ return {load,setSeparation,setDatumMarkersVisible,setTopologyEvidence,setContourEvidence,dispose(){
   if(dead)return;dead=true;cancelAnimationFrame(raf);observer?.disconnect();
   const geometries=new Set(),materials=new Set();
   models.traverse(o=>{
