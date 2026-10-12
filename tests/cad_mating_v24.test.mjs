@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {proposeX500CadMating,CAD_PAIR_SCHEMA} from '../core/cad_mating_v24.mjs';
+import {proposeX500CadMating,CAD_PAIR_SCHEMA,scopeX500CadMating,cadMatingAppliesToRecord} from '../core/cad_mating_v24.mjs';
+import {compileX500Record} from '../core/x500_record_v14.mjs';
 const preview=(name,hash,bounds)=>({
  schema:'aeroforge/cad-preview-evidence/v1.3',
  glbHashMatchesManifest:true,localStepHashMatchesManifest:true,
@@ -74,4 +75,26 @@ test('browser wiring includes dual local source selection, not remote asset load
  assert.match(ui,/verifyCadPackage/);
  assert.match(ui,/proposeX500CadMating/);
  assert.match(ui,/aeroforge:cad-mating-proposal-updated/);
+});
+
+test('existing aircraft frame source fingerprints prevent mixing incompatible CAD revisions',()=>{
+ const research=proposeX500CadMating(frame(),motor(),input());
+ const record=compileX500Record({variant:'six_c',batteryCells:4});
+ const scoped=scopeX500CadMating(research,record);
+ assert.equal(cadMatingAppliesToRecord(scoped,record),true);
+ const sourceMatched={...record,geometry:{...record.geometry,
+  sourceHash:research.frame.sourceSha256,
+  visualGlbHash:research.frame.meshSha256}};
+ assert.equal(cadMatingAppliesToRecord(scoped,sourceMatched),true);
+ for(const changed of [
+  {...record,geometry:{...record.geometry,sourceHash:'d'.repeat(64)}},
+  {...record,geometry:{...record.geometry,visualGlbHash:'e'.repeat(64)}},
+  {...record,parts:{...record.parts,frame:{...record.parts.frame,cadSourceSha256:'f'.repeat(64)}}}
+ ]){
+  assert.equal(cadMatingAppliesToRecord(scoped,changed),false);
+  assert.throws(()=>scopeX500CadMating(research,changed),/Frame CAD in aircraft record differs/);
+ }
+ assert.equal(scoped.mechanicalFitApproved,false);
+ assert.equal(scoped.powerApproved,false);
+ assert.equal(scoped.flightApproved,false);
 });
