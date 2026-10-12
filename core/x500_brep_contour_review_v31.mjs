@@ -11,6 +11,7 @@ const fail=m=>{throw Error('BREP contour classification rejected: '+m);};
 const expectedIds=['frame-quadrant-nn','frame-quadrant-np',
  'frame-quadrant-pn','frame-quadrant-pp','motor-coaxial-16-19-pairs'];
 const frameFaces=[108,112,116,120];
+const expectedMotorFacePairs=[[7,69],[4,72],[10,66],[13,63]];
 const expectedMotorCenters=[
  [725.367,-6.718],[726.428,5.657],[737.742,-5.657],[738.802,6.718]
 ];
@@ -78,9 +79,10 @@ export function reviewX500ContourGroups(report,candidateReview,topologyReview,
      fail('Each original frame plate must have four unique slot contours');
     const slotCenters=[];
     for(const entry of withinPlane){
-     strictFalse(entry,['fastenerHoleVerified','verifiedPhysicalMount']);
+     strictFalse(entry,['fastenerHoleIdentityVerified','verifiedPhysicalMount']);
      if(entry.kind!=='CLOSED_OBROUND_INNER_WIRE_CANDIDATE'||
       entry.nominalWidthMm!==5.8||entry.nominalLengthMm!==7.3||
+      entry.nominalContourRadiusMm!==2.9||
       entry.straightSectionMm!==1.5||
       !Number.isInteger(entry.wireIndex)||entry.wireIndex<1||entry.wireIndex>5||
       !near(entry.sourceNativeAxialMm,plane===105?15.5:17,.001))
@@ -129,7 +131,9 @@ export function reviewX500ContourGroups(report,candidateReview,topologyReview,
     const center=bore.centerTransverseNativeMm;
     const which=expectedMotorCenters.findIndex(x=>
       Array.isArray(center)&&center.length===2&&center.every((v,i)=>near(v,x[i],.01)));
-    if(which<0||centers.includes(which))fail('Motor passage axis moved or duplicated');
+    if(which<0||centers.includes(which)||
+      bore.sourceFaceIndices.slice().sort((a,b)=>a-b).join(',')!==expectedMotorFacePairs[which].slice().sort((a,b)=>a-b).join(','))
+      fail('Motor passage axis or its original cylindrical face identity moved or duplicated');
     centers.push(which);
     annotations.push({id:'motor-circular-passage-'+which,role:'motor',
       sourceSolidIndex:group.sourceSolidIndex,sourceFaceIndices:[...bore.sourceFaceIndices],
