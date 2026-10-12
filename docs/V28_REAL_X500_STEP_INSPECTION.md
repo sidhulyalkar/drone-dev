@@ -43,6 +43,19 @@ The private package consists of the two GLBs, two source-bound manifests, one du
 - A source-specific, read-only observation pane appears only when the local STEP and GLB byte receipts match the exact uploaded source fingerprints. It never prepopulates mounting-hole coordinates or invents measured shaft centers.
 - Renderer viewport may present Y-up for these exact matched local assets; neither source geometry nor original datum registration is automatically altered.
 
+## Exact BREP cylindrical surface audit (v2.8)
+
+A separate `BRepAdaptor_Surface` scan of every imported solid preserves source-native locations, radius, direction and face indices. It does **not** call a cylinder a bolt hole, shaft, thread, or boss.
+
+| Evidence | Frame STEP | Motor STEP |
+| --- | ---: | ---: |
+| CAD BREP faces inspected | 14,178 | 304 |
+| Cylindrical-surface face candidates | 5,382 | 97 |
+
+In the motor STEP, 63 cylindrical-surface face candidates share an X-directed axis through approximately **Y = 732.08467 mm, Z = 0 mm** in the motor's unregistered native coordinate frame. That is a strong geometric axis **candidate** consistent with the observed 43 mm X extent, but not verified as the shaft, propeller rotation axis, motor mounting datum, or intended installed direction. Multiple faces can describe one cylindrical feature; 63 is **not** a count of mechanical holes or individual cylinders.
+
+The full face-level reports and per-file hashes live in the local private GLB package supplied to the operator. `tools/step_brep_feature_candidates_v28.py` reproduces the extraction from byte-matched originals without promoting any approval flags. A reimport may reindex faces across CAD engines or versions; preserve both source SHA-256 and tool version in subsequent manual annotations.
+
 ## Physical blockers before proceeding toward flight
 
 1. Visually identify actual frame motor mount plate solids and motor base/shaft faces from the original BREP; label them with reproducible shape IDs.
