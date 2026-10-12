@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {verifyCadPairViewerAssets} from './core/cad_pair_view_guard_v25.mjs';
+import {deriveCadPairInspectionPose} from './core/cad_pair_pose_v26.mjs';
 export function createCadPairViewer(host){
  if(!host)throw Error('Missing paired CAD host');
  const scene=new THREE.Scene();scene.background=new THREE.Color(0x101c24);
@@ -20,8 +21,9 @@ export function createCadPairViewer(host){
  const sun=new THREE.DirectionalLight(0xffffff,2.1);sun.position.set(1,2,5);scene.add(sun);
  const models=new THREE.Group();scene.add(models);
  const axes=new THREE.AxesHelper(.1);models.add(axes);
+ const datums=new THREE.Group();scene.add(datums);
  const loader=new GLTFLoader();
- let dead=false,raf=0;
+ let dead=false,raf=0,activeProposal=null,motorRoot=null,separationMm=0,markersVisible=true;
  function resize(){
   if(dead)return;
   const w=Math.max(200,host.clientWidth),h=Math.max(250,host.clientHeight);
@@ -42,17 +44,16 @@ export function createCadPairViewer(host){
   const [frame,motor]=await Promise.all([parse(frameBytes),parse(motorBytes)]);
   if(dead)return;
   // Keep each file's own GLB mesh geometry and transform; no inferred components.
-  const frameRoot=frame.scene,motorRoot=motor.scene;
+  const frameRoot=frame.scene;motorRoot=motor.scene;
   frameRoot.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshStandardMaterial({
    color:0x9daeb8,metalness:.12,roughness:.67,side:THREE.DoubleSide});});
   motorRoot.traverse(o=>{if(o.isMesh)o.material=new THREE.MeshStandardMaterial({
    color:0x5bbdc8,metalness:.18,roughness:.48,side:THREE.DoubleSide});});
-  const mat=proposal.registration.axisMatrix,t=proposal.registration.motorToFrameTranslationMm;
-  const transform=new THREE.Matrix4();
-  transform.set(mat[0][0],mat[0][1],mat[0][2],t[0]/1000,
-   mat[1][0],mat[1][1],mat[1][2],t[1]/1000,
-   mat[2][0],mat[2][1],mat[2][2],t[2]/1000,0,0,0,1);
-  motorRoot.matrixAutoUpdate=false;motorRoot.matrix.copy(transform);
+  // Use the same validated mathematical datum contract as the renderer overlays.
+  const initialPose=deriveCadPairInspectionPose(proposal,0);
+  motorRoot.matrixAutoUpdate=false;
+  motorRoot.matrix.set(...initialPose.matrix4RowMajor);
+  activeProposal=proposal;separationMm=0;
   models.add(frameRoot,motorRoot);
   models.updateMatrixWorld(true);
   const aabb=new THREE.Box3().setFromObject(models);
@@ -67,6 +68,45 @@ export function createCadPairViewer(host){
   camera.updateProjectionMatrix();
   orbit.minDistance=span*.05;orbit.maxDistance=span*10;
   orbit.update();resize();
+  // Two explicit markers represent the *user-picked* source mating datums.
+  // The guide line is the visualization separation, not a measured clearance.
+  const sphereRadius=Math.max(.002,Math.min(.012,span*.015));
+  const dot=(color)=>{
+   const mesh=new THREE.Mesh(new THREE.SphereGeometry(sphereRadius,14,10),
+    new THREE.MeshBasicMaterial({color,depthTest:false}));
+   mesh.renderOrder=3;datums.add(mesh);return mesh;
+  };
+  const frameDot=dot(0xffc66a),motorDot=dot(0x55deef);
+  const line=new THREE.Line(new THREE.BufferGeometry(),
+   new THREE.LineDashedMaterial({color:0xf7d18b,dashSize:.008,gapSize:.005,depthTest:false}));
+  line.renderOrder=2;datums.add(line);
+  datums.userData={frameDot,motorDot,line};
+  updateInspectionPose();
+ }
+ function updateInspectionPose(){
+  if(!activeProposal||!motorRoot)return null;
+  const pose=deriveCadPairInspectionPose(activeProposal,separationMm);
+  motorRoot.matrix.set(...pose.matrix4RowMajor);
+  motorRoot.matrixWorldNeedsUpdate=true;
+  const {frameDot,motorDot,line}=datums.userData;
+  if(frameDot&&motorDot&&line){
+   frameDot.position.set(...pose.frameDatumMm.map(v=>v/1000));
+   motorDot.position.set(...pose.motorDatumPreviewFrameMm.map(v=>v/1000));
+   line.geometry.dispose();
+   line.geometry=new THREE.BufferGeometry().setFromPoints([frameDot.position,motorDot.position]);
+   line.computeLineDistances();
+   datums.visible=markersVisible;
+  }
+  return pose;
+ }
+ function setSeparation(value){
+  if(dead||!activeProposal)throw Error('Load a valid CAD research proposal first');
+  separationMm=value;
+  return updateInspectionPose();
+ }
+ function setDatumMarkersVisible(visible){
+  if(typeof visible!=='boolean')throw Error('Expected marker visibility boolean');
+  markersVisible=visible;datums.visible=markersVisible;
  }
  function draw(){
   if(dead)return;
@@ -76,7 +116,7 @@ export function createCadPairViewer(host){
   raf=requestAnimationFrame(draw);
  }
  draw();
- return {load,dispose(){
+ return {load,setSeparation,setDatumMarkersVisible,dispose(){
   if(dead)return;dead=true;cancelAnimationFrame(raf);observer?.disconnect();
   const geometries=new Set(),materials=new Set();
   models.traverse(o=>{
@@ -84,6 +124,10 @@ export function createCadPairViewer(host){
     for(const m of Array.isArray(o.material)?o.material:[o.material])if(m)materials.add(m);}
   });
   geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());
+  for(const dot of datums.children){
+   dot.geometry?.dispose();dot.material?.dispose();
+  }
+  datums.clear();
   axes.geometry.dispose();axes.material.dispose();
   orbit.dispose();renderer.dispose();renderer.domElement.remove();
  }};
