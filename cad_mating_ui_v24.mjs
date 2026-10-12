@@ -370,6 +370,12 @@ if(host){
     topoSummary.textContent+=' 3D display: '+display.sourcePlanarMarkers+
       ' source-only frame plane points, orange Y=15.5 mm / violet Y=17.0 mm. No motor mating surface located.';
    }
+   if(verified.contourReview){
+    const display=currentViewer.setContourEvidence(verified.contourReview);
+    contourSummary.textContent+=' 3D markers: '+display.originalFrameSlotMarkers+
+      ' green frame slots and '+display.originalMotorPassageMarkers+
+      ' coral motor circular passages. Pure source geometry, not a confirmed mate.';
+   }
    separation.value='0';separationValue.textContent='0 mm';separation.disabled=false;
    markerToggle.disabled=false;currentViewer.setDatumMarkersVisible(markerToggle.checked);
   }catch(err){
