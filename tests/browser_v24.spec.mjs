@@ -139,3 +139,27 @@ test('paired report cannot describe another CAD source while browser file hashes
  await expect(page.locator('#cad-v24-pair')).toContainText('CAD intake rejected: motor source or tessellation digest mismatch');
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
+
+test('v2.9 candidate report cannot elevate geometry when its source is a synthetic STEP',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ const frame=fixture('x500v2-frame.step','FRAME'),motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);
+ await choose(page,1,motor);
+ const untrusted={
+  schema:'aeroforge/x500-mount-feature-candidates/v2.9',
+  source:{frameSha256:frame.manifest.source.sha256,
+   motorSha256:motor.manifest.source.sha256},
+  candidates:[],candidateCount:0,
+  mountingHoleIdentityApproved:true,physicalFitApproved:true,flightApproved:true
+ };
+ await page.locator('#cad-v29-feature-index').setInputFiles({
+  name:'untrusted-feature-review.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify(untrusted))});
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'CAD intake rejected: Mounting candidate report rejected: original uploaded STEP fingerprints differ');
+ await expect(page.locator('#cad-v29-feature-review')).toBeHidden();
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
