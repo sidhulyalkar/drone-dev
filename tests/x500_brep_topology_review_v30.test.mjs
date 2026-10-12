@@ -96,3 +96,14 @@ test('v3.0 uploader hashes exact report bytes before linking original source and
  assert.match(ui,/topoDetail\.textContent/);
  assert.doesNotMatch(ui,/inputMap\.frameMountKernelMm\.value=topologyReview/);
 });
+
+test('v3.0 rendered source plane markers are frame-only, source-fingerprint gated and never physical approvals',()=>{
+ const viewer=readFileSync(new URL('../cad_pair_viewer_v24.mjs',import.meta.url),'utf8');
+ const ui=readFileSync(new URL('../cad_mating_ui_v24.mjs',import.meta.url),'utf8');
+ assert.match(viewer,/function setTopologyEvidence\(review\)/);
+ assert.match(viewer,/activeProposal\.frame\?\.sourceSha256===X500_SOURCE_OBSERVATIONS_V28\.frame\.sha256/);
+ assert.match(viewer,/if\(c\.role!=='frame'\)continue/);
+ assert.match(viewer,/points\.length!==8/);
+ assert.match(viewer,/motorMatingPlaneLocated:false/);
+ assert.match(ui,/currentViewer\.setTopologyEvidence\(verified\.topologyReview\)/);
+});
