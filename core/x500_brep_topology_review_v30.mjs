@@ -84,6 +84,16 @@ export function reviewX500PlaneTopology(report,candidates,verifiedCandidateRepor
      !p.touchingCylinderFaceIndices.every(i=>ids.has(i))||
      p.sharedTopoDsEdgeCount<1)
     fail('Planar face is not supported by all four source cylinders');
+   // A claimed common plane must actually appear as a shared TopoDS edge on
+   // *each* individually indexed cylindrical face, not just in the summary.
+   for(const cyl of row.cylinderSurfaceTopology){
+    const adjacent=cyl.edgeAdjacentPlanarFaces.find(edge=>
+      edge.faceIndex===p.faceIndex&&edge.sharedTopoDsEdgeCount>=1&&
+      edge.normalParallelToCylinderAxis===true&&
+      within(edge.planeAxialCoordinateMm,p.planeAxialCoordinateMm,.002)&&
+      within(edge.planarFaceAreaKernelMm2,p.planarFaceAreaKernelMm2,.02));
+    if(!adjacent)fail('Summary plane lacks face-level shared-edge evidence');
+   }
    expectedSet.delete(p.faceIndex);
   }
   if(expectedSet.size)fail('Source planar face omitted');
