@@ -22,3 +22,14 @@
 .cad-v26-inspection-controls input[type=range]{width:min(220px,55vw);min-width:130px}
 .cad-v26-inspection-controls output{font-variant-numeric:tabular-nums;min-width:95px}
 .cad-v26-inspection-controls small{flex-basis:100%;opacity:.85}
+
+/* v2.9: subordinate, collapsed BREP research candidates; not fit approval. */
+#cad-v29-feature-review{margin:12px 0;padding:12px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v29-feature-review>summary{cursor:pointer;font-weight:650}
+#cad-v29-feature-review label{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-size:.85rem}
+#cad-v29-feature-choice{max-width:100%;width:min(600px,100%);box-sizing:border-box}
+#cad-v29-feature-review small{display:block;margin:10px 0;line-height:1.5}
+#cad-v29-feature-review p{overflow-wrap:anywhere;font-size:.85rem}
+#cad-v29-copy-transverse{max-width:100%;white-space:normal;text-align:left}
+#cad-v28-source-observations .cad-v28-source-readout{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem;max-height:170px;overflow:auto}
+@media(max-width:600px){#cad-v29-feature-review{padding:9px}}
