@@ -118,8 +118,21 @@ function safeProposal(p){
   fail('Unqualified source-bound CAD proposal required');
  return p;
 }
+function sourceIdentityAgrees(proposal,record){
+ // A separately registered frame CAD in the canonical aircraft record must
+ // refer to the exact same source STEP and GLB, not only the same kit variant.
+ const hashes=[
+  [record?.geometry?.sourceHash,proposal.frame.sourceSha256],
+  [record?.geometry?.visualGlbHash,proposal.frame.meshSha256],
+  [record?.parts?.frame?.cadSourceSha256,proposal.frame.sourceSha256]
+ ];
+ return hashes.every(([claimed,actual])=>claimed===null||claimed===undefined||
+  (typeof claimed==='string'&&claimed===actual));
+}
 export function scopeX500CadMating(proposal,record){
  safeProposal(proposal);
+ if(!sourceIdentityAgrees(proposal,record))
+  fail('Frame CAD in aircraft record differs from the frame CAD selected for this mating study');
  return {...proposal,aircraftScope:x500Context(record),
   aircraftScopeAuthority:CAD_SCOPE_AUTHORITY,
   independentlyQualified:false,mechanicalFitApproved:false,procurementApproved:false,
@@ -133,6 +146,7 @@ export function cadMatingAppliesToRecord(proposal,record){
   return proposal.aircraftScopeAuthority===CAD_SCOPE_AUTHORITY&&
    scope?.aircraftReference===current.aircraftReference&&
    scope?.revisionIdentity===current.revisionIdentity&&
-   scope?.variant===current.variant&&scope?.batteryCells===current.batteryCells;
+   scope?.variant===current.variant&&scope?.batteryCells===current.batteryCells&&
+   sourceIdentityAgrees(proposal,record);
  }catch{return false;}
 }
