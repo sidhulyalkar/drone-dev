@@ -8,6 +8,7 @@ import {getX500RealSourceObservations} from './core/x500_real_source_observation
 import {x500RightHandedAxisOptions} from './core/cad_orientation_options_v28.mjs';
 import {checkX500MountCandidates} from './core/x500_mount_feature_review_v29.mjs';
 import {reviewX500PlaneTopology} from './core/x500_brep_topology_review_v30.mjs';
+import {reviewX500ContourGroups} from './core/x500_brep_contour_review_v31.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
 if(host){
@@ -55,6 +56,20 @@ if(host){
  const topoDetail=el('pre');topoDetail.className='cad-v30-topology-readout';
  const topoNote=el('small','These are original-CAD topological relationships, not certified fastener holes or contact faces. Motor has no common directly adjacent axial plane. Nothing in this panel auto-fills or approves a mounting position.');
  topoPanel.append(topoSummary,topoSelect,topoDetail,topoNote);
+ const contourLabel=el('label','Optional v3.1 original-BREP slot and circular-passage contours (JSON) ');
+ const contourInput=el('input');contourInput.type='file';
+ contourInput.accept='.json,application/json';contourInput.id='cad-v31-contour-report';
+ contourLabel.append(contourInput,el('small',
+  'Exact original STEP loops and split cylinder walls. Requires the original v2.9 + v3.0 reports and both STEP/GLB assets.'));
+ const contourPanel=el('details');contourPanel.id='cad-v31-contour-review';contourPanel.hidden=true;
+ contourPanel.append(el('summary','Source contour inspection: 16 obround slots + 4 motor circular passages'));
+ const contourSummary=el('p','No exact-source contour audit verified.');
+ const contourChoice=el('select');contourChoice.id='cad-v31-contour-choice';
+ const contourDetail=el('p','Select an original-source contour to inspect.');
+ const contourCopy=el('button','Copy transverse center into unverified draft (axial datum left blank)');
+ contourCopy.id='cad-v31-copy-transverse';contourCopy.type='button';
+ const contourWarning=el('small','CAD contours are not certified holes, and motor thread, bolt diameter, fastening, contact plane and collision clearance remain unknown. No approval can be granted here.');
+ contourPanel.append(contourSummary,contourChoice,contourDetail,contourCopy,contourWarning);
  const featurePanel=el('details');featurePanel.id='cad-v29-feature-review';featurePanel.hidden=true;
  featurePanel.append(el('summary','Review 5 CAD cylindrical-face mounting candidates (research only)'));
  const featureSelect=el('select');featureSelect.id='cad-v29-feature-choice';
@@ -123,7 +138,7 @@ if(host){
  visualControls.append(separationLabel,markerLabel,visualWarning);
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,controls,realSourceEvidence,featurePanel,topoPanel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -133,12 +148,13 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
  candidatesInput.addEventListener('change',clearFiles);
  topoInput.addEventListener('change',clearFiles);
+ contourInput.addEventListener('change',clearFiles);
  form.addEventListener('input',clearProposal);
  axis.addEventListener('change',clearProposal);
  displayAxis.addEventListener('change',clearProposal);
@@ -180,7 +196,7 @@ if(host){
     if(ticket!==token)return;
     matchedSourceReceipt=compareX500SourceIntake(parsed,frame.preview,motor.preview);
    }
-   let featureReview=null,candidateReportSha256=null,topologyReview=null;
+   let featureReview=null,candidateReportSha256=null,topologyReportSha256=null,topologyReview=null,contourReview=null;
    const candidateFile=candidatesInput.files?.[0];
    if(candidateFile){
     if(candidateFile.size>256*1024)throw Error('BREP candidate index exceeds 256 KB');
@@ -196,11 +212,34 @@ if(host){
    if(topologyFile){
     if(!featureReview)throw Error('v3.0 BREP adjacency requires the original v2.9 feature index');
     if(topologyFile.size>512*1024)throw Error('BREP topology report exceeds 512 KB');
-    topologyReview=reviewX500PlaneTopology(JSON.parse(await topologyFile.text()),
+    const rawTopology=await topologyFile.arrayBuffer();
+    if(ticket!==token)return;
+    const topologyDigest=await crypto.subtle.digest('SHA-256',rawTopology);
+    topologyReportSha256=Array.from(new Uint8Array(topologyDigest),v=>v.toString(16).padStart(2,'0')).join('');
+    topologyReview=reviewX500PlaneTopology(JSON.parse(new TextDecoder().decode(rawTopology)),
       featureReview,candidateReportSha256);
     if(ticket!==token)return;
    }
-   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview};build.disabled=false;
+   const contourFile=contourInput.files?.[0];
+   if(contourFile){
+    if(!topologyReview||!featureReview)
+     throw Error('v3.1 BREP contours require both original v2.9 pattern and v3.0 topology reports');
+    if(contourFile.size>512*1024)throw Error('BREP contour report exceeds 512 KB');
+    contourReview=reviewX500ContourGroups(JSON.parse(await contourFile.text()),
+     featureReview,topologyReview,candidateReportSha256,topologyReportSha256);
+    if(ticket!==token)return;
+   }
+   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview};build.disabled=false;
+   contourPanel.hidden=!contourReview;
+   contourChoice.replaceChildren();
+   if(contourReview){
+    contourSummary.textContent='Exact original BREP: 16 frame obround contours (5.8 × 7.3 mm), four motor 2.5 mm circular passages with 2.3 mm wall extent. No thread or fit qualifications.';
+    for(const entry of contourReview.annotations){
+     const opt=el('option',entry.role+' • '+entry.id+' • '+entry.contourType);
+     opt.value=entry.id;contourChoice.append(opt);
+    }
+    contourDetail.textContent='Choose a contour to view its exact source-native center and solid face IDs.';
+   }
    topoPanel.hidden=!topologyReview;
    topoSelect.replaceChildren();
    if(topologyReview){
@@ -234,6 +273,29 @@ if(host){
     : 'Two local STEP and GLB digests matched their manifests. No paired intake report selected; vendor origin, units and mating datums unverified.';
   }catch(err){if(ticket===token)verifyStatus.textContent='CAD intake rejected: '+err.message;}
   finally{verify.disabled=false;}
+ });
+ function updateContourDetail(){
+  const current=verified?.contourReview?.annotations.find(a=>a.id===contourChoice.value);
+  contourDetail.textContent=current?
+   current.role.toUpperCase()+': original source center '+current.nativeCenterMm.map(x=>Number(x).toFixed(3)).join(', ')+' mm. '+
+   (current.role==='frame'?'Slot contour width '+current.widthMm+' mm; length '+current.lengthMm+' mm.':
+    'Circular passage diameter '+current.diameterMm+' mm. ')+
+   'Mating-face coordinate remains UNQUALIFIED; this is not a physical fastener approval.':
+   'Load verified original-source v3.1 contour evidence first.';
+ }
+ contourChoice.addEventListener('change',updateContourDetail);
+ contourCopy.addEventListener('click',()=>{
+  const current=verified?.contourReview?.annotations.find(a=>a.id===contourChoice.value);
+  if(!current){contourDetail.textContent='No verified source contour selected';return;}
+  const target=current.role==='frame'?inputMap.frameMountKernelMm:inputMap.motorMountKernelMm;
+  target.value=current.nativeCenterMm.map((x,i)=>{
+   if(current.role==='frame'&&i===1)return '';
+   if(current.role==='motor'&&i===0)return '';
+   return String(x);
+  }).join(', ');
+  clearProposal();target.focus();
+  contourDetail.textContent='Transferred SOURCE-NATIVE transverse center only: '+target.value+
+   ' mm. Blank axial coordinate is REQUIRED and must be independently inspected; no physical mate approved.';
  });
  topoSelect.addEventListener('change',()=>{
   const c=verified?.topologyReview?.candidates.find(x=>x.id===topoSelect.value);
