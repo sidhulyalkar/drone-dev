@@ -45,7 +45,7 @@ if(host){
  controls.append(verify,verifyStatus);
  const realSourceEvidence=el('details');realSourceEvidence.id='cad-v28-source-observations';realSourceEvidence.hidden=true;
  realSourceEvidence.append(el('summary','Source-specific CAD observations (research only)'));
- const realSourceText=el('pre');realSourceText.className='cad-v24-report';realSourceEvidence.append(realSourceText);
+ const realSourceText=el('pre');realSourceText.className='cad-v28-source-readout';realSourceEvidence.append(realSourceText);
  const form=el('form');form.className='cad-v24-form';
  const inputMap={};
  function field(key,label,type='text',defaultValue=''){
