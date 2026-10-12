@@ -4,6 +4,8 @@
  */
 import {verifyCadPackage,validateCadManifest} from './core/cad_package_v13.mjs';
 import {compareX500SourceIntake} from './core/x500_source_intake_v27.mjs';
+import {getX500RealSourceObservations} from './core/x500_real_source_observations_v28.mjs';
+import {x500RightHandedAxisOptions} from './core/cad_orientation_options_v28.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
 if(host){
@@ -41,6 +43,9 @@ if(host){
  const verify=el('button','Verify two source packages');verify.type='button';
  const verifyStatus=el('p','No local source files verified.');
  controls.append(verify,verifyStatus);
+ const realSourceEvidence=el('details');realSourceEvidence.id='cad-v28-source-observations';realSourceEvidence.hidden=true;
+ realSourceEvidence.append(el('summary','Source-specific CAD observations (research only)'));
+ const realSourceText=el('pre');realSourceText.className='cad-v24-report';realSourceEvidence.append(realSourceText);
  const form=el('form');form.className='cad-v24-form';
  const inputMap={};
  function field(key,label,type='text',defaultValue=''){
@@ -53,14 +58,17 @@ if(host){
  field('frameMountKernelMm','Frame mount center XYZ in native STEP mm (comma separated)','text','');
  field('motorMountKernelMm','Motor base origin XYZ in native STEP mm (comma separated)','text','');
  const axis=el('select');
- for(const [key,label] of [
-  ['+X,+Y,+Z','Identity rotation (+X,+Y,+Z)'],
-  ['-Y,+X,+Z','90° around source Z (-Y,+X,+Z)'],
-  ['-X,-Y,+Z','180° around source Z (-X,-Y,+Z)'],
-  ['+Y,-X,+Z','270° around source Z (+Y,-X,+Z)']]){
-  const opt=el('option',label);opt.value=key;axis.append(opt);
+ for(const {value,label} of x500RightHandedAxisOptions()){
+  const opt=el('option',label);opt.value=value;axis.append(opt);
  }
- const axLabel=el('label','Motor-to-frame axis hypothesis');axLabel.append(axis);form.append(axLabel);
+ axis.value='+X,+Y,+Z';
+ const axLabel=el('label','Motor-to-frame axis hypothesis (24 right-handed rotations)');axLabel.append(axis);form.append(axLabel);
+ const displayAxis=el('select');displayAxis.id='cad-v28-display-axis';
+ for(const key of ['+Z','-Z','+X','-X','+Y','-Y']){
+  const opt=el('option','Motor native '+key+' (display only, NOT shaft qualification)');opt.value=key;displayAxis.append(opt);
+ }
+ const displayAxisLabel=el('label','Separate motor for preview along selected native direction');
+ displayAxisLabel.append(displayAxis);form.append(displayAxisLabel);
  field('framePatternMm','Observed frame hole spacing hypothesis (mm)','number','');
  field('motorPatternMm','Observed motor mounting hole spacing hypothesis (mm)','number','');
  field('observer','Observer or inspection label','text','');
@@ -85,11 +93,11 @@ if(host){
  const markerLabel=el('label');
  const markerToggle=el('input');markerToggle.type='checkbox';markerToggle.checked=true;markerToggle.disabled=true;
  markerLabel.append(markerToggle,document.createTextNode(' Show unverified mounting datum markers'));
- const visualWarning=el('small','The preview slides the motor along assumed source-native +Z. The research pose, measurements and safety status never change.');
+ const visualWarning=el('small','The preview slides along the user-selected motor-native signed axis, which is NOT a verified shaft axis. Research registration and approval flags never change.');
  visualControls.append(separationLabel,markerLabel,visualWarning);
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,controls,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,controls,realSourceEvidence,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -99,12 +107,13 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;realSourceEvidence.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
  form.addEventListener('input',clearProposal);
  axis.addEventListener('change',clearProposal);
+ displayAxis.addEventListener('change',clearProposal);
  function coords(value){
   const numbers=value.split(',').map(x=>Number(x.trim()));
   if(numbers.length!==3||value.split(',').some(x=>!x.trim())||numbers.some(x=>!Number.isFinite(x)))
@@ -144,6 +153,15 @@ if(host){
     matchedSourceReceipt=compareX500SourceIntake(parsed,frame.preview,motor.preview);
    }
    verified={frame,motor,matchedSourceReceipt};build.disabled=false;
+   const sourceObservations=getX500RealSourceObservations(frame.preview,motor.preview);
+   realSourceEvidence.hidden=!sourceObservations;
+   if(sourceObservations){
+    const F=sourceObservations.frame,M=sourceObservations.motor;
+    realSourceText.textContent='LOCAL IMPORT / UNQUALIFIED\n'+
+     'Frame: '+F.importedSolidCount+' solids, source AABB mm: '+JSON.stringify(F.sourceKernelAabbMm)+'\n'+
+     'Motor: '+M.importedSolidCount+' solids, source AABB mm: '+JSON.stringify(M.sourceKernelAabbMm)+'\n'+
+     F.observation+'\n'+M.observation+'\n'+sourceObservations.warning;
+   }
    verifyStatus.textContent=matchedSourceReceipt
     ? 'Local STEP + GLB digests match BOTH paired source-intake report entries. Manufacturer origin, units and physical fit still unverified.'
     : 'Two local STEP and GLB digests matched their manifests. No paired intake report selected; vendor origin, units and mating datums unverified.';
@@ -159,7 +177,8 @@ if(host){
     frameMountKernelMm:coords(x.frameMountKernelMm),motorMountKernelMm:coords(x.motorMountKernelMm),
     axisMap:axis.value.split(','),observer:x.observer,datumNotes:x.datumNotes,
     sourceUnitsReviewed:units.checked,framePatternMm:Number(x.framePatternMm),
-    motorPatternMm:Number(x.motorPatternMm),fastenerNotes:x.fastenerNotes
+    motorPatternMm:Number(x.motorPatternMm),fastenerNotes:x.fastenerNotes,
+    displayAxisNative:displayAxis.value
    });
    proposal=scopeX500CadMating(proposed,aircraftRecord);
    result.textContent='Source fingerprints: frame '+proposal.frame.sourceSha256+' / motor '+proposal.motor.sourceSha256+
