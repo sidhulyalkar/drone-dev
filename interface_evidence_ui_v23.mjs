@@ -1,6 +1,7 @@
 /** v2.3 optional collapsed check-level research panel. No automatic device persistence. */
 import {startInterfaceEvidenceLinks,reconcileInterfaceEvidenceLinks,appendInterfaceEvidenceLink,
  interfaceEvidenceMatrix,validateInterfaceEvidenceLinks} from './core/interface_evidence_v23.mjs';
+import {cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('v22-inspection');
 if(host){
  let record=null,journal=null,links=null,cadProposal=null;
@@ -54,7 +55,7 @@ if(host){
    for(const c of edge.checks){
     const row=make('li',c.requirement+' · '+
      (c.currentEvidenceCount?'USER EVIDENCE LINKED, UNVERIFIED':'EVIDENCE MISSING'));
-    if(edge.edgeId==='frame-motor'&&c.checkIndex===1&&cadProposal?.schema==='aeroforge/x500-cad-mating-proposal/v2.4'){
+    if(edge.edgeId==='frame-motor'&&c.checkIndex===1&&cadMatingAppliesToRecord(cadProposal,record)){
      row.append(make('p','Unverified dual-source CAD pose available: frame '+cadProposal.frame.sourceSha256.slice(0,12)+
       ' / motor '+cadProposal.motor.sourceSha256.slice(0,12)+
       '. Mounting datums remain unresolved; this does not count as inspection evidence.'));
