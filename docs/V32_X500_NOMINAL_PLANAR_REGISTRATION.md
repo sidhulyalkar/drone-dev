@@ -26,13 +26,13 @@ The per-candidate search checks *all 24 bijective motor passage-to-frame slot as
 The calculation for projected center \(q_i\), slot center \(c_i\), radial unit axis \(u_i\), slot spine half-length \(h = 0.75\) mm and a **hypothetical** circular probe diameter \(d\) is:
 
 \[
-t_i = \\operatorname{clamp}((q_i-c_i)\\cdot u_i,-h,h)
+t_i = \operatorname{clamp}((q_i-c_i)\cdot u_i,-h,h)
 \]
 \[
-\\delta_i = \\left\\|q_i-(c_i+t_iu_i)\\right\\|
+\delta_i = \left\|q_i-(c_i+t_iu_i)\right\|
 \]
 \[
-\\text{nominal test-gauge margin}_i = 2.9 - d/2 - \\delta_i.
+\text{nominal test-gauge margin}_i = 2.9 - d/2 - \delta_i.
 \]
 
 The margin is only a 2D ideal-obround projection test. It is not actual screw clearance, machined tolerance, fastener safety factor, or proof that a physical bolt can pass through both parts.
