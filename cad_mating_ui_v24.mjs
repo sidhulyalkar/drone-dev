@@ -6,6 +6,7 @@ import {verifyCadPackage,validateCadManifest} from './core/cad_package_v13.mjs';
 import {compareX500SourceIntake} from './core/x500_source_intake_v27.mjs';
 import {getX500RealSourceObservations} from './core/x500_real_source_observations_v28.mjs';
 import {x500RightHandedAxisOptions} from './core/cad_orientation_options_v28.mjs';
+import {checkX500MountCandidates} from './core/x500_mount_feature_review_v29.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
 if(host){
@@ -39,6 +40,20 @@ if(host){
  receiptInput.id='cad-v27-intake-receipt';receiptLabel.append(receiptInput);
  const receiptNote=el('small','Original STEP files remain required. This optional report must match BOTH original STEP/GLB digests. It is not a manufacturer signature.');
  receiptLabel.append(receiptNote);
+ const candidatesLabel=el('label','Optional v2.9 local BREP feature candidate index (JSON) ');
+ const candidatesInput=el('input');candidatesInput.type='file';
+ candidatesInput.accept='.json,application/json';candidatesInput.id='cad-v29-feature-index';
+ candidatesLabel.append(candidatesInput,el('small','Generated from BOTH exact-source BREP inventories. Candidate axes are NOT verified holes or known mounting faces.'));
+ const featurePanel=el('details');featurePanel.id='cad-v29-feature-review';featurePanel.hidden=true;
+ featurePanel.append(el('summary','Review 5 CAD cylindrical-face mounting candidates (research only)'));
+ const featureSelect=el('select');featureSelect.id='cad-v29-feature-choice';
+ const featureSelectLabel=el('label','Select the actual source-axis pattern for inspection');
+ featureSelectLabel.append(featureSelect);
+ const featureReadout=el('p','No CAD feature candidate selected');
+ const copyCandidate=el('button','Use transverse coordinates in draft (axial position still required)');
+ copyCandidate.type='button';copyCandidate.id='cad-v29-copy-transverse';
+ const featureCaution=el('small','Draft coordinate transfer deliberately leaves the cylinder AXIAL coordinate blank. Independently inspect the actual mounting surface before entering that value; no fit is certified.');
+ featurePanel.append(featureSelectLabel,featureReadout,copyCandidate,featureCaution);
  const controls=el('div');controls.className='cad-v24-actions';
  const verify=el('button','Verify two source packages');verify.type='button';
  const verifyStatus=el('p','No local source files verified.');
@@ -97,7 +112,7 @@ if(host){
  visualControls.append(separationLabel,markerLabel,visualWarning);
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,controls,realSourceEvidence,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,controls,realSourceEvidence,featurePanel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -107,10 +122,11 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;realSourceEvidence.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;realSourceEvidence.hidden=true;featurePanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
+ candidatesInput.addEventListener('change',clearFiles);
  form.addEventListener('input',clearProposal);
  axis.addEventListener('change',clearProposal);
  displayAxis.addEventListener('change',clearProposal);
@@ -152,7 +168,25 @@ if(host){
     if(ticket!==token)return;
     matchedSourceReceipt=compareX500SourceIntake(parsed,frame.preview,motor.preview);
    }
-   verified={frame,motor,matchedSourceReceipt};build.disabled=false;
+   let featureReview=null;
+   const candidateFile=candidatesInput.files?.[0];
+   if(candidateFile){
+    if(candidateFile.size>256*1024)throw Error('BREP candidate index exceeds 256 KB');
+    featureReview=checkX500MountCandidates(JSON.parse(await candidateFile.text()),
+     frame.preview,motor.preview);
+    if(ticket!==token)return;
+   }
+   verified={frame,motor,matchedSourceReceipt,featureReview};build.disabled=false;
+   featurePanel.hidden=!featureReview;
+   featureSelect.replaceChildren();
+   if(featureReview){
+    for(const c of featureReview.candidates){
+     const label=c.role.toUpperCase()+' • '+c.id+
+      ' • transverse '+c.centerTransverseMm.join(', ')+' mm';
+     const option=el('option',label);option.value=c.id;featureSelect.append(option);
+    }
+    featureReadout.textContent='Five BREP cylinder-pattern candidates are source-hash-bound. The coordinate along each candidate axis is deliberately UNKNOWN.';
+   }
    const sourceObservations=getX500RealSourceObservations(frame.preview,motor.preview);
    realSourceEvidence.hidden=!sourceObservations;
    if(sourceObservations){
@@ -167,6 +201,24 @@ if(host){
     : 'Two local STEP and GLB digests matched their manifests. No paired intake report selected; vendor origin, units and mating datums unverified.';
   }catch(err){if(ticket===token)verifyStatus.textContent='CAD intake rejected: '+err.message;}
   finally{verify.disabled=false;}
+ });
+ featureSelect.addEventListener('change',()=>{
+  const c=verified?.featureReview?.candidates.find(x=>x.id===featureSelect.value);
+  featureReadout.textContent=c?
+   c.id+' | '+c.support+' | unregistered native coordinates: '+c.displayPointNativeMm.map(v=>v===null?'UNKNOWN':v).join(', ')+
+   ' mm. This is NOT a verified mounting datum.':
+   'Select a candidate after verifying its two source packages.';
+ });
+ copyCandidate.addEventListener('click',()=>{
+  const c=verified?.featureReview?.candidates.find(x=>x.id===featureSelect.value);
+  if(!c){featureReadout.textContent='First verify both sources and select an unqualified candidate';return;}
+  const target=c.role==='frame'?inputMap.frameMountKernelMm:inputMap.motorMountKernelMm;
+  // The free axial coordinate MUST be supplied from an independent
+  // mounting-face inspection; never use CAD cylinder Axis.Location() for it.
+  target.value=c.displayPointNativeMm.map(x=>x===null?'':String(x)).join(', ');
+  clearProposal();target.focus();
+  featureReadout.textContent='Draft '+c.role+' transverse coordinates inserted: '+target.value+
+   ' mm. The blank axial coordinate MUST be inspected and entered manually. No physical fit approval.';
  });
  form.addEventListener('submit',e=>{
   e.preventDefault();
