@@ -41,7 +41,7 @@ export function compareX500SourceIntake(receipt,framePreview,motorPreview){
    f.sourceRevisionDeclaredByOperator===m.source.revision,
    role+' size or revision declaration changed after conversion');
   check(o.glbName===m.mesh.fileName&&
-   o.visualManifestName===o.glbName.replace(/\\.glb$/i,'.visual-package.json'),
+   o.visualManifestName===o.glbName.replace(/\.glb$/i,'.visual-package.json'),
    role+' source/mesh manifest mapping mismatch');
   check(o.solidCount===m.conversion.solidCount&&
    o.triangleCount===m.conversion.triangleCount,
