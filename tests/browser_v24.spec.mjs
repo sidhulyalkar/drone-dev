@@ -68,6 +68,11 @@ test('dual source CAD research needs both matching original STEP files and leave
  await page.locator('#v22-inspection > summary').click();
  await page.locator('#v23-checklist > summary').click();
  await expect(page.locator('#v23-checklist')).toContainText('Unverified dual-source CAD pose available');
+ await page.locator('#v06-kit-variant').selectOption('six_x');
+ await expect(page.locator('#v23-checklist')).not.toContainText('Unverified dual-source CAD pose available');
+ await expect(page.getByRole('button',{name:'Export proposal JSON'})).toBeDisabled();
+ await page.locator('#v06-kit-variant').selectOption('six_c');
+ await expect(page.locator('#v23-checklist')).not.toContainText('Unverified dual-source CAD pose available');
  await page.locator('#cad-v24-pair form input[type=text]').first().fill('1, 2, 3');
  await expect(page.getByRole('button',{name:'Export proposal JSON'})).toBeDisabled();
 });
