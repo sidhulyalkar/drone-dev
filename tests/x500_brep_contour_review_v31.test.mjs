@@ -110,6 +110,7 @@ test('UI hashes predecessor topology bytes and only transfers transverse coordin
  assert.match(ui,/reviewX500ContourGroups/);
  assert.match(ui,/crypto\.subtle\.digest\('SHA-256',rawTopology\)/);
  assert.match(ui,/contourPanel\.hidden=!contourReview/);
+ assert.match(ui,/copyCandidate\.disabled=Boolean\(contourReview\)/);
  assert.match(ui,/if\(current\.role==='frame'&&i===1\)return ''/);
  assert.match(ui,/if\(current\.role==='motor'&&i===0\)return ''/);
  assert.match(viewer,/setContourEvidence\(review\)/);
