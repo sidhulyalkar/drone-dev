@@ -3,6 +3,7 @@
  * Does not persist binary files, and never grants mechanical or flight authority.
  */
 import {verifyCadPackage,validateCadManifest} from './core/cad_package_v13.mjs';
+import {compareX500SourceIntake} from './core/x500_source_intake_v27.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
 if(host){
@@ -26,6 +27,11 @@ if(host){
   }
   parts[key]=inputs;fileGrid.append(block);
  }
+ const receiptLabel=el('label','Optional local v2.7 two-source intake report (JSON) ');
+ const receiptInput=el('input');receiptInput.type='file';receiptInput.accept='.json,application/json';
+ receiptInput.id='cad-v27-intake-receipt';receiptLabel.append(receiptInput);
+ const receiptNote=el('small','Original STEP files remain required. This optional report must match BOTH original STEP/GLB digests. It is not a manufacturer signature.');
+ receiptLabel.append(receiptNote);
  const controls=el('div');controls.className='cad-v24-actions';
  const verify=el('button','Verify two source packages');verify.type='button';
  const verifyStatus=el('p','No local source files verified.');
@@ -78,7 +84,7 @@ if(host){
  visualControls.append(separationLabel,markerLabel,visualWarning);
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,fileGrid,controls,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,fileGrid,receiptLabel,controls,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -91,6 +97,7 @@ if(host){
   ++token;verified=null;build.disabled=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
+ receiptInput.addEventListener('change',clearFiles);
  form.addEventListener('input',clearProposal);
  axis.addEventListener('change',clearProposal);
  function coords(value){
@@ -123,8 +130,18 @@ if(host){
    const correct=frame.preview.manifest.source.fileName.toLowerCase()==='x500v2-frame.step'&&
     motor.preview.manifest.source.fileName.toLowerCase()==='air2216ii_motor_3d.step';
    if(!correct)throw Error('Require named X500 V2 frame and AIR2216II motor STEP candidates');
-   verified={frame,motor};build.disabled=false;
-   verifyStatus.textContent='Two local STEP and GLB digests matched their manifests. Vendor origin, units and mating datums still unverified.';
+   let matchedSourceReceipt=null;
+   const reportFile=receiptInput.files?.[0];
+   if(reportFile){
+    if(reportFile.size>256*1024)throw Error('Source intake JSON must be 256 KB or smaller');
+    const parsed=JSON.parse(await reportFile.text());
+    if(ticket!==token)return;
+    matchedSourceReceipt=compareX500SourceIntake(parsed,frame.preview,motor.preview);
+   }
+   verified={frame,motor,matchedSourceReceipt};build.disabled=false;
+   verifyStatus.textContent=matchedSourceReceipt
+    ? 'Local STEP + GLB digests match BOTH paired source-intake report entries. Manufacturer origin, units and physical fit still unverified.'
+    : 'Two local STEP and GLB digests matched their manifests. No paired intake report selected; vendor origin, units and mating datums unverified.';
   }catch(err){if(ticket===token)verifyStatus.textContent='CAD intake rejected: '+err.message;}
   finally{verify.disabled=false;}
  });
@@ -144,7 +161,8 @@ if(host){
     '\nHypothesis translation (mm): '+proposal.registration.motorToFrameTranslationMm.join(', ')+
     '\nMount hole spacing difference (mm): '+proposal.patternHypotheses.frameMinusMotorMm+
     '\nBroad phase: '+proposal.broadphase.status+
-    '\nALL PHYSICAL AND FLIGHT APPROVALS: FALSE';
+    '\nALL PHYSICAL AND FLIGHT APPROVALS: FALSE'+
+    (verified.matchedSourceReceipt?'\nPAIRED SOURCE RECEIPT: both source digests matched, vendor origin NOT authenticated':'\nPAIRED SOURCE RECEIPT: not supplied');
    exportBtn.disabled=false;viewButton.disabled=false;broadcast();
   }catch(err){clearProposal();result.textContent='Registration blocked: '+err.message;}
  });
