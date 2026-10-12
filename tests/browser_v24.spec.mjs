@@ -204,3 +204,18 @@ test('v3.1 contours cannot bypass v2.9+v3.0 original source report requirements'
  await expect(page.locator('#cad-v31-contour-review')).toBeHidden();
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
+
+test('v3.2 plan-view solver remains hidden without exact verified source BREP contours',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ await expect(page.locator('#cad-v32-planar-fit')).toBeHidden();
+ const frame=fixture('x500v2-frame.step','FRAME');
+ const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'No paired intake report selected');
+ await expect(page.locator('#cad-v32-planar-fit')).toBeHidden();
+ await expect(page.locator('#cad-v32-export')).toBeDisabled();
+});
