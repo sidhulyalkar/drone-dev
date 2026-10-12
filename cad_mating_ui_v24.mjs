@@ -65,14 +65,27 @@ if(host){
  result.setAttribute('aria-live','polite');
  const viewerHost=el('div');viewerHost.className='cad-v24-viewport';viewerHost.hidden=true;
  const viewButton=el('button','Preview two source meshes in 3D');viewButton.type='button';viewButton.disabled=true;
+ const visualControls=el('div');visualControls.className='cad-v26-inspection-controls';
+ const separationLabel=el('label','VISUAL MOTOR SEPARATION (NOT PHYSICAL CLEARANCE) ');
+ const separation=el('input');separation.type='range';separation.min='0';separation.max='100';separation.step='1';
+ separation.value='0';separation.disabled=true;separation.id='cad-v26-separation';
+ const separationValue=el('output','0 mm');separationValue.htmlFor=separation.id;
+ separationLabel.append(separation,separationValue);
+ const markerLabel=el('label');
+ const markerToggle=el('input');markerToggle.type='checkbox';markerToggle.checked=true;markerToggle.disabled=true;
+ markerLabel.append(markerToggle,document.createTextNode(' Show unverified mounting datum markers'));
+ const visualWarning=el('small','The preview slides the motor along assumed source-native +Z. The research pose, measurements and safety status never change.');
+ visualControls.append(separationLabel,markerLabel,visualWarning);
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,fileGrid,controls,form,viewButton,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,fileGrid,controls,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
   proposal=null;exportBtn.disabled=true;viewButton.disabled=true;result.textContent='No current mating proposal. Reevaluate changed values.';
-  viewer?.dispose();viewer=null;viewerHost.hidden=true;viewerHost.replaceChildren();broadcast();
+  viewer?.dispose();viewer=null;viewerHost.hidden=true;viewerHost.replaceChildren();
+  separation.disabled=true;separation.value='0';separationValue.textContent='0 mm';
+  markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
   ++token;verified=null;build.disabled=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
@@ -149,12 +162,26 @@ if(host){
    if(!proposal||!verified||!cadMatingAppliesToRecord(proposal,aircraftRecord))
     throw Error('Aircraft selection changed before CAD preview could start');
    viewerHost.hidden=false;
-   viewer=createCadPairViewer(viewerHost);
-   await viewer.load(verified.frame.glbBytes,verified.motor.glbBytes,proposal);
+   const currentViewer=createCadPairViewer(viewerHost);
+   viewer=currentViewer;
+   await currentViewer.load(verified.frame.glbBytes,verified.motor.glbBytes,proposal);
+   if(viewer!==currentViewer||!proposal||!cadMatingAppliesToRecord(proposal,aircraftRecord))return;
+   separation.value='0';separationValue.textContent='0 mm';separation.disabled=false;
+   markerToggle.disabled=false;currentViewer.setDatumMarkersVisible(markerToggle.checked);
   }catch(err){
    viewer?.dispose();viewer=null;viewerHost.hidden=true;
    result.textContent+='\n3D preview unavailable: '+err.message;
   }
+ });
+ separation.addEventListener('input',()=>{
+  if(!viewer||separation.disabled)return;
+  try{
+   const pose=viewer.setSeparation(Number(separation.value));
+   separationValue.textContent=pose.displaySeparationMm+' mm (display only)';
+  }catch(err){separationValue.textContent='Invalid separation';}
+ });
+ markerToggle.addEventListener('change',()=>{
+  if(viewer) viewer.setDatumMarkersVisible(markerToggle.checked);
  });
  window.addEventListener('aeroforge:x500-record-updated',e=>{
   const incoming=e.detail?.record;
