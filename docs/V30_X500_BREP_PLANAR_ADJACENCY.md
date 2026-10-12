@@ -47,6 +47,7 @@ The generator checks both exact original STEP SHA-256 digests before OCP import,
 
 3. Open **Engineering → Real CAD viewer → Frame ↔ motor CAD registration study**. Select and locally verify the original STEP + GLB + visual-package JSON for both components. Add v2.9 `x500-mount-feature-candidates.v29.json`, then optionally v3.0 `x500-brep-plane-adjacency.v30.json`, and click **Verify two source packages**.
 4. Expand the separate **Review direct cylindrical-to-planar BREP adjacency** panel. Inspect per-candidate original solid and face IDs, exact directly shared axial planes and warning when **none** is shared. This panel is *read-only* and does not auto-fill a proposed axial mounting datum.
+5. When an independently labeled manual research pose is created and **Preview two source meshes in 3D** is opened, eight small source-bound frame-only dots mark those original BREP plane coordinates: orange = native Y 15.5 mm, violet = native Y 17.0 mm, at each of the four candidate frame centers. These markers are **not** a physical face visualization, and their placement does not identify a motor mounting plane or approve a fit.
 
 The optional v3.0 report may also be absent. Older manually entered research hypotheses remain available under their prior rules, but without v3.0 topological evidence.
 
