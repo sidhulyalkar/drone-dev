@@ -1,4 +1,10 @@
-# AeroForge v3.1 Draft · Source-Bound Hardware Research Studio
+# AeroForge v3.2 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.2: 16 source-derived nominal motor-to-obround in-plane alignments
+
+The original user-uploaded STEP-derived frame/motor contour chain now supports a **fully deterministic 2D plan-view alignment solver**. It discovers four nominal projected orientations at each of four outer frame motor-pattern locations, near **45°, 135°, 225° and 315°**, maps all four motor passages bijectively to individual radial obround slots, and measures point-to-segment residuals rather than misleading centroid distance. The largest nominal residual across the sixteen rounded-source-coordinate hypotheses is ~**0.000510 mm**. With a **hypothetical 2.5 mm test gauge** (NOT a fastener specification), the smallest computed ideal-obround margin is ~**1.649490 mm**. These are mathematical, source-CAD-native results, not measured tolerances or physical clearance approvals.
+
+Engineering includes a compact, optional **SVG 2D native-plane explorer**, gauge diameter slider, 16-pose selector and research-only JSON export. It stays hidden without the exact original STEP/GLB and BREP report chain; it deliberately **does not apply** a nominal planar rotation to the existing manually reviewed 3D assembly pose. Axial mounting contact, continuous source-to-part rotation and exact BREP interference remain independent unresolved requirements. [Read v3.2 research assumptions, equations and verification](docs/V32_X500_NOMINAL_PLANAR_REGISTRATION.md).
 
 ## New in v3.1: Exact original BREP slot-versus-bore contour classification
 
