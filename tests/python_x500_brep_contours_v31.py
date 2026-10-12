@@ -47,7 +47,7 @@ class TestSourceContourRecognizer(unittest.TestCase):
    path.write_text("ISO-10303-21; SYNTHETIC UNTRUSTED TEST")
    with self.assertRaisesRegex(ValueError,"original STEP bytes changed"):
     features.import_solids(path,"frame")
-   with self.assertRaisesRegex(ValueError,"original STEP filename"):
+   with self.assertRaisesRegex(ValueError,"Original motor STEP filename"):
     features.import_solids(Path(directory)/"wrong.step","motor")
 
 if __name__=="__main__":
