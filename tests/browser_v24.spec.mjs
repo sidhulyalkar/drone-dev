@@ -163,3 +163,23 @@ test('v2.9 candidate report cannot elevate geometry when its source is a synthet
  await expect(page.locator('#cad-v29-feature-review')).toBeHidden();
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
+
+test('v3.0 reported BREP planes require both source files and the exact underlying v2.9 report',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ const frame=fixture('x500v2-frame.step','FRAME'),motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ await page.locator('#cad-v30-topology-report').setInputFiles({
+  name:'unlinked-plane-report.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify({
+   schema:'aeroforge/x500-brep-plane-adjacency/v3.0',
+   flightApproved:true,verifiedPhysicalMountingFaceCount:4
+  }))
+ });
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'CAD intake rejected: v3.0 BREP adjacency requires the original v2.9 feature index');
+ await expect(page.locator('#cad-v30-topology-review')).toBeHidden();
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
