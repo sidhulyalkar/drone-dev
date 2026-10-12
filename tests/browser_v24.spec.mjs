@@ -38,6 +38,36 @@ async function choose(page,index,fixture){
  await fields.nth(2).setInputFiles({name:fixture.manifest.source.fileName,
   mimeType:'application/octet-stream',buffer:fixture.step});
 }
+function intakeReport(frame,motor){
+ const pack=(fixture)=>({
+  fileName:fixture.manifest.source.fileName,
+  sha256:fixture.manifest.source.sha256,
+  sizeBytes:fixture.manifest.source.sizeBytes,
+  sourceRevisionDeclaredByOperator:fixture.manifest.source.revision,
+  origin:'USER_ACQUIRED_SOURCE_NOT_VENDOR_AUTHENTICATED',
+  stepEnvelopeRecognized:true,unitsIndependentlyVerified:false,redistributionAuthorized:false
+ });
+ const conversion=(fixture)=>({
+  glbName:fixture.manifest.mesh.fileName,
+  glbSha256:fixture.manifest.mesh.sha256,
+  visualManifestName:fixture.manifest.mesh.fileName.replace(/\\.glb$/i,'.visual-package.json'),
+  solidCount:fixture.manifest.conversion.solidCount,
+  triangleCount:fixture.manifest.conversion.triangleCount,
+  unreviewedGeometry:true
+ });
+ return {
+  schema:'aeroforge/x500-paired-source-intake/v2.7',
+  sourcePage:'https://docs.holybro.com/drone-development-kit/px4-development-kit-x500v2/download',
+  files:{frame:pack(frame),motor:pack(motor)},
+  conversionResults:{frame:conversion(frame),motor:conversion(motor)},
+  licenseNotes:'Synthetic test files only; no manufacturer redistribution grant or origin verified.',
+  manufacturerIdentityVerified:false,inputUnitsIndependentlyVerified:false,
+  assemblyDatumsRegistered:false,physicalFitQualified:false,
+  procurementApproved:false,powerApproved:false,flightApproved:false,
+  readyForMechanicalManufacture:false,sourcesCopiedOrRedistributed:false,
+  readyForBrowserResearch:true
+ };
+}
 test('dual source CAD research needs both matching original STEP files and leaves physical approval false',async({page})=>{
  await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
  await page.locator('#af-workspace-engineering').click();
@@ -46,8 +76,11 @@ test('dual source CAD research needs both matching original STEP files and leave
  const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
  await choose(page,0,frame);
  await choose(page,1,motor);
+ await page.locator('#cad-v27-intake-receipt').setInputFiles({
+  name:'x500-paired-source-intake.v27.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify(intakeReport(frame,motor)))});
  await page.getByRole('button',{name:'Verify two source packages'}).click();
- await expect(page.locator('#cad-v24-pair')).toContainText('Two local STEP and GLB digests matched');
+ await expect(page.locator('#cad-v24-pair')).toContainText('match BOTH paired source-intake report entries');
  await page.locator('#cad-v24-pair form input[type=text]').nth(0).fill('250, 0, 20');
  await page.locator('#cad-v24-pair form input[type=text]').nth(1).fill('0, 0, 0');
  await page.locator('#cad-v24-pair form input[type=number]').nth(0).fill('16');
@@ -88,5 +121,21 @@ test('altered original STEP refuses paired mechanical proposal',async({page})=>{
    buffer:Buffer.from('SYNTHETIC ALTERED BYTES IN TEST')});
  await page.getByRole('button',{name:'Verify two source packages'}).click();
  await expect(page.locator('#cad-v24-pair')).toContainText('CAD intake rejected');
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
+
+test('paired report cannot describe another CAD source while browser file hashes match',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ const frame=fixture('x500v2-frame.step','FRAME'),motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ const swapped=intakeReport(frame,motor);
+ swapped.conversionResults.motor.glbSha256='e'.repeat(64);
+ await page.locator('#cad-v27-intake-receipt').setInputFiles({
+  name:'spoofed-intake.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify(swapped))});
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText('CAD intake rejected: motor source or tessellation digest mismatch');
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
