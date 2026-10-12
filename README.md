@@ -1,4 +1,10 @@
-# AeroForge v2.7 Draft · Source-Bound Hardware Research Studio
+# AeroForge v2.8 Draft · Source-Bound Hardware Research Studio
+
+## New in v2.8: Original source files imported and visualized
+
+The user supplied both original-named X500 V2 STEP files. Local CadQuery/OCP inspections found **244 frame solids** and **4 motor solids**. Source-byte fingerprints, CAD-native bounds, export timestamp caveats and bounded LOD results are documented in [v2.8 real STEP inspection](docs/V28_REAL_X500_STEP_INSPECTION.md). This is physical source geometry for a research viewer, not independently signed vendor provenance, qualified hole centers or flight hardware approval.
+
+The local CAD mesher was tuned to a conservative full-assembly preview profile after the previous ultra-fine default exceeded the cap before converting all 244 solids. The display-only UI now supports all **24 right-handed signed axis mappings** and a separate selectable visual separation axis, explicitly needed because the uploaded motor source has its longest dimension on native X rather than native Z. The source-specific measurements appear only after exact source STEP and GLB hashes are matched.
 
 ## New in v2.7: Actual manufacturer STEP intake pathway
 
