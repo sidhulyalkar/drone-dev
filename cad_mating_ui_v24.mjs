@@ -303,6 +303,11 @@ if(host){
    viewer=currentViewer;
    await currentViewer.load(verified.frame.glbBytes,verified.motor.glbBytes,proposal);
    if(viewer!==currentViewer||!proposal||!cadMatingAppliesToRecord(proposal,aircraftRecord))return;
+   if(verified.topologyReview){
+    const display=currentViewer.setTopologyEvidence(verified.topologyReview);
+    topoSummary.textContent+=' 3D display: '+display.sourcePlanarMarkers+
+      ' source-only frame plane points, orange Y=15.5 mm / violet Y=17.0 mm. No motor mating surface located.';
+   }
    separation.value='0';separationValue.textContent='0 mm';separation.disabled=false;
    markerToggle.disabled=false;currentViewer.setDatumMarkersVisible(markerToggle.checked);
   }catch(err){
