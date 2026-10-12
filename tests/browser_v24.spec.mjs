@@ -183,3 +183,24 @@ test('v3.0 reported BREP planes require both source files and the exact underlyi
  await expect(page.locator('#cad-v30-topology-review')).toBeHidden();
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
+
+test('v3.1 contours cannot bypass v2.9+v3.0 original source report requirements',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ const frame=fixture('x500v2-frame.step','FRAME');
+ const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ await page.locator('#cad-v31-contour-report').setInputFiles({
+  name:'forged-brep-contours.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify({
+   schema:'aeroforge/x500-brep-contour-groups/v3.1',
+   physicalFitApproved:true,flightApproved:true
+  }))
+ });
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'CAD intake rejected: v3.1 BREP contours require both original v2.9 pattern and v3.0 topology reports');
+ await expect(page.locator('#cad-v31-contour-review')).toBeHidden();
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
