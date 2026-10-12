@@ -9,7 +9,7 @@ derived geometry is uploaded to the repository.
 """
 import argparse
 from collections import defaultdict
-from itertools import combinations
+from itertools import combinations,product
 import hashlib
 import json
 import math
@@ -120,7 +120,7 @@ def motor_candidates(report):
                 if abs(d-target)<.03:
                     mid=((a[0]+b[0])/2,(a[1]+b[1])/2)
                     pairs.setdefault(target,[]).append((a,b,mid))
-        for a,b in combinations(pairs.get(16,[]),pairs.get(19,[])):
+        for a,b in product(pairs.get(16,[]),pairs.get(19,[])):
             if set(a[:2]) & set(b[:2]):continue
             if math.dist(a[2],b[2])>.02:continue
             y=(a[2][0]+b[2][0])/2
