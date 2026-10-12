@@ -105,7 +105,7 @@ def frame_candidates(report):
             }
     require(set(found)=={"++","+-","-+","--"},
             "Expected four distinct outer frame geometric quartets; no partial result allowed")
-    return [found[k] for k in ("--","-+","+","+-")]
+    return [found[k] for k in ("--","-+","++","+-")]
 
 def motor_candidates(report):
     groups=keyed_points(report["candidateCylinders"],0,1.25)
