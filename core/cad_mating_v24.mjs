@@ -88,3 +88,51 @@ export function proposeX500CadMating(framePreview,motorPreview,input){
   powerApproved:false,flightApproved:false,
   warning:'Manual relative transform and box overlap are ONLY research hypotheses. Frame and motor source, mounts, units, axes, clearance, and fasteners require independent physical review.'};
 }
+
+/**
+ * Bind a locally verified, but unqualified CAD placement to exactly one X500
+ * selection. This is a revision-scoped research association, not verification.
+ * Unscoped historical proposals never display as evidence for the current kit.
+ */
+export const CAD_SCOPE_AUTHORITY='REVISION_SCOPED_USER_PROPOSAL_NOT_QUALIFIED';
+function x500Context(record){
+ if(record?.schema!=='aeroforge/x500-aircraft-record/v1.4'||
+  record.reference!=='holybro-x500-v2'||!['six_c','six_x'].includes(record.variant)||
+  !Number.isInteger(record.selected?.batteryCells)||
+  record.selected.batteryCells<2||record.selected.batteryCells>12||
+  typeof record.revisionIdentity!=='string'||!record.revisionIdentity||
+  record.revisionIdentity.length>6000)
+  fail('Canonical X500 revision identity is required for CAD association');
+ return {aircraftReference:record.reference,revisionIdentity:record.revisionIdentity,
+  variant:record.variant,batteryCells:record.selected.batteryCells};
+}
+function safeProposal(p){
+ if(!isObj(p)||p.schema!==CAD_PAIR_SCHEMA||
+  p.sourceAuthority!=='LOCAL_MATCHING_BYTES_MANUFACTURER_ORIGIN_UNAUTHENTICATED'||
+  p.independentlyQualified!==false||p.mechanicalFitApproved!==false||
+  p.procurementApproved!==false||p.powerApproved!==false||p.flightApproved!==false||
+  !SHA.test(p.frame?.sourceSha256)||!SHA.test(p.motor?.sourceSha256)||
+  !SHA.test(p.frame?.meshSha256)||!SHA.test(p.motor?.meshSha256)||
+  p.frame?.sourceSha256===p.motor?.sourceSha256||
+  p.registration?.provenance!=='USER_SELECTED_NOT_INDEPENDENTLY_REGISTERED')
+  fail('Unqualified source-bound CAD proposal required');
+ return p;
+}
+export function scopeX500CadMating(proposal,record){
+ safeProposal(proposal);
+ return {...proposal,aircraftScope:x500Context(record),
+  aircraftScopeAuthority:CAD_SCOPE_AUTHORITY,
+  independentlyQualified:false,mechanicalFitApproved:false,procurementApproved:false,
+  powerApproved:false,flightApproved:false};
+}
+/** A prior variant, changed source/revision, or legacy unscoped proposal never applies. */
+export function cadMatingAppliesToRecord(proposal,record){
+ try{
+  safeProposal(proposal);
+  const current=x500Context(record),scope=proposal.aircraftScope;
+  return proposal.aircraftScopeAuthority===CAD_SCOPE_AUTHORITY&&
+   scope?.aircraftReference===current.aircraftReference&&
+   scope?.revisionIdentity===current.revisionIdentity&&
+   scope?.variant===current.variant&&scope?.batteryCells===current.batteryCells;
+ }catch{return false;}
+}
