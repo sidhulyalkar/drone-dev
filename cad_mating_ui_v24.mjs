@@ -7,6 +7,7 @@ import {compareX500SourceIntake} from './core/x500_source_intake_v27.mjs';
 import {getX500RealSourceObservations} from './core/x500_real_source_observations_v28.mjs';
 import {x500RightHandedAxisOptions} from './core/cad_orientation_options_v28.mjs';
 import {checkX500MountCandidates} from './core/x500_mount_feature_review_v29.mjs';
+import {reviewX500PlaneTopology} from './core/x500_brep_topology_review_v30.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
 if(host){
@@ -44,6 +45,16 @@ if(host){
  const candidatesInput=el('input');candidatesInput.type='file';
  candidatesInput.accept='.json,application/json';candidatesInput.id='cad-v29-feature-index';
  candidatesLabel.append(candidatesInput,el('small','Generated from BOTH exact-source BREP inventories. Candidate axes are NOT verified holes or known mounting faces.'));
+ const topoLabel=el('label','Optional v3.0 original-BREP planar adjacency report (JSON) ');
+ const topoInput=el('input');topoInput.type='file';topoInput.accept='.json,application/json';
+ topoInput.id='cad-v30-topology-report';topoLabel.append(topoInput);
+ const topoPanel=el('details');topoPanel.id='cad-v30-topology-review';topoPanel.hidden=true;
+ topoPanel.append(el('summary','Review direct cylindrical-to-planar BREP adjacency (not physical fit)'));
+ const topoSummary=el('p','No face topology report checked');
+ const topoSelect=el('select');topoSelect.id='cad-v30-topology-choice';
+ const topoDetail=el('pre');topoDetail.className='cad-v30-topology-readout';
+ const topoNote=el('small','These are original-CAD topological relationships, not certified fastener holes or contact faces. Motor has no common directly adjacent axial plane. Nothing in this panel auto-fills or approves a mounting position.');
+ topoPanel.append(topoSummary,topoSelect,topoDetail,topoNote);
  const featurePanel=el('details');featurePanel.id='cad-v29-feature-review';featurePanel.hidden=true;
  featurePanel.append(el('summary','Review 5 CAD cylindrical-face mounting candidates (research only)'));
  const featureSelect=el('select');featureSelect.id='cad-v29-feature-choice';
@@ -112,7 +123,7 @@ if(host){
  visualControls.append(separationLabel,markerLabel,visualWarning);
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,controls,realSourceEvidence,featurePanel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,controls,realSourceEvidence,featurePanel,topoPanel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -122,11 +133,12 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;realSourceEvidence.hidden=true;featurePanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
  candidatesInput.addEventListener('change',clearFiles);
+ topoInput.addEventListener('change',clearFiles);
  form.addEventListener('input',clearProposal);
  axis.addEventListener('change',clearProposal);
  displayAxis.addEventListener('change',clearProposal);
@@ -168,15 +180,36 @@ if(host){
     if(ticket!==token)return;
     matchedSourceReceipt=compareX500SourceIntake(parsed,frame.preview,motor.preview);
    }
-   let featureReview=null;
+   let featureReview=null,candidateReportSha256=null,topologyReview=null;
    const candidateFile=candidatesInput.files?.[0];
    if(candidateFile){
     if(candidateFile.size>256*1024)throw Error('BREP candidate index exceeds 256 KB');
-    featureReview=checkX500MountCandidates(JSON.parse(await candidateFile.text()),
+    const rawCandidateBytes=await candidateFile.arrayBuffer();
+    if(ticket!==token)return;
+    const digest=await crypto.subtle.digest('SHA-256',rawCandidateBytes);
+    candidateReportSha256=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');
+    featureReview=checkX500MountCandidates(JSON.parse(new TextDecoder().decode(rawCandidateBytes)),
      frame.preview,motor.preview);
     if(ticket!==token)return;
    }
-   verified={frame,motor,matchedSourceReceipt,featureReview};build.disabled=false;
+   const topologyFile=topoInput.files?.[0];
+   if(topologyFile){
+    if(!featureReview)throw Error('v3.0 BREP adjacency requires the original v2.9 feature index');
+    if(topologyFile.size>512*1024)throw Error('BREP topology report exceeds 512 KB');
+    topologyReview=reviewX500PlaneTopology(JSON.parse(await topologyFile.text()),
+      featureReview,candidateReportSha256);
+    if(ticket!==token)return;
+   }
+   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview};build.disabled=false;
+   topoPanel.hidden=!topologyReview;
+   topoSelect.replaceChildren();
+   if(topologyReview){
+    topoSummary.textContent='Original-source BREP edge topology reported for all five candidates. Four frame patterns share 15.5 and 17 mm Y-normal plane faces; motor candidate has no common directly connected X-normal plane. NO qualified mate.';
+    for(const c of topologyReview.candidates){
+     const option=el('option',c.id+' • '+c.sharedPlanarFaces.length+' common axial planes');option.value=c.id;topoSelect.append(option);
+    }
+    topoDetail.textContent='Select a candidate to inspect its original source face indices.';
+   }
    featurePanel.hidden=!featureReview;
    featureSelect.replaceChildren();
    if(featureReview){
@@ -201,6 +234,16 @@ if(host){
     : 'Two local STEP and GLB digests matched their manifests. No paired intake report selected; vendor origin, units and mating datums unverified.';
   }catch(err){if(ticket===token)verifyStatus.textContent='CAD intake rejected: '+err.message;}
   finally{verify.disabled=false;}
+ });
+ topoSelect.addEventListener('change',()=>{
+  const c=verified?.topologyReview?.candidates.find(x=>x.id===topoSelect.value);
+  if(!c){topoDetail.textContent='Verify a v3.0 source topology report first';return;}
+  const planes=c.sharedPlanarFaces.map(p=>'face '+p.sourceFaceIndex+
+    ': '+p.sourceNativeAxis+'='+p.axialNativeCoordinateMm+' mm; area='+p.areaNativeMm2.toFixed(2)+' mm²').join('\n');
+  topoDetail.textContent=c.id+' (source solid '+c.solidIndex+')\nCylindrical faces: '+
+    c.originalCylinderFaceIndices.join(', ')+
+    '\nCOMMON EDGE-ADJACENT AXIAL PLANES:\n'+(planes||'NONE')+
+    '\nNearby planes are not necessarily joined to the cylinder faces. No physical mating contact is validated.';
  });
  featureSelect.addEventListener('change',()=>{
   const c=verified?.featureReview?.candidates.find(x=>x.id===featureSelect.value);
