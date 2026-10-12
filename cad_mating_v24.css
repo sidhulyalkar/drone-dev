@@ -33,3 +33,10 @@
 #cad-v29-copy-transverse{max-width:100%;white-space:normal;text-align:left}
 #cad-v28-source-observations .cad-v28-source-readout{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem;max-height:170px;overflow:auto}
 @media(max-width:600px){#cad-v29-feature-review{padding:9px}}
+
+/* v3.0 topology evidence remains a separate collapsed read-only inspector. */
+#cad-v30-topology-review{margin:12px 0;padding:12px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v30-topology-review>summary{cursor:pointer;font-weight:650}
+#cad-v30-topology-review select{display:block;width:min(100%,600px);max-width:100%;margin:10px 0}
+#cad-v30-topology-review .cad-v30-topology-readout{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.55;max-height:300px;overflow:auto;padding:10px;border:1px solid #66748070;border-radius:8px}
+#cad-v30-topology-review small{display:block;line-height:1.45;margin:10px 0}
