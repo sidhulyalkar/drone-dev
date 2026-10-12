@@ -1,4 +1,10 @@
-# AeroForge v3.0 Draft · Source-Bound Hardware Research Studio
+# AeroForge v3.1 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.1: Exact original BREP slot-versus-bore contour classification
+
+Reimporting the actual operator-uploaded X500 V2 frame/motor STEP files now differentiates **16 closed obround frame slot contours (5.8 × 7.3 mm)** from **four 2.5 mm-diameter motor circular-passage candidates**, reconstructed from pairs of half-cylindrical faces. The complete frame slot centers are **8.75 mm** from each outer quadrant center, distinct from the earlier 9.5 mm half-cylinder-axis distance. The source-bound v3.1 report requires both original STEP hashes and the exact private v2.9 and v3.0 report bytes.
+
+Engineering now offers a collapsed 20-contour review selector, preserving original STEP-native geometry and optionally overlaying green frame-slot and coral motor passage markers in the dual-source 3D viewer. Copying a research contour center still deliberately leaves the **unmeasured mounting-axis coordinate blank**. No thread, contact face, bolt engagement, toleranced fit, manufacturing, procurement, power or flight approval is inferred. Source files and unlicensed derivative GLBs remain off GitHub. [Read the v3.1 BREP contour and validation guide](docs/V31_X500_BREP_CONTOUR_FEATURES.md).
 
 ## New in v3.0: Actual BREP planar face adjacency
 
