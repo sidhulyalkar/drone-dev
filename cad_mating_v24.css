@@ -62,3 +62,14 @@
 #cad-v32-nominal-summary{font-size:.9rem;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 #cad-v32-export{max-width:100%;white-space:normal}
 @media(max-width:600px){#cad-v32-planar-fit{padding:9px}}
+
+/* v3.3 source-native three-dimensional contact hypothesis review. */
+#cad-v33-contact-survey{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v33-contact-survey>summary{cursor:pointer;font-weight:650}
+#cad-v33-contact-survey .cad-v33-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:10px;margin:12px 0}
+#cad-v33-contact-survey label{display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:.85rem}
+#cad-v33-contact-survey select{width:100%;max-width:100%}
+#cad-v33-contact-survey .cad-v33-source-readout{max-height:270px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;font-size:.83rem;padding:12px;border:1px solid #66829080;border-radius:8px}
+#cad-v33-contact-survey small{display:block;line-height:1.5;margin:12px 0}
+#cad-v33-export{max-width:100%;white-space:normal;text-align:left}
+@media(max-width:600px){#cad-v33-contact-survey{padding:9px}}
