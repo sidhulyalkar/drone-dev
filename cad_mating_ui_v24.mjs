@@ -11,6 +11,7 @@ import {reviewX500PlaneTopology} from './core/x500_brep_topology_review_v30.mjs'
 import {reviewX500ContourGroups} from './core/x500_brep_contour_review_v31.mjs';
 import {createX500NominalFitPanel} from './cad_nominal_planar_ui_v32.mjs';
 import {reviewX500SourceContactSurvey} from './core/x500_contact_survey_v33.mjs';
+import {reviewX500BooleanProbe} from './core/x500_brep_boolean_review_v33.mjs';
 import {createX500ContactSurveyPanel} from './cad_contact_survey_ui_v33.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
@@ -81,6 +82,10 @@ if(host){
  const contactInput=el('input');contactInput.type='file';
  contactInput.accept='.json,application/json';contactInput.id='cad-v33-contact-report';
  contactLabel.append(contactInput,el('small','Original STEP/CAD contact-face paths, 64 source-native rigid-pose hypotheses and conservatively screened AABB pairs. No physical fit or collision approval.'));
+ const boundedLabel=el('label','Optional v3.3 bounded exact BREP solid-pair result (JSON) ');
+ const boundedInput=el('input');boundedInput.type='file';
+ boundedInput.accept='.json,application/json';boundedInput.id='cad-v33-brep-probe';
+ boundedLabel.append(boundedInput,el('small','Report from an independently supervised CAD kernel. Positive model overlaps are blockers; zero modeled overlap never grants physical clearance.'));
  const featurePanel=el('details');featurePanel.id='cad-v29-feature-review';featurePanel.hidden=true;
  featurePanel.append(el('summary','Review 5 CAD cylindrical-face mounting candidates (research only)'));
  const featureSelect=el('select');featureSelect.id='cad-v29-feature-choice';
@@ -151,7 +156,7 @@ if(host){
  const sourceContactUI=createX500ContactSurveyPanel();
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,planarReferenceLabel,contactLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,sourceContactUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,planarReferenceLabel,contactLabel,boundedLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,sourceContactUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -170,6 +175,7 @@ if(host){
  contourInput.addEventListener('change',clearFiles);
  planarReferenceInput.addEventListener('change',clearFiles);
  contactInput.addEventListener('change',clearFiles);
+ boundedInput.addEventListener('change',clearFiles);
  form.addEventListener('input',clearProposal);
  axis.addEventListener('change',clearProposal);
  displayAxis.addEventListener('change',clearProposal);
@@ -211,7 +217,7 @@ if(host){
     if(ticket!==token)return;
     matchedSourceReceipt=compareX500SourceIntake(parsed,frame.preview,motor.preview);
    }
-   let featureReview=null,candidateReportSha256=null,topologyReportSha256=null,topologyReview=null,contourReview=null,contourReportSha256=null,independentV32=null,v32ReportSha256=null,sourceContactReview=null;
+   let featureReview=null,candidateReportSha256=null,topologyReportSha256=null,topologyReview=null,contourReview=null,contourReportSha256=null,independentV32=null,v32ReportSha256=null,sourceContactReview=null,sourceContactReportSha256=null,boundedReview=null;
    const candidateFile=candidatesInput.files?.[0];
    if(candidateFile){
     if(candidateFile.size>256*1024)throw Error('BREP candidate index exceeds 256 KB');
@@ -264,13 +270,27 @@ if(host){
     if(!contourReview||!independentV32)
      throw Error('v3.3 BREP contact study requires original v3.1 contours and the v3.2 independent source report');
     if(v33File.size>1024*1024)throw Error('v3.3 source contact report exceeds 1 MB');
+    const v33Bytes=await v33File.arrayBuffer();
+    if(ticket!==token)return;
+    const v33Digest=await crypto.subtle.digest('SHA-256',v33Bytes);
+    sourceContactReportSha256=Array.from(new Uint8Array(v33Digest),
+      v=>v.toString(16).padStart(2,'0')).join('');
     sourceContactReview=reviewX500SourceContactSurvey(
-      JSON.parse(await v33File.text()),contourReview,contourReportSha256,
+      JSON.parse(new TextDecoder().decode(v33Bytes)),contourReview,contourReportSha256,
       independentV32,v32ReportSha256);
     if(ticket!==token)return;
    }
-   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview,sourceContactReview};build.disabled=false;
+   const boundedFile=boundedInput.files?.[0];
+   if(boundedFile){
+    if(!sourceContactReview)throw Error('v3.3 exact BREP batch requires the original verified source-contact survey');
+    if(boundedFile.size>128*1024)throw Error('v3.3 BREP Boolean evidence exceeds 128 KB');
+    boundedReview=reviewX500BooleanProbe(JSON.parse(await boundedFile.text()),
+      sourceContactReview,sourceContactReportSha256);
+    if(ticket!==token)return;
+   }
+   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview,sourceContactReview,boundedReview};build.disabled=false;
    if(sourceContactReview)sourceContactUI.setEvidence(sourceContactReview);
+   if(boundedReview)sourceContactUI.setBooleanEvidence(boundedReview);
    if(contourReview)nominalFitUI.setEvidence(contourReview);
    contourPanel.hidden=!contourReview;
    // A v2.9 half-cylinder axis pattern center is not a frame slot center.
