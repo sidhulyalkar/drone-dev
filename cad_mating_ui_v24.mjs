@@ -10,6 +10,8 @@ import {checkX500MountCandidates} from './core/x500_mount_feature_review_v29.mjs
 import {reviewX500PlaneTopology} from './core/x500_brep_topology_review_v30.mjs';
 import {reviewX500ContourGroups} from './core/x500_brep_contour_review_v31.mjs';
 import {createX500NominalFitPanel} from './cad_nominal_planar_ui_v32.mjs';
+import {reviewX500SourceContactSurvey} from './core/x500_contact_survey_v33.mjs';
+import {createX500ContactSurveyPanel} from './cad_contact_survey_ui_v33.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
 const host=document.getElementById('cad-package-v13');
 if(host){
@@ -71,6 +73,14 @@ if(host){
  contourCopy.id='cad-v31-copy-transverse';contourCopy.type='button';
  const contourWarning=el('small','CAD contours are not certified holes, and motor thread, bolt diameter, fastening, contact plane and collision clearance remain unknown. No approval can be granted here.');
  contourPanel.append(contourSummary,contourChoice,contourDetail,contourCopy,contourWarning);
+ const planarReferenceLabel=el('label','Optional v3.2 original-source independent planar reference report (JSON) ');
+ const planarReferenceInput=el('input');planarReferenceInput.type='file';
+ planarReferenceInput.accept='.json,application/json';planarReferenceInput.id='cad-v32-planar-reference';
+ planarReferenceLabel.append(planarReferenceInput,el('small','This exact private Python reference report links to the v3.1 contour-report byte hash. Required before v3.3 source-contact evidence can be reviewed.'));
+ const contactLabel=el('label','Optional v3.3 original-source BREP 3D contact survey (JSON) ');
+ const contactInput=el('input');contactInput.type='file';
+ contactInput.accept='.json,application/json';contactInput.id='cad-v33-contact-report';
+ contactLabel.append(contactInput,el('small','Original STEP/CAD contact-face paths, 64 source-native rigid-pose hypotheses and conservatively screened AABB pairs. No physical fit or collision approval.'));
  const featurePanel=el('details');featurePanel.id='cad-v29-feature-review';featurePanel.hidden=true;
  featurePanel.append(el('summary','Review 5 CAD cylindrical-face mounting candidates (research only)'));
  const featureSelect=el('select');featureSelect.id='cad-v29-feature-choice';
@@ -138,9 +148,10 @@ if(host){
  const visualWarning=el('small','The preview slides along the user-selected motor-native signed axis, which is NOT a verified shaft axis. Research registration and approval flags never change.');
  visualControls.append(separationLabel,markerLabel,visualWarning);
  const nominalFitUI=createX500NominalFitPanel();
+ const sourceContactUI=createX500ContactSurveyPanel();
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,planarReferenceLabel,contactLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,sourceContactUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -150,13 +161,15 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;nominalFitUI.reset();copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;nominalFitUI.reset();sourceContactUI.reset();copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
  candidatesInput.addEventListener('change',clearFiles);
  topoInput.addEventListener('change',clearFiles);
  contourInput.addEventListener('change',clearFiles);
+ planarReferenceInput.addEventListener('change',clearFiles);
+ contactInput.addEventListener('change',clearFiles);
  form.addEventListener('input',clearProposal);
  axis.addEventListener('change',clearProposal);
  displayAxis.addEventListener('change',clearProposal);
@@ -181,7 +194,7 @@ if(host){
   return {preview,glbBytes};
  }
  verify.addEventListener('click',async()=>{
-  const ticket=++token;verified=null;build.disabled=true;nominalFitUI.reset();clearProposal();verify.disabled=true;
+  const ticket=++token;verified=null;build.disabled=true;nominalFitUI.reset();sourceContactUI.reset();clearProposal();verify.disabled=true;
   verifyStatus.textContent='Hashing frame and motor STEP/GLB files locally…';
   try{
    const frame=await load('Frame',parts.frame);if(ticket!==token)return;
@@ -198,7 +211,7 @@ if(host){
     if(ticket!==token)return;
     matchedSourceReceipt=compareX500SourceIntake(parsed,frame.preview,motor.preview);
    }
-   let featureReview=null,candidateReportSha256=null,topologyReportSha256=null,topologyReview=null,contourReview=null;
+   let featureReview=null,candidateReportSha256=null,topologyReportSha256=null,topologyReview=null,contourReview=null,contourReportSha256=null,independentV32=null,v32ReportSha256=null,sourceContactReview=null;
    const candidateFile=candidatesInput.files?.[0];
    if(candidateFile){
     if(candidateFile.size>256*1024)throw Error('BREP candidate index exceeds 256 KB');
@@ -227,11 +240,37 @@ if(host){
     if(!topologyReview||!featureReview)
      throw Error('v3.1 BREP contours require both original v2.9 pattern and v3.0 topology reports');
     if(contourFile.size>512*1024)throw Error('BREP contour report exceeds 512 KB');
-    contourReview=reviewX500ContourGroups(JSON.parse(await contourFile.text()),
-     featureReview,topologyReview,candidateReportSha256,topologyReportSha256);
+    const contourBytes=await contourFile.arrayBuffer();
+    if(ticket!==token)return;
+    const contourDigest=await crypto.subtle.digest('SHA-256',contourBytes);
+    contourReportSha256=Array.from(new Uint8Array(contourDigest),v=>v.toString(16).padStart(2,'0')).join('');
+    contourReview=reviewX500ContourGroups(
+      JSON.parse(new TextDecoder().decode(contourBytes)),
+      featureReview,topologyReview,candidateReportSha256,topologyReportSha256);
     if(ticket!==token)return;
    }
-   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview};build.disabled=false;
+   const independentV32File=planarReferenceInput.files?.[0];
+   if(independentV32File){
+    if(!contourReview)throw Error('v3.2 independent source planar reference requires original v3.1 contours');
+    if(independentV32File.size>256*1024)throw Error('v3.2 source reference exceeds 256 KB');
+    const v32Bytes=await independentV32File.arrayBuffer();
+    if(ticket!==token)return;
+    const d=await crypto.subtle.digest('SHA-256',v32Bytes);
+    v32ReportSha256=Array.from(new Uint8Array(d),v=>v.toString(16).padStart(2,'0')).join('');
+    independentV32=JSON.parse(new TextDecoder().decode(v32Bytes));
+   }
+   const v33File=contactInput.files?.[0];
+   if(v33File){
+    if(!contourReview||!independentV32)
+     throw Error('v3.3 BREP contact study requires original v3.1 contours and the v3.2 independent source report');
+    if(v33File.size>1024*1024)throw Error('v3.3 source contact report exceeds 1 MB');
+    sourceContactReview=reviewX500SourceContactSurvey(
+      JSON.parse(await v33File.text()),contourReview,contourReportSha256,
+      independentV32,v32ReportSha256);
+    if(ticket!==token)return;
+   }
+   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview,sourceContactReview};build.disabled=false;
+   if(sourceContactReview)sourceContactUI.setEvidence(sourceContactReview);
    if(contourReview)nominalFitUI.setEvidence(contourReview);
    contourPanel.hidden=!contourReview;
    // A v2.9 half-cylinder axis pattern center is not a frame slot center.
