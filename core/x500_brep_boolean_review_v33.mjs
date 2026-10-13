@@ -60,7 +60,8 @@ export function reviewX500BooleanProbe(report,survey,sourceSurveySha256){
    pair.frameSolidIndex>=244||!Number.isInteger(pair.motorSolidIndex)||
    pair.motorSolidIndex<0||pair.motorSolidIndex>=4||ids.has(id)||
    !finite(pair.modelIntersectionVolumeMm3)||pair.modelIntersectionVolumeMm3<0||
-   pair.sourceModelPositiveOverlap!==(pair.modelIntersectionVolumeMm3>.0001))
+   pair.sourceModelPositiveOverlap!==(pair.modelIntersectionVolumeMm3>.0001)||
+   !expectedIds.has(id))
    fail('Malformed or contradictory per-solid exact BREP overlap');
   ids.add(id);max=Math.max(max,pair.modelIntersectionVolumeMm3);
   if(pair.sourceModelPositiveOverlap)positive++;
