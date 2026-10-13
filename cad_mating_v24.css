@@ -73,3 +73,12 @@
 #cad-v33-contact-survey small{display:block;line-height:1.5;margin:12px 0}
 #cad-v33-export{max-width:100%;white-space:normal;text-align:left}
 @media(max-width:600px){#cad-v33-contact-survey{padding:9px}}
+
+/* v3.4 source-only CAD repeated-occurrence reconciliation, hidden by default. */
+#cad-v34-occurrence-review{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v34-occurrence-review>summary{cursor:pointer;font-weight:650}
+#cad-v34-occurrence-review select{display:block;width:min(100%,650px);margin:12px 0}
+#cad-v34-occurrence-review .cad-v34-report{max-height:280px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.83rem;line-height:1.5;padding:12px;border:1px solid #68849570;border-radius:8px}
+#cad-v34-occurrence-review small{display:block;margin:10px 0;line-height:1.55}
+#cad-v34-summary{font-variant-numeric:tabular-nums}
+@media(max-width:600px){#cad-v34-occurrence-review{padding:9px}}
