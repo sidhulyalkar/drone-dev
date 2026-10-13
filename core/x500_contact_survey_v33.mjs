@@ -116,6 +116,7 @@ function verifyPose(p,reference){
   rotation3x3:R.map(row=>[...row]),
   nativeTranslationMm:[...T],
   opposingSourceNormals:opposed,modelAabbPotentialPairs:broad.length,
+  modelAabbPairs:broad.map(x=>({frameSolidIndex:x.frameSolidIndex,motorSolidIndex:x.motorSolidIndex})),
   exactBrepBooleanStatus:'NOT_RUN',
   actualMountingPlaneQualified:false,
   physicalFitApproved:false,flightApproved:false};
