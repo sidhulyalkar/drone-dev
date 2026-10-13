@@ -1,4 +1,12 @@
-# AeroForge v3.2 Draft · Source-Bound Hardware Research Studio
+# AeroForge v3.3 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.3: Source-BREP motor seating candidates and actual model interference
+
+Two source CAD motor planes, native X = **1180.87548** and **1183.67548 mm**, are topologically connected to all four circular passage candidates through 45° conical BREP transitions. They are genuine **source-geometric face candidates**, not independently verified mounting seats.
+
+The prior 16 nominal planar alignments now expand to **64 proper right-handed, original-coordinate-preserving 3D source-pose hypotheses**, including **32 with opposing candidate face normals**. Every pose is screened across **all 244 original frame solids and all four motor solids** by conservative AABB overlap. One independently supervised **exact BREP intersection batch** then tested all 30 broadphase-positive original-solid pairs of a single candidate pose and found **13 modeled positive-volume collisions** (largest **5,491.39 mm³**). A misleading isolated zero-volume intersection for the immediate mounting solid was not treated as complete clearance.
+
+The collapsed Engineering interface now provides a source-hash-linked **64-pose 3D contact inspector**, opposing-normal filter, and optional exact BREP collision-evidence upload. These artifacts never silently alter the 3D mating proposal or approve actual fit. A fresh CAD-free supervisor with hard deadlines runs expensive Booleans separately; worker failures/timeouts are **INDETERMINATE**, not no-collision results. The offline private kit includes all 36 prior/source evidence, BREP programs and per-pair collision CSVs. [Read the detailed v3.3 report](docs/V33_X500_SOURCE_CONTACT_AND_BREP_INTERFERENCE.md).
 
 ## New in v3.2: 16 source-derived nominal motor-to-obround in-plane alignments
 
