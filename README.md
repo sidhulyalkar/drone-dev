@@ -1,4 +1,12 @@
-# AeroForge v3.3 Draft · Source-Bound Hardware Research Studio
+# AeroForge v3.4 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.4: Exact source-occurrence audit and collision count reconciliation
+
+The first v3.3 motor-to-frame BREP intersection batch found **13 positive comparisons among 30 original source-solid pairs**. New original STEP BREP auditing now proves **four coincident CAD occurrence pairs**, one at each frame quadrant: **56/189, 83/191, 110/190, 137/188**. Each pair shares underlying original TopoDS `TShape`, orientation and effectively identical placed transforms, vertices and bounding boxes, unlike the same source shape placed at different aircraft corners.
+
+This reduces **244 original frame-solid occurrences to 240 distinct placed-geometry groups**, and allows a supplemental conservative model-interference view: **30 raw comparisons → 26 geometry-group comparisons; 13 raw positive overlaps → nine geometry-distinct positive groups**. The underlying 30 original exact BREP volumes remain unchanged. The largest positive volume remains **5,491.38771511 mm³**, so this source-native pose **still has substantial modeled interference**.
+
+The operator-only `tools/x500_source_occurrence_audit_v34.py` rehashes original STEP and v3.3 survey/Boolean bytes, checks all 244 source solids, and records narrow spatial identity witnesses. The separate collapsed Engineering v3.4 panel independently recomputes the 26 geometry-group results from all 30 source-model Boolean rows and refuses any physical/BOM approval. **Coincident CAD occurrences are not proof that two physical purchased components are interchangeable or redundant.** [See original source occurrence and collision reconciliation evidence](docs/V34_X500_SOURCE_OCCURRENCE_RECONCILIATION.md).
 
 ## New in v3.3: Source-BREP motor seating candidates and actual model interference
 
