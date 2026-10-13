@@ -133,6 +133,6 @@ test('v3.3 browser is hidden on changed source, uses exact SHA of v31 and v32 an
  assert.match(ui,/crypto\.subtle\.digest\('SHA-256',v32Bytes\)/);
  assert.match(ui,/sourceContactUI\.reset\(\)/);
  assert.match(panel,/cad-v33-show-same-facing/);
- assert.match(panel,/sourceNative/);
+ assert.match(panel,/nativeTranslationMm/);
  assert.doesNotMatch(ui,/proposeX500CadMating\(sourceContactReview/);
 });
