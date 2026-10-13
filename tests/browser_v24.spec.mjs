@@ -219,3 +219,23 @@ test('v3.2 plan-view solver remains hidden without exact verified source BREP co
  await expect(page.locator('#cad-v32-planar-fit')).toBeHidden();
  await expect(page.locator('#cad-v32-export')).toBeDisabled();
 });
+
+test('v3.3 proposed contact plane evidence cannot bypass original v3.1 contours and v3.2 reference',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ const frame=fixture('x500v2-frame.step','FRAME');
+ const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ await expect(page.locator('#cad-v33-contact-survey')).toBeHidden();
+ await page.locator('#cad-v33-contact-report').setInputFiles({
+  name:'forged-source-contact.v33.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify({schema:'aeroforge/x500-source-contact-hypotheses/v3.3',
+   physicalFitApproved:true,flightApproved:true}))
+ });
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'CAD intake rejected: v3.3 BREP contact study requires original v3.1 contours and the v3.2 independent source report');
+ await expect(page.locator('#cad-v33-contact-survey')).toBeHidden();
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
