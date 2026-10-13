@@ -52,6 +52,7 @@ export function reviewX500BooleanProbe(report,survey,sourceSurveySha256){
   !finite(b.maxPositiveOverlapMm3)||b.maxPositiveOverlapMm3<0)
   fail('Incomplete or falsely finalized exact-solid batch evidence');
  const ids=new Set();
+ const expectedIds=new Set(candidate.modelAabbPairs.map(x=>x.frameSolidIndex+':'+x.motorSolidIndex));
  let positive=0,max=0;
  for(const pair of b.pairs){
   const id=pair.frameSolidIndex+':'+pair.motorSolidIndex;
