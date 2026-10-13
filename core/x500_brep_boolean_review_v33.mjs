@@ -71,7 +71,7 @@ export function reviewX500BooleanProbe(report,survey,sourceSurveySha256){
   fail('Top-level collision summary contradicts exact source solid pairs');
  // The source-only browser survey does not embed the full AABB pair list;
  // require original 30-34 complete pair count, not a bogus one-pair clearance.
- if(b.pairCount!==candidate.modelAabbPotentialPairs)
+ if(b.pairCount!==candidate.modelAabbPotentialPairs||ids.size!==expectedIds.size)
   fail('Some source AABB-positive pairs were skipped in the exact Boolean batch');
  return {schema:'aeroforge/x500-boolean-browser-evidence/v3.3',
   authority:'EXACT_ORIGINAL_CAD_MODEL_ONE_HYPOTHESIS_ONLY',
