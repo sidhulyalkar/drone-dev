@@ -239,3 +239,23 @@ test('v3.3 proposed contact plane evidence cannot bypass original v3.1 contours 
  await expect(page.locator('#cad-v33-contact-survey')).toBeHidden();
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
+
+test('v3.4 coincident CAD source audit cannot bypass original exact Boolean evidence',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ const frame=fixture('x500v2-frame.step','FRAME');
+ const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ await expect(page.locator('#cad-v34-occurrence-review')).toBeHidden();
+ await page.locator('#cad-v34-occurrence-report').setInputFiles({
+  name:'forged-original-brep-occurrences.v34.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify({schema:'aeroforge/x500-source-occurrence-reconciliation/v3.4',
+   physicalFitApproved:true,sourceModelRawPositiveOverlapCount:0}))
+ });
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'CAD intake rejected: v3.4 duplicate BREP occurrence analysis requires the original v3.3 survey and completed exact Boolean pair report');
+ await expect(page.locator('#cad-v34-occurrence-review')).toBeHidden();
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
