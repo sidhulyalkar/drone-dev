@@ -17,19 +17,26 @@ export function createX500ContactSurveyPanel(){
  control.append(label,toggleLabel);
  const status=make('p','No verified source-bound 3D survey selected.');
  status.id='cad-v33-source-status';
+ const collisionInfo=make('p','No bounded exact CAD Boolean report loaded; all collision checks unresolved.');
+ collisionInfo.id='cad-v33-boolean-status';
  const readout=make('pre');readout.className='cad-v33-source-readout';
  readout.textContent='Original CAD plane observations not yet available.';
  const note=make('small','AABB possible overlaps require exact BREP review. A timed-out or missing Boolean is INDETERMINATE, never “no collision.” The source-native motor seat, bolt engagement, manufacturing tolerances and rotor clearance are not qualified.');
  const download=make('button','Export unqualified 3D pose research JSON');
  download.type='button';download.id='cad-v33-export';download.disabled=true;
- panel.append(head,intro,control,status,readout,note,download);
- let data=null;
+ panel.append(head,intro,control,status,collisionInfo,readout,note,download);
+ let data=null,booleanEvidence=null;
  function redraw(){
   const value=picker.value;
   const item=data?.candidates.find(c=>c.id===value);
   if(!item){readout.textContent='Select one source-geometry hypothesis.';return;}
   status.textContent=(item.opposingSourceNormals?'Opposing face normals':'SAME-FACING normals, not a seating hypothesis')+
    ' · '+item.modelAabbPotentialPairs+' AABB-possible solid pairs · exact BREP collision NOT RUN.';
+  collisionInfo.textContent=booleanEvidence?(booleanEvidence.hypothesisId===item.id?
+    booleanEvidence.status+' · '+booleanEvidence.evaluatedSolidPairs+' original-source solid pairs evaluated · '+
+    booleanEvidence.modelOverlapPairCount+' positive modeled intersections; physical fit NOT APPROVED.':
+    'A bounded Boolean report exists only for '+booleanEvidence.hypothesisId+'. It does not cover this selected pose.'):
+    'No bounded exact BREP report loaded for this pose; collision status INDETERMINATE.';
   readout.textContent=[
    'Original frame location: '+item.framePatternId+' | source solid '+item.frameSolidIndex,
    'Motor candidate plane: face '+item.motorPlaneFaceIndex,
@@ -60,8 +67,9 @@ export function createX500ContactSurveyPanel(){
   redraw();
  }
  function reset(){
-  data=null;panel.hidden=true;picker.replaceChildren();download.disabled=true;
+  data=null;booleanEvidence=null;panel.hidden=true;picker.replaceChildren();download.disabled=true;
   status.textContent='No verified source-bound 3D contact study selected.';
+  collisionInfo.textContent='No bounded exact BREP report loaded.';
   readout.textContent='Original CAD plane observations not yet available.';
   toggle.checked=false;
  }
@@ -74,6 +82,16 @@ export function createX500ContactSurveyPanel(){
   data=review;panel.hidden=false;toggle.checked=false;
   download.disabled=false;rebuild();
  }
+ function setBooleanEvidence(evidence){
+  if(!data||evidence?.schema!=='aeroforge/x500-boolean-browser-evidence/v3.3'||
+    evidence.physicalFitApproved!==false||evidence.flightApproved!==false||
+    !data.candidates.some(x=>x.id===evidence.hypothesisId))
+   throw Error('Original-source independent BREP collision result was not verified');
+  booleanEvidence=evidence;
+  if(picker.querySelector('option[value="'+evidence.hypothesisId+'"]'))
+   picker.value=evidence.hypothesisId;
+  redraw();
+ }
  picker.addEventListener('change',redraw);
  toggle.addEventListener('change',rebuild);
  download.addEventListener('click',()=>{
@@ -84,5 +102,5 @@ export function createX500ContactSurveyPanel(){
   link.href=url;link.download='aeroforge-X500-source-contact-UNQUALIFIED-v33.json';
   link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
  });
- return {panel,reset,setEvidence};
+ return {panel,reset,setEvidence,setBooleanEvidence};
 }
