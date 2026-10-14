@@ -13,6 +13,8 @@ import {createX500NominalFitPanel} from './cad_nominal_planar_ui_v32.mjs';
 import {reviewX500SourceContactSurvey} from './core/x500_contact_survey_v33.mjs';
 import {reviewX500BooleanProbe} from './core/x500_brep_boolean_review_v33.mjs';
 import {reviewX500OccurrenceAudit} from './core/x500_occurrence_reconciliation_v34.mjs';
+import {reviewX500AssemblyHierarchy} from './core/x500_xcaf_assembly_review_v35.mjs';
+import {createX500AssemblyHierarchyPanel} from './cad_xcaf_assembly_ui_v35.mjs';
 import {createX500OccurrenceReviewPanel} from './cad_source_occurrence_ui_v34.mjs';
 import {createX500ContactSurveyPanel} from './cad_contact_survey_ui_v33.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
@@ -92,6 +94,14 @@ if(host){
  const occurrenceInput=el('input');occurrenceInput.type='file';
  occurrenceInput.accept='.json,application/json';occurrenceInput.id='cad-v34-occurrence-report';
  occurrenceLabel.append(occurrenceInput,el('small','Requires the unchanged v3.3 64-pose survey and complete original exact BREP Boolean batch. Geometry grouping is not OEM part multiplicity.'));
+ const flatLabel=el('label','Original v2.8 X500 frame 244-solid source inventory (JSON) ');
+ const flatInput=el('input');flatInput.type='file';flatInput.accept='.json,application/json';
+ flatInput.id='cad-v35-flat-inventory';
+ flatLabel.append(flatInput,el('small','SHA-bound to original frame STEP. Required to verify the original XCAF STEP 244-leaf traversal order.'));
+ const assemblyLabel=el('label','Optional v3.5 original STEP component hierarchy (JSON) ');
+ const assemblyInput=el('input');assemblyInput.type='file';
+ assemblyInput.accept='.json,application/json';assemblyInput.id='cad-v35-xcaf-report';
+ assemblyLabel.append(assemblyInput,el('small','Original AP214 XCAF occurrence names, component labels and paths. Requires verified v3.4 report and v2.8 source-solid inventory. Not an OEM BOM.'));
  const featurePanel=el('details');featurePanel.id='cad-v29-feature-review';featurePanel.hidden=true;
  featurePanel.append(el('summary','Review 5 CAD cylindrical-face mounting candidates (research only)'));
  const featureSelect=el('select');featureSelect.id='cad-v29-feature-choice';
@@ -161,9 +171,10 @@ if(host){
  const nominalFitUI=createX500NominalFitPanel();
  const sourceContactUI=createX500ContactSurveyPanel();
  const occurrenceUI=createX500OccurrenceReviewPanel();
+ const assemblyUI=createX500AssemblyHierarchyPanel();
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,planarReferenceLabel,contactLabel,boundedLabel,occurrenceLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,sourceContactUI.panel,occurrenceUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,planarReferenceLabel,contactLabel,boundedLabel,occurrenceLabel,flatLabel,assemblyLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,sourceContactUI.panel,occurrenceUI.panel,assemblyUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -173,7 +184,7 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;nominalFitUI.reset();sourceContactUI.reset();occurrenceUI.reset();copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;nominalFitUI.reset();sourceContactUI.reset();occurrenceUI.reset();assemblyUI.reset();copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
@@ -184,6 +195,8 @@ if(host){
  contactInput.addEventListener('change',clearFiles);
  boundedInput.addEventListener('change',clearFiles);
  occurrenceInput.addEventListener('change',clearFiles);
+ flatInput.addEventListener('change',clearFiles);
+ assemblyInput.addEventListener('change',clearFiles);
  form.addEventListener('input',clearProposal);
  axis.addEventListener('change',clearProposal);
  displayAxis.addEventListener('change',clearProposal);
@@ -225,7 +238,7 @@ if(host){
     if(ticket!==token)return;
     matchedSourceReceipt=compareX500SourceIntake(parsed,frame.preview,motor.preview);
    }
-   let featureReview=null,candidateReportSha256=null,topologyReportSha256=null,topologyReview=null,contourReview=null,contourReportSha256=null,independentV32=null,v32ReportSha256=null,sourceContactReview=null,sourceContactReportSha256=null,boundedReview=null,boundedRaw=null,boundedReportSha256=null,occurrenceReview=null;
+   let featureReview=null,candidateReportSha256=null,topologyReportSha256=null,topologyReview=null,contourReview=null,contourReportSha256=null,independentV32=null,v32ReportSha256=null,sourceContactReview=null,sourceContactReportSha256=null,boundedReview=null,boundedRaw=null,boundedReportSha256=null,occurrenceReview=null,rawV34=null,v34ReportSha256=null,assemblyReview=null,rawAssemblyReport=null;
    const candidateFile=candidatesInput.files?.[0];
    if(candidateFile){
     if(candidateFile.size>256*1024)throw Error('BREP candidate index exceeds 256 KB');
@@ -307,15 +320,42 @@ if(host){
     if(!sourceContactReview||!boundedReview||!boundedRaw)
      throw Error('v3.4 duplicate BREP occurrence analysis requires the original v3.3 survey and completed exact Boolean pair report');
     if(occurrenceFile.size>256*1024)throw Error('v3.4 occurrence report exceeds 256 KB');
-    occurrenceReview=reviewX500OccurrenceAudit(JSON.parse(await occurrenceFile.text()),
+    const v34Bytes=await occurrenceFile.arrayBuffer();
+    if(ticket!==token)return;
+    const v34Digest=await crypto.subtle.digest('SHA-256',v34Bytes);
+    v34ReportSha256=Array.from(new Uint8Array(v34Digest),
+      v=>v.toString(16).padStart(2,'0')).join('');
+    rawV34=JSON.parse(new TextDecoder().decode(v34Bytes));
+    occurrenceReview=reviewX500OccurrenceAudit(rawV34,
       sourceContactReview,boundedReview,boundedRaw,
       sourceContactReportSha256,boundedReportSha256);
     if(ticket!==token)return;
    }
-   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview,sourceContactReview,boundedReview,occurrenceReview};build.disabled=false;
+   const v35File=assemblyInput.files?.[0];
+   if(v35File){
+    if(!occurrenceReview||!rawV34)
+     throw Error('v3.5 XCAF assembly labels require all original-source v3.4 BREP collision evidence');
+    const inventoryFile=flatInput.files?.[0];
+    if(!inventoryFile)
+     throw Error('v3.5 XCAF leaf mapping requires original SHA-linked 244-solid v2.8 source inventory');
+    if(inventoryFile.size>512*1024||v35File.size>512*1024)
+     throw Error('v3.5 source assembly or flat inventory JSON exceeds 512 KB');
+    const inventoryBytes=await inventoryFile.arrayBuffer();
+    if(ticket!==token)return;
+    const inventoryDigest=await crypto.subtle.digest('SHA-256',inventoryBytes);
+    const inventorySha=Array.from(new Uint8Array(inventoryDigest),
+      v=>v.toString(16).padStart(2,'0')).join('');
+    const originalFlat=JSON.parse(new TextDecoder().decode(inventoryBytes));
+    rawAssemblyReport=JSON.parse(await v35File.text());
+    assemblyReview=reviewX500AssemblyHierarchy(rawAssemblyReport,
+     originalFlat,inventorySha,occurrenceReview,v34ReportSha256);
+    if(ticket!==token)return;
+   }
+   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview,sourceContactReview,boundedReview,occurrenceReview,assemblyReview};build.disabled=false;
    if(sourceContactReview)sourceContactUI.setEvidence(sourceContactReview);
    if(boundedReview)sourceContactUI.setBooleanEvidence(boundedReview);
    if(occurrenceReview)occurrenceUI.setEvidence(occurrenceReview);
+   if(assemblyReview)assemblyUI.setEvidence(assemblyReview,rawAssemblyReport.sourceLeafInstances);
    if(contourReview)nominalFitUI.setEvidence(contourReview);
    contourPanel.hidden=!contourReview;
    // A v2.9 half-cylinder axis pattern center is not a frame slot center.
