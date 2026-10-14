@@ -259,3 +259,27 @@ test('v3.4 coincident CAD source audit cannot bypass original exact Boolean evid
  await expect(page.locator('#cad-v34-occurrence-review')).toBeHidden();
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
+
+test('v3.5 XCAF part names never authenticate a forged manufacturer BOM without original v3.4 evidence',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ const frame=fixture('x500v2-frame.step','FRAME');
+ const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ await expect(page.locator('#cad-v35-xcaf-hierarchy')).toBeHidden();
+ await page.locator('#cad-v35-xcaf-report').setInputFiles({
+  name:'forged-step-assembly.json',mimeType:'application/json',
+  buffer:Buffer.from(JSON.stringify({
+   schema:'aeroforge/x500-xcaf-assembly-identity/v3.5',
+   manufacturerBomIndependentlyVerified:true,
+   frameStepMotorAndSeparateCandidateInterchangeabilityVerified:true,
+   physicalFitApproved:true
+  }))
+ });
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'CAD intake rejected: v3.5 XCAF assembly labels require all original-source v3.4 BREP collision evidence');
+ await expect(page.locator('#cad-v35-xcaf-hierarchy')).toBeHidden();
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
