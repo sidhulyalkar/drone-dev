@@ -1,5 +1,8 @@
 name: Browser workflow smoke tests
 on: [push, pull_request]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 jobs:
   chromium:
     runs-on: ubuntu-latest
@@ -26,7 +29,7 @@ jobs:
           cat /tmp/aeroforge-http.log
           exit 1
       - name: Exercise browser workflows
-        run: npx playwright test tests/browser_v13.spec.mjs --workers=1 --reporter=line
+        run: npx playwright test tests/browser_v13.spec.mjs tests/browser_v24.spec.mjs tests/browser_v25.spec.mjs --workers=1 --reporter=line
       - uses: actions/upload-artifact@v4
         if: always()
         with:

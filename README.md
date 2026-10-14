@@ -1,4 +1,72 @@
-# AeroForge v2.2 · Revision-Aware Hardware Evidence Studio
+# AeroForge v3.5 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.5: Source-preserved XCAF assembly hierarchy and preexisting motor identities
+
+Recovered the original X500 frame STEP's **AP214 assembly structure** rather than treating its 244 flattening-export solids as anonymous purchased parts: **111 named root component occurrences and 244 named leaf solids**, including four `HMX5V-ARM-V1_ASM` arm subassemblies. Original STEP product definition labels and full parent-child occurrence paths are preserved. All 244 indexed leaves were cross-checked against the previous exact-source flat geometry inventory.
+
+**Critical finding:** the frame STEP already contains a modeled `DJ-2216-KV880` motor at each of four arms, plus four spatially coincident top-level references to those same motor definitions. This explains all four previously identified pairs `56/189, 83/191, 110/190, 137/188`. Source CAD defines eight occurrence labels, **not eight independently validated physical motors**. The separately supplied `AIR2216II` STEP therefore represents a **potential replacement/alternate motor model**, NOT an automatically compatible motor that can simply be added to the existing frame assembly.
+
+The v3.3 exact CAD interference results now have component attribution: **four distinct modeled collision groups involve the preexisting `DJ-2216-KV880` source motor, one involves `BAN-DJ-DIAN-F2` source bracket-like geometry, and four involve `GB70-M3-6` fastener-like named shapes**. All nine geometry-distinct positive model intersections remain visible. The source-revision discrepancy is important: the frame source CAD header is dated **2022**, the separately supplied motor source CAD **2025**, and current Holybro X500 V2 kit documentation describes **four 2216 KV920 motors**, versus older documentation referring to **2216 KV880**.
+
+The new private v3.5 `tools/x500_xcaf_assembly_inventory_v35.py` audit and collapsed Engineering browser viewer reconcile source labels and original flat CAD solids against v3.4 source-identity/BREP collision receipts. All named components are searchable, and each original model collision can be traced to its source assembly path. **Manufacturer BOM verification, motor replacement approval, physical part count and real mechanical compatibility remain false**. [Read source XCAF hierarchy evidence and open hardware revision questions](docs/V35_X500_XCAF_ASSEMBLY_HIERARCHY.md).
+
+## New in v3.4: Exact source-occurrence audit and collision count reconciliation
+
+The first v3.3 motor-to-frame BREP intersection batch found **13 positive comparisons among 30 original source-solid pairs**. New original STEP BREP auditing now proves **four coincident CAD occurrence pairs**, one at each frame quadrant: **56/189, 83/191, 110/190, 137/188**. Each pair shares underlying original TopoDS `TShape`, orientation and effectively identical placed transforms, vertices and bounding boxes, unlike the same source shape placed at different aircraft corners.
+
+This reduces **244 original frame-solid occurrences to 240 distinct placed-geometry groups**, and allows a supplemental conservative model-interference view: **30 raw comparisons → 26 geometry-group comparisons; 13 raw positive overlaps → nine geometry-distinct positive groups**. The underlying 30 original exact BREP volumes remain unchanged. The largest positive volume remains **5,491.38771511 mm³**, so this source-native pose **still has substantial modeled interference**.
+
+The operator-only `tools/x500_source_occurrence_audit_v34.py` rehashes original STEP and v3.3 survey/Boolean bytes, checks all 244 source solids, and records narrow spatial identity witnesses. The separate collapsed Engineering v3.4 panel independently recomputes the 26 geometry-group results from all 30 source-model Boolean rows and refuses any physical/BOM approval. **Coincident CAD occurrences are not proof that two physical purchased components are interchangeable or redundant.** [See original source occurrence and collision reconciliation evidence](docs/V34_X500_SOURCE_OCCURRENCE_RECONCILIATION.md).
+
+## New in v3.3: Source-BREP motor seating candidates and actual model interference
+
+Two source CAD motor planes, native X = **1180.87548** and **1183.67548 mm**, are topologically connected to all four circular passage candidates through 45° conical BREP transitions. They are genuine **source-geometric face candidates**, not independently verified mounting seats.
+
+The prior 16 nominal planar alignments now expand to **64 proper right-handed, original-coordinate-preserving 3D source-pose hypotheses**, including **32 with opposing candidate face normals**. Every pose is screened across **all 244 original frame solids and all four motor solids** by conservative AABB overlap. One independently supervised **exact BREP intersection batch** then tested all 30 broadphase-positive original-solid pairs of a single candidate pose and found **13 modeled positive-volume collisions** (largest **5,491.39 mm³**). A misleading isolated zero-volume intersection for the immediate mounting solid was not treated as complete clearance.
+
+The collapsed Engineering interface now provides a source-hash-linked **64-pose 3D contact inspector**, opposing-normal filter, and optional exact BREP collision-evidence upload. These artifacts never silently alter the 3D mating proposal or approve actual fit. A fresh CAD-free supervisor with hard deadlines runs expensive Booleans separately; worker failures/timeouts are **INDETERMINATE**, not no-collision results. The offline private kit includes all 36 prior/source evidence, BREP programs and per-pair collision CSVs. [Read the detailed v3.3 report](docs/V33_X500_SOURCE_CONTACT_AND_BREP_INTERFERENCE.md).
+
+## New in v3.2: 16 source-derived nominal motor-to-obround in-plane alignments
+
+The original user-uploaded STEP-derived frame/motor contour chain now supports a **fully deterministic 2D plan-view alignment solver**. It discovers four nominal projected orientations at each of four outer frame motor-pattern locations, near **45°, 135°, 225° and 315°**, maps all four motor passages bijectively to individual radial obround slots, and measures point-to-segment residuals rather than misleading centroid distance. The largest nominal residual across the sixteen rounded-source-coordinate hypotheses is ~**0.000510 mm**. With a **hypothetical 2.5 mm test gauge** (NOT a fastener specification), the smallest computed ideal-obround margin is ~**1.649490 mm**. These are mathematical, source-CAD-native results, not measured tolerances or physical clearance approvals.
+
+Engineering includes a compact, optional **SVG 2D native-plane explorer**, gauge diameter slider, 16-pose selector and research-only JSON export. It stays hidden without the exact original STEP/GLB and BREP report chain; it deliberately **does not apply** a nominal planar rotation to the existing manually reviewed 3D assembly pose. Axial mounting contact, continuous source-to-part rotation and exact BREP interference remain independent unresolved requirements. [Read v3.2 research assumptions, equations and verification](docs/V32_X500_NOMINAL_PLANAR_REGISTRATION.md).
+
+## New in v3.1: Exact original BREP slot-versus-bore contour classification
+
+Reimporting the actual operator-uploaded X500 V2 frame/motor STEP files now differentiates **16 closed obround frame slot contours (5.8 × 7.3 mm)** from **four 2.5 mm-diameter motor circular-passage candidates**, reconstructed from pairs of half-cylindrical faces. The complete frame slot centers are **8.75 mm** from each outer quadrant center, distinct from the earlier 9.5 mm half-cylinder-axis distance. The source-bound v3.1 report requires both original STEP hashes and the exact private v2.9 and v3.0 report bytes.
+
+Engineering now offers a collapsed 20-contour review selector, preserving original STEP-native geometry and optionally overlaying green frame-slot and coral motor passage markers in the dual-source 3D viewer. Copying a research contour center still deliberately leaves the **unmeasured mounting-axis coordinate blank**. No thread, contact face, bolt engagement, toleranced fit, manufacturing, procurement, power or flight approval is inferred. Source files and unlicensed derivative GLBs remain off GitHub. [Read the v3.1 BREP contour and validation guide](docs/V31_X500_BREP_CONTOUR_FEATURES.md).
+
+## New in v3.0: Actual BREP planar face adjacency
+
+Original-source CadQuery/OCP inspection now finds the two actual CAD planes sharing topological edges with all four outer frame cylindrical patterns: native **Y = 15.5 and 17.0 mm**, faces **105 and 103**, respectively. Critically, **no single motor axial plane** shares edges with all eight selected motor cylindrical faces, so there is no automatically inferred mounting seat or axial motor datum. The new local `tools/x500_brep_plane_adjacency_v30.py` tool records exact source face indices, adjacency and nearby planes, while the browser verifies both original STEP/GLB sources plus the v2.9 JSON byte digest before displaying its report. An optional eight-dot marker overlay highlights *frame-source* face coordinates in the 3D preview, without generating motor face markers or changing any safety flags. [Full v3.0 BREP inspection and workflow](docs/V30_X500_BREP_PLANAR_ADJACENCY.md).
+
+## New in v2.9: BREP-source mounting pattern candidate review
+
+The actual 244-solid X500 V2 frame and four-solid AIR2216II motor CAD files now support a reproducible **five-candidate BREP face-pattern research report**. Four outer-frame cylindrical-face quartets have native X/Z centers at approximately (±176.876, ±176.876) mm and a **19 mm diagonal, not a 19 mm square side**. The motor CAD shows two separate opposite cylindrical-face pairs spanning **16 and 19 mm**. These patterns remain **unclassified geometry**, not certified fastener holes or demonstrated compatibility.
+
+The local `tools/x500_mount_feature_candidates_v29.py` tool builds a compact report from both complete original-source BREP inventories and refuses incomplete/mismatched source fingerprints. In Engineering, upload the private v2.9 report after verifying both STEP + GLB packages, inspect five patterns in the collapsed panel, and optionally copy only transverse native coordinates to a research draft. The missing along-axis mating plane must be independently supplied by the reviewer. No source mesh or STEP binary is committed. [See the v2.9 BREP review guide](docs/V29_X500_MOUNT_FEATURE_REVIEW.md).
+
+## New in v2.8: Original source files imported and visualized
+
+The user supplied both original-named X500 V2 STEP files. Local CadQuery/OCP inspections found **244 frame solids** and **4 motor solids**. Source-byte fingerprints, CAD-native bounds, export timestamp caveats and bounded LOD results are documented in [v2.8 real STEP inspection](docs/V28_REAL_X500_STEP_INSPECTION.md). This is physical source geometry for a research viewer, not independently signed vendor provenance, qualified hole centers or flight hardware approval.
+
+The local CAD mesher was tuned to a conservative full-assembly preview profile after the previous ultra-fine default exceeded the cap before converting all 244 solids. The display-only UI now supports all **24 right-handed signed axis mappings** and a separate selectable visual separation axis, explicitly needed because the uploaded motor source has its longest dimension on native X rather than native Z. The source-specific measurements appear only after exact source STEP and GLB hashes are matched.
+
+## New in v2.7: Actual manufacturer STEP intake pathway
+
+The official Holybro X500 V2 download page lists `x500v2-frame.step` and `AIR2216II_Motor_3D.STEP`. New local tooling (`tools/x500_source_intake_v27.py`) now validates the original files against deliberately recorded SHA-256 hashes, rejects invalid STEP envelopes, performs both CadQuery conversions in one fail-closed staging transaction, and emits a **paired source-intake receipt** alongside the hash-bound GLB manifests. The browser can optionally revalidate that receipt against both locally selected original STEPs and GLBs. Private source STEP files and generated CAD outputs are ignored by Git by default.
+
+**Important:** the original manufacturer STEP files have not yet been downloaded or independently inspected during this development session. This is a production-oriented source ingestion implementation plus synthetic-fixture tests, **not** an assertion of manufacturer-authenticated geometry, measured mounting centers, redistribution rights, or fit approval. Follow the exact [genuine X500 CAD intake guide](docs/V27_GENUINE_X500_CAD_INTAKE.md).
+
+## New in v2.4: Two-Source X500 Frame + Motor CAD Study
+
+The Engineering workspace now supports separately verifying local frame and motor STEP originals with their converted GLB and manifest files, then proposing a user-annotated motor/frame transform and viewing both **real source-derived meshes** together. The motor placement is a hypothesis, and the broad-phase AABB check is not a physical interference test. The registration proposal is visible at the unresolved `frame-motor` checklist item without pretending its evidence is qualified. No manufacturer STEP bytes were fetched or redistributed for this code release. [v2.4 guide](docs/V24_X500_CAD_MATING.md).
+
+## New in v2.3: Check-Level Engineering Evidence Matrix
+
+Individual interface checks now expose evidence links to v2.2 observation records, independent-review notes, and configuration-stale history; user evidence never automatically closes any physical or safety hold. See [v2.3 specification](docs/V23_INTERFACE_EVIDENCE_MATRIX.md).
 
 ## v0.7: Exploded Assembly Showcase
 

@@ -1,0 +1,96 @@
+/* Collapsed secondary CAD evidence workspace. */
+.cad-v24-pair{margin:20px 0 0;border:1px solid var(--border, #667480);border-radius:12px;padding:15px;background:rgba(13,30,44,.25)}
+.cad-v24-pair>summary{font-weight:700;cursor:pointer}
+.cad-v24-pair p{line-height:1.55}
+.cad-v24-files{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0}
+.cad-v24-files fieldset{border:1px solid #6f7b8670;border-radius:10px;padding:12px;min-width:0}
+.cad-v24-files legend{font-weight:700}
+.cad-v24-files label,.cad-v24-form label{display:flex;flex-direction:column;gap:5px;font-size:.85rem;margin:8px 0}
+.cad-v24-files input{max-width:100%}
+.cad-v24-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px 12px;margin:12px 0}
+.cad-v24-form input,.cad-v24-form textarea,.cad-v24-form select{max-width:100%;width:100%;box-sizing:border-box}
+.cad-v24-form label:has(input[type=checkbox]){flex-direction:row;align-items:flex-start;grid-column:1/-1}
+.cad-v24-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cad-v24-viewport{height:390px;min-height:280px;position:relative;border:1px solid #637e8a;border-radius:10px;overflow:hidden;margin:10px 0}
+.cad-v24-report{overflow-wrap:anywhere;white-space:pre-wrap;padding:12px;border:1px solid #5e727c;border-radius:8px;max-height:270px;overflow:auto}
+.cad-v24-warning{font-size:.85rem}
+@media (prefers-reduced-motion:reduce){.cad-v24-pair *{scroll-behavior:auto!important}}
+
+/* v2.6: keep the datum inspection optional and visually subordinate. */
+.cad-v26-inspection-controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 0;font-size:.8rem}
+.cad-v26-inspection-controls label{display:inline-flex;gap:7px;align-items:center;flex-wrap:wrap}
+.cad-v26-inspection-controls input[type=range]{width:min(220px,55vw);min-width:130px}
+.cad-v26-inspection-controls output{font-variant-numeric:tabular-nums;min-width:95px}
+.cad-v26-inspection-controls small{flex-basis:100%;opacity:.85}
+
+/* v2.9: subordinate, collapsed BREP research candidates; not fit approval. */
+#cad-v29-feature-review{margin:12px 0;padding:12px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v29-feature-review>summary{cursor:pointer;font-weight:650}
+#cad-v29-feature-review label{display:flex;flex-direction:column;gap:6px;margin:10px 0;font-size:.85rem}
+#cad-v29-feature-choice{max-width:100%;width:min(600px,100%);box-sizing:border-box}
+#cad-v29-feature-review small{display:block;margin:10px 0;line-height:1.5}
+#cad-v29-feature-review p{overflow-wrap:anywhere;font-size:.85rem}
+#cad-v29-copy-transverse{max-width:100%;white-space:normal;text-align:left}
+#cad-v28-source-observations .cad-v28-source-readout{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem;max-height:170px;overflow:auto}
+@media(max-width:600px){#cad-v29-feature-review{padding:9px}}
+
+/* v3.0 topology evidence remains a separate collapsed read-only inspector. */
+#cad-v30-topology-review{margin:12px 0;padding:12px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v30-topology-review>summary{cursor:pointer;font-weight:650}
+#cad-v30-topology-review select{display:block;width:min(100%,600px);max-width:100%;margin:10px 0}
+#cad-v30-topology-review .cad-v30-topology-readout{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.55;max-height:300px;overflow:auto;padding:10px;border:1px solid #66748070;border-radius:8px}
+#cad-v30-topology-review small{display:block;line-height:1.45;margin:10px 0}
+
+/* v3.1 optional source-only contour review, collapsed by default. */
+#cad-v31-contour-review{margin:12px 0;padding:12px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v31-contour-review>summary{cursor:pointer;font-weight:650}
+#cad-v31-contour-review select{display:block;width:min(100%,640px);margin:10px 0}
+#cad-v31-contour-review p{line-height:1.5;overflow-wrap:anywhere;font-size:.85rem}
+#cad-v31-contour-review small{display:block;margin:10px 0;line-height:1.45}
+#cad-v31-copy-transverse{max-width:100%;white-space:normal;text-align:left}
+@media(max-width:600px){#cad-v31-contour-review{padding:9px}}
+
+/* v3.2 native-plane candidate solver, intentionally subordinate to source evidence. */
+#cad-v32-planar-fit{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v32-planar-fit>summary{cursor:pointer;font-weight:650}
+#cad-v32-planar-fit .cad-v32-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0}
+#cad-v32-planar-fit label{display:flex;flex-direction:column;gap:7px;font-size:.85rem}
+#cad-v32-planar-fit select,#cad-v32-planar-fit input[type=range]{width:100%;max-width:100%;box-sizing:border-box}
+#cad-v32-planar-fit output{font-variant-numeric:tabular-nums}
+#cad-v32-planar-diagram{display:block;width:min(100%,460px);height:auto;margin:12px auto;border:1px solid #6c8592;border-radius:9px;background:#101d2a}
+#cad-v32-planar-fit small{display:block;margin:8px 0;line-height:1.5}
+#cad-v32-nominal-summary{font-size:.9rem;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#cad-v32-export{max-width:100%;white-space:normal}
+@media(max-width:600px){#cad-v32-planar-fit{padding:9px}}
+
+/* v3.3 source-native three-dimensional contact hypothesis review. */
+#cad-v33-contact-survey{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v33-contact-survey>summary{cursor:pointer;font-weight:650}
+#cad-v33-contact-survey .cad-v33-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:10px;margin:12px 0}
+#cad-v33-contact-survey label{display:flex;flex-direction:column;align-items:flex-start;gap:6px;font-size:.85rem}
+#cad-v33-contact-survey select{width:100%;max-width:100%}
+#cad-v33-contact-survey .cad-v33-source-readout{max-height:270px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;font-size:.83rem;padding:12px;border:1px solid #66829080;border-radius:8px}
+#cad-v33-contact-survey small{display:block;line-height:1.5;margin:12px 0}
+#cad-v33-export{max-width:100%;white-space:normal;text-align:left}
+@media(max-width:600px){#cad-v33-contact-survey{padding:9px}}
+
+/* v3.4 source-only CAD repeated-occurrence reconciliation, hidden by default. */
+#cad-v34-occurrence-review{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v34-occurrence-review>summary{cursor:pointer;font-weight:650}
+#cad-v34-occurrence-review select{display:block;width:min(100%,650px);margin:12px 0}
+#cad-v34-occurrence-review .cad-v34-report{max-height:280px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.83rem;line-height:1.5;padding:12px;border:1px solid #68849570;border-radius:8px}
+#cad-v34-occurrence-review small{display:block;margin:10px 0;line-height:1.55}
+#cad-v34-summary{font-variant-numeric:tabular-nums}
+@media(max-width:600px){#cad-v34-occurrence-review{padding:9px}}
+
+/* v3.5: named XCAF source assembly metadata, never a physical OEM BOM. */
+#cad-v35-xcaf-hierarchy{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v35-xcaf-hierarchy>summary{cursor:pointer;font-weight:650}
+#cad-v35-xcaf-hierarchy .cad-v35-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:12px;margin:12px 0}
+#cad-v35-xcaf-hierarchy label{display:flex;flex-direction:column;gap:6px;font-size:.85rem}
+#cad-v35-xcaf-hierarchy select,#cad-v35-xcaf-hierarchy input[type=search]{width:100%;min-width:0;box-sizing:border-box}
+#cad-v35-xcaf-hierarchy #cad-v35-collision-choice{margin:10px 0}
+#cad-v35-xcaf-hierarchy .cad-v35-component-readout{max-height:300px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;font-size:.82rem;border:1px solid #667f8b80;border-radius:8px;padding:12px}
+#cad-v35-xcaf-hierarchy small{display:block;margin:11px 0;line-height:1.5}
+#cad-v35-overview{font-variant-numeric:tabular-nums}
+@media(max-width:600px){#cad-v35-xcaf-hierarchy{padding:9px}}
