@@ -82,3 +82,15 @@
 #cad-v34-occurrence-review small{display:block;margin:10px 0;line-height:1.55}
 #cad-v34-summary{font-variant-numeric:tabular-nums}
 @media(max-width:600px){#cad-v34-occurrence-review{padding:9px}}
+
+/* v3.5: named XCAF source assembly metadata, never a physical OEM BOM. */
+#cad-v35-xcaf-hierarchy{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v35-xcaf-hierarchy>summary{cursor:pointer;font-weight:650}
+#cad-v35-xcaf-hierarchy .cad-v35-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:12px;margin:12px 0}
+#cad-v35-xcaf-hierarchy label{display:flex;flex-direction:column;gap:6px;font-size:.85rem}
+#cad-v35-xcaf-hierarchy select,#cad-v35-xcaf-hierarchy input[type=search]{width:100%;min-width:0;box-sizing:border-box}
+#cad-v35-xcaf-hierarchy #cad-v35-collision-choice{margin:10px 0}
+#cad-v35-xcaf-hierarchy .cad-v35-component-readout{max-height:300px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;font-size:.82rem;border:1px solid #667f8b80;border-radius:8px;padding:12px}
+#cad-v35-xcaf-hierarchy small{display:block;margin:11px 0;line-height:1.5}
+#cad-v35-overview{font-variant-numeric:tabular-nums}
+@media(max-width:600px){#cad-v35-xcaf-hierarchy{padding:9px}}
