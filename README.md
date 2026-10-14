@@ -1,4 +1,14 @@
-# AeroForge v3.4 Draft · Source-Bound Hardware Research Studio
+# AeroForge v3.5 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.5: Source-preserved XCAF assembly hierarchy and preexisting motor identities
+
+Recovered the original X500 frame STEP's **AP214 assembly structure** rather than treating its 244 flattening-export solids as anonymous purchased parts: **111 named root component occurrences and 244 named leaf solids**, including four `HMX5V-ARM-V1_ASM` arm subassemblies. Original STEP product definition labels and full parent-child occurrence paths are preserved. All 244 indexed leaves were cross-checked against the previous exact-source flat geometry inventory.
+
+**Critical finding:** the frame STEP already contains a modeled `DJ-2216-KV880` motor at each of four arms, plus four spatially coincident top-level references to those same motor definitions. This explains all four previously identified pairs `56/189, 83/191, 110/190, 137/188`. Source CAD defines eight occurrence labels, **not eight independently validated physical motors**. The separately supplied `AIR2216II` STEP therefore represents a **potential replacement/alternate motor model**, NOT an automatically compatible motor that can simply be added to the existing frame assembly.
+
+The v3.3 exact CAD interference results now have component attribution: **four distinct modeled collision groups involve the preexisting `DJ-2216-KV880` source motor, one involves `BAN-DJ-DIAN-F2` source bracket-like geometry, and four involve `GB70-M3-6` fastener-like named shapes**. All nine geometry-distinct positive model intersections remain visible. The source-revision discrepancy is important: the frame source CAD header is dated **2022**, the separately supplied motor source CAD **2025**, and current Holybro X500 V2 kit documentation describes **four 2216 KV920 motors**, versus older documentation referring to **2216 KV880**.
+
+The new private v3.5 `tools/x500_xcaf_assembly_inventory_v35.py` audit and collapsed Engineering browser viewer reconcile source labels and original flat CAD solids against v3.4 source-identity/BREP collision receipts. All named components are searchable, and each original model collision can be traced to its source assembly path. **Manufacturer BOM verification, motor replacement approval, physical part count and real mechanical compatibility remain false**. [Read source XCAF hierarchy evidence and open hardware revision questions](docs/V35_X500_XCAF_ASSEMBLY_HIERARCHY.md).
 
 ## New in v3.4: Exact source-occurrence audit and collision count reconciliation
 
