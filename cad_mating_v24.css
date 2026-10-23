@@ -94,3 +94,15 @@
 #cad-v35-xcaf-hierarchy small{display:block;margin:11px 0;line-height:1.5}
 #cad-v35-overview{font-variant-numeric:tabular-nums}
 @media(max-width:600px){#cad-v35-xcaf-hierarchy{padding:9px}}
+
+/* v3.6 source-only retain/replacement variant. Never a physical assembly wizard. */
+#cad-v36-variant-plan{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v36-variant-plan>summary{font-weight:650;cursor:pointer}
+#cad-v36-variant-plan .cad-v36-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:12px 0}
+#cad-v36-variant-plan label{display:flex;flex-direction:column;gap:6px;font-size:.86rem}
+#cad-v36-variant-plan select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+#cad-v36-variant-plan .cad-v36-readout{max-height:350px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.65;padding:12px;border:1px solid #71879588;border-radius:9px}
+#cad-v36-variant-plan small{display:block;line-height:1.55;margin:10px 0}
+#cad-v36-export{max-width:100%;white-space:normal}
+#cad-v36-status{font-variant-numeric:tabular-nums}
+@media(max-width:600px){#cad-v36-variant-plan{padding:9px}}
