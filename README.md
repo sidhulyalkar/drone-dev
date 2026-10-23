@@ -1,4 +1,14 @@
-# AeroForge v3.5 Draft · Source-Bound Hardware Research Studio
+# AeroForge v3.6 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.6: Deliberate source-CAD motor alternatives with immutable collision history
+
+The verified original X500 STEP contains `DJ-2216-KV880` motor geometry in four frame arm locations, with **two coincident CAD occurrences at each location**. The separately supplied `AIR2216II` source CAD is **not** automatically the same part, an extra installed motor or a proven mechanical replacement.
+
+Engineering now includes a separate **controlled assembly variant explorer** that supports (1) **retaining the preexisting source-motor geometry without adding AIR2216II**, and (2) a clearly labeled **hypothetical AIR2216II replacement** at one specified original frame arm. A replacement proposal masks *only the two original coincident CAD leaf references at that arm* in a source-model plan; it never deletes the source STEP, changes the live 3D mating pose, rewrites the original exact BREP results or claims a compatible BOM.
+
+For the **first-arm** source-only alternative, masking the existing modeled motor leaves **56/189** changes the *historical* comparison view from **26 to 22 geometry-pair rows and 9 to 5 previously collision-positive groups**. The five bracket/fastener-like modeled interference groups **remain unresolved**. No fresh exact BREP was run. For the other three arms, the earlier first-arm Boolean batch is **not reused or extrapolated** and the model result is **not evaluated**.
+
+The browser panel records original source SHA-linked evidence, all original 30 pair measurements/13 original positive comparisons, the selected source-only scenario mask and separate unsatisfied manufacturer, mechanical, electrical, fastener and flight gates. A deterministic Python `tools/x500_variant_manifest_v36.py` independently builds report-derived plans with no original-CAD mutation or false reinspection claim. [Full v3.6 variant semantics, local CLI and safety gates](docs/V36_X500_CONTROLLED_ASSEMBLY_VARIANTS.md).
 
 ## New in v3.5: Source-preserved XCAF assembly hierarchy and preexisting motor identities
 
