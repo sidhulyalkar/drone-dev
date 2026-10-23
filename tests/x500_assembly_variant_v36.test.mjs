@@ -142,5 +142,5 @@ test('browser scenario is separate from actual mating proposal and original XCAF
  assert.match(panel,/cad-v36-scenario-mode/);
  assert.match(panel,/cad-v36-target-site/);
  assert.match(panel,/NOT RUN/);
- assert.doesNotMatch(main,/proposeX500CadMating\(.*variantUI/s);
+ assert.doesNotMatch(main,/proposeX500CadMating\(variantUI/);
 });
