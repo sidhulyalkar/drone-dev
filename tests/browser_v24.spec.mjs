@@ -283,3 +283,18 @@ test('v3.5 XCAF part names never authenticate a forged manufacturer BOM without 
  await expect(page.locator('#cad-v35-xcaf-hierarchy')).toBeHidden();
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
+
+test('v3.6 assembly scenarios stay inaccessible without the exact original XCAF source-report chain',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ await expect(page.locator('#cad-v36-variant-plan')).toBeHidden();
+ await expect(page.locator('#cad-v36-export')).toBeDisabled();
+ const frame=fixture('x500v2-frame.step','FRAME');
+ const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v36-variant-plan')).toBeHidden();
+ await expect(page.locator('#cad-v36-export')).toBeDisabled();
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
