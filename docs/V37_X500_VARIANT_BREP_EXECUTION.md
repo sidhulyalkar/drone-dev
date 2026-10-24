@@ -60,12 +60,15 @@ Per-pair statuses:
 
 | Status | Meaning |
 | --- | --- |
-| `MODEL_POSITIVE_INTERSECTION` | Model-only OpenCascade intersection volume is above the explicit 0.0001 mm³ threshold |
-| `MODEL_ZERO_INTERSECTION` | No positive intersection volume over that threshold, **only for this one ideal CAD pair and pose** |
-| `INDETERMINATE_TIMEOUT` | Worker did not finish in its hard limit, with no reported model volume |
-| `INDETERMINATE_WORKER_ERROR` | CAD import, Boolean, result parse or subprocess error; cannot claim clearance |
+| `MODEL_POSITIVE_INTERSECTION` | Strictly positive OpenCascade modeled intersection volume **above** the 0.0001 mm³ reporting threshold; modeled interference blocker |
+| `MODEL_ZERO_INTERSECTION` | Numerically **exactly 0 mm³** from the finished Boolean at this specific ideal CAD pose. Does not rule out tangential contact or physical interference |
+| `INDETERMINATE_SUBTHRESHOLD_INTERSECTION` | Positive measured modeled volume in the interval (0, 0.0001] mm³. Preserve its numeric value but **never classify it as zero** |
+| `INDETERMINATE_TIMEOUT` | Worker did not finish in its hard limit; modeled volume unknown (null) |
+| `INDETERMINATE_WORKER_ERROR` | CAD import, Boolean, result parse or subprocess error; modeled volume unknown (null) |
 
 Any skipped pair is represented by a partial manifest with `complete=false`; no result volume is invented for it.
+
+**Stricter numeric evidence contract:** Earlier pre-v3.7-hardening receipts might have represented a small positive volume as `MODEL_ZERO_INTERSECTION` using the historical 0.0001 mm³ threshold. Those receipts are now intentionally rejected by the browser reviewer. Re-run the bounded worker to obtain an explicit `INDETERMINATE_SUBTHRESHOLD_INTERSECTION` with the actual positive volume. A worker that completed all *attempts* may still have a non-clear modeled summary when any subthreshold, timeout, or worker-error row remains. The threshold is a numerical classification boundary, not a manufacturing tolerance.
 
 ### Browser post-run inspection
 
@@ -80,7 +83,7 @@ Select the source-hash-matched returned v3.7 worker result JSON in the same expa
 The viewer reports one of three **model-only** summary classes:
 
 - `MODEL_INTERFERENCE_PRESENT`: at least one positive actual CAD model volume was observed; physical mounting is not approved
-- `ALL_SCREENED_MODEL_PAIRS_ZERO_NOT_PHYSICAL_FIT`: all expected source candidates were run to completion without positive modeled intersection, still **not proof of real-world fit**
+- `ALL_SCREENED_MODEL_PAIRS_ZERO_NOT_PHYSICAL_FIT`: all expected source pairs have exactly zero reported model intersection volumes, still **not proof of real-world fit**
 - `INDETERMINATE_INCOMPLETE_OR_FAILED_BREP`: any attempted timeout/failure or incomplete pair set, without converting failure into clearance
 
 The original v3.3 30-pair Boolean evidence, v3.4 occurrence reconciliations and v3.5 hierarchy stay unchanged. Nor does the v3.7 result alter an actual 3D mating proposal or source CAD geometry.
