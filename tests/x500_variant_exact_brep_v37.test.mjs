@@ -84,7 +84,7 @@ test('exact replacement job enumerates 242 frame solids, 4 motor solids and mask
   assert.deepEqual(p.explicitlyMaskedFrameSolidIndices,poses[siteId][2]);
   assert.equal(p.expectedOriginalSourceAabbPairs.length,22);
   assert.ok(p.expectedOriginalSourceAabbPairs.some(x=>x.frameSolidIndex===poses[siteId][1]));
-  assert.ok(p.memberSourceFrameSolidIndices.includes(...[57,58,59,60]));
+  assert.ok([57,58,59,60].every(i=>p.memberSourceFrameSolidIndices.includes(i)));
   assert.equal(p.jobStatus,'NOT_EXECUTED');
   assert.equal(p.mustRecomputeAllAabbs,true);
   assert.equal(p.mustEvaluateEveryAabbPositiveSourceSolidPair,true);
