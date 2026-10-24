@@ -294,9 +294,13 @@ test('v3.6 assembly scenarios stay inaccessible without the exact original XCAF 
  const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
  await choose(page,0,frame);await choose(page,1,motor);
  await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'Two local STEP and GLB digests matched their manifests');
  await expect(page.locator('#cad-v36-variant-plan')).toBeHidden();
  await expect(page.locator('#cad-v36-export')).toBeDisabled();
- await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+ // Hash-matched SYNTHETIC files allow an explicitly unverified v2.4 research
+ // pose, but not a source-authenticated v3.6 variant evaluation.
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeEnabled();
 });
 
 test('v3.7 exact source BREP execution planning remains inaccessible without original XCAF and v3.3 geometry evidence',async({page})=>{
@@ -310,6 +314,34 @@ test('v3.7 exact source BREP execution planning remains inaccessible without ori
  const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
  await choose(page,0,frame);await choose(page,1,motor);
  await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'Two local STEP and GLB digests matched their manifests');
  await expect(page.locator('#cad-v37-brep-execution')).toBeHidden();
- await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+ await expect(page.locator('#cad-v37-export-plan')).toBeDisabled();
+ // The explicitly unverified v2.4 research action has a lower trust gate.
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeEnabled();
+});
+
+test('failed reverification revokes the previously enabled unverified research pose',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ await choose(page,0,fixture('x500v2-frame.step','FRAME'));
+ const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,1,motor);
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText(
+  'Two local STEP and GLB digests matched their manifests');
+ const proposal=page.getByRole('button',{name:'Create unverified mating proposal'});
+ await expect(proposal).toBeEnabled();
+ // Tampering a local source revokes even the research-only action immediately.
+ await page.locator('#cad-v24-pair fieldset').nth(1).locator('input[type=file]').nth(2)
+  .setInputFiles({name:motor.manifest.source.fileName,
+   mimeType:'application/octet-stream',buffer:Buffer.from('SYNTHETIC TAMPERED STEP')});
+ await expect(proposal).toBeDisabled();
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v24-pair')).toContainText('CAD intake rejected');
+ await expect(proposal).toBeDisabled();
+ await expect(page.locator('#cad-v37-brep-execution')).toBeHidden();
+ await expect(page.locator('#cad-v37-export-plan')).toBeDisabled();
 });
