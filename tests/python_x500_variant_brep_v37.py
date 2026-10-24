@@ -58,6 +58,36 @@ class TestV37SourceBrepContract(unittest.TestCase):
   self.assertIn('broadPhasePairIdentityMatched',source)
   self.assertIn('originalCadFilesEdited',source)
 
+ def test_import_requires_actual_bounded_positive_volume_solids(self):
+  # Fake geometry deliberately bypasses CadQuery; qualification requires the
+  # genuine STEP import in the isolated CAD worker, not this Python test.
+  from types import SimpleNamespace
+  class FakeSolid:
+   def __init__(self,typ="Solid",volume=4.0,bounds=None):
+    self.typ=typ
+    self.volume=volume
+    self.bounds=bounds or [0.,0.,0.,2.,3.,4.]
+   def ShapeType(self):return self.typ
+   def Volume(self):return self.volume
+   def BoundingBox(self):
+    return SimpleNamespace(**dict(zip(
+     ("xmin","ymin","zmin","xmax","ymax","zmax"),self.bounds)))
+  valid=[FakeSolid(),FakeSolid()]
+  runner.validate_source_solids(valid,2,"frame")
+  self.assertEqual(runner.shape_bbox(valid[0]),([0.,0.,0.],[2.,3.,4.]))
+  for bad in [
+   [FakeSolid(typ="Shell"),FakeSolid()],
+   [FakeSolid(volume=0),FakeSolid()],
+   [FakeSolid(volume=float("nan")),FakeSolid()],
+   [FakeSolid(bounds=[0,0,0,float("inf"),3,4]),FakeSolid()],
+   [FakeSolid(bounds=[0,0,0,0,3,4]),FakeSolid()],
+   [FakeSolid(bounds=[1,0,0,0,3,4]),FakeSolid()],
+   [FakeSolid()],
+  ]:
+   with self.subTest(bad=str(bad)):
+    with self.assertRaisesRegex(ValueError,"CAD reimport|Missing, non-solid|source BREP"):
+     runner.validate_source_solids(bad,2,"frame")
+
  def test_json_rejects_duplicate_keys_and_nonfinite_values(self):
   with tempfile.TemporaryDirectory() as d:
    path=Path(d)/"source.json"
