@@ -122,7 +122,7 @@ test('exact BREP zero requires zero volume; small positive penetration stays ind
  const zero=measured(p);
  zero.pairs[0].modelIntersectionVolumeMm3=0.00001;
  assert.throws(()=>reviewX500VariantBrepResult(p,zero,C),
-  /model-zero BREP intersection must have exactly zero/);
+  /Model-zero BREP intersection must have exactly zero/);
  const subthreshold=measured(p);
  subthreshold.pairs[0].status='INDETERMINATE_SUBTHRESHOLD_INTERSECTION';
  subthreshold.pairs[0].modelIntersectionVolumeMm3=0.00001;
