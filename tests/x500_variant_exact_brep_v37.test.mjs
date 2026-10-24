@@ -117,6 +117,48 @@ test('zero model intersection still not physical fit; incomplete/timeouts remain
  assert.equal(status.modeledStatus,'INDETERMINATE_INCOMPLETE_OR_FAILED_BREP');
  assert.equal(status.workerComplete,false);
 });
+test('exact BREP zero requires zero volume; small positive penetration stays indeterminate',()=>{
+ const p=plan(fixture());
+ const zero=measured(p);
+ zero.pairs[0].modelIntersectionVolumeMm3=0.00001;
+ assert.throws(()=>reviewX500VariantBrepResult(p,zero,C),
+  /model-zero BREP intersection must have exactly zero/);
+ const subthreshold=measured(p);
+ subthreshold.pairs[0].status='INDETERMINATE_SUBTHRESHOLD_INTERSECTION';
+ subthreshold.pairs[0].modelIntersectionVolumeMm3=0.00001;
+ const review=reviewX500VariantBrepResult(p,subthreshold,C);
+ assert.equal(review.modeledStatus,'INDETERMINATE_INCOMPLETE_OR_FAILED_BREP');
+ assert.equal(review.subthresholdPositiveModelPairs,1);
+ assert.equal(review.largestSubthresholdModelOverlapMm3,0.00001);
+ assert.equal(review.untestedOrIndeterminatePairs,1);
+ assert.equal(review.workerComplete,false);
+ assert.equal(review.physicalFitApproved,false);
+ const atThreshold=measured(p);
+ atThreshold.pairs[0].status='INDETERMINATE_SUBTHRESHOLD_INTERSECTION';
+ atThreshold.pairs[0].modelIntersectionVolumeMm3=0.0001;
+ assert.equal(reviewX500VariantBrepResult(p,atThreshold,C).workerComplete,false);
+ const boundary=measured(p);
+ boundary.pairs[0].status='MODEL_POSITIVE_INTERSECTION';
+ boundary.pairs[0].modelIntersectionVolumeMm3=0.000100001;
+ assert.equal(reviewX500VariantBrepResult(p,boundary,C).modelPositivePairs,1);
+ const malformed=[
+  [0,'INDETERMINATE_SUBTHRESHOLD_INTERSECTION'],
+  [null,'INDETERMINATE_SUBTHRESHOLD_INTERSECTION'],
+  [-0.00001,'INDETERMINATE_SUBTHRESHOLD_INTERSECTION'],
+  [0.001,'INDETERMINATE_SUBTHRESHOLD_INTERSECTION'],
+  [0.00001,'MODEL_ZERO_INTERSECTION'],
+  [0,'MODEL_POSITIVE_INTERSECTION'],
+  [0.00001,'MODEL_POSITIVE_INTERSECTION']
+ ];
+ for(const [volume,status] of malformed){
+  const result=measured(p);
+  result.pairs[0].status=status;
+  result.pairs[0].modelIntersectionVolumeMm3=volume;
+  assert.throws(()=>reviewX500VariantBrepResult(p,result,C),
+   /X500 variant exact-BREP contract rejected/);
+ }
+});
+
 test('plan and results reject poisoned source, masks, pose reflection, omitted solids, approval upgrades',()=>{
  const poison=[
   x=>x.variant.scenarioMode=VARIANT_MODES.RETAIN,
