@@ -298,3 +298,18 @@ test('v3.6 assembly scenarios stay inaccessible without the exact original XCAF 
  await expect(page.locator('#cad-v36-export')).toBeDisabled();
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
 });
+
+test('v3.7 exact source BREP execution planning remains inaccessible without original XCAF and v3.3 geometry evidence',async({page})=>{
+ await page.goto('http://127.0.0.1:8080',{waitUntil:'domcontentloaded'});
+ await page.locator('#af-workspace-engineering').click();
+ await page.locator('#cad-v24-pair > summary').click();
+ await expect(page.locator('#cad-v37-brep-execution')).toBeHidden();
+ await expect(page.locator('#cad-v37-export-variant')).toBeDisabled();
+ await expect(page.locator('#cad-v37-export-plan')).toBeDisabled();
+ const frame=fixture('x500v2-frame.step','FRAME');
+ const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
+ await choose(page,0,frame);await choose(page,1,motor);
+ await page.getByRole('button',{name:'Verify two source packages'}).click();
+ await expect(page.locator('#cad-v37-brep-execution')).toBeHidden();
+ await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeDisabled();
+});
