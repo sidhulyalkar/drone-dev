@@ -1,5 +1,9 @@
 # AeroForge v3.7 Draft · Source-Bound Hardware Research Studio
 
+## Project state and next engineering milestones
+
+[Read the evidence-maturity audit and source-first evolution roadmap](docs/PROJECT_STATE_AND_EVOLUTION.md). This distinguishes passing software contracts from real-source geometry execution, independent reproduction, physical component verification, and flight readiness. The immediate engineering priority remains the first independently auditable original-source v3.7 BREP run. Neither CI nor a model-only zero-intersection result approves hardware.
+
 ## New in v3.7: Original-source, bounded variant-specific BREP execution
 
 The v3.6 retain-vs-replace configuration model now leads into a **separate v3.7 original-source BREP job contract**. For one chosen arm and one v3.3 original-source right-handed 3D pose with opposing candidate face normals, AeroForge constructs a source-sha-bound **242-frame-solid + 4-motor-solid execution manifest**. It excludes only the two coincident old-motor CAD occurrences at that arm in the imaginary model composition, preserves all historic v3.3–v3.5 results and requires a *fresh independent AABB scan* with exactly matched planned source pair identities.
