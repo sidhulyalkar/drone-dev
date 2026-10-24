@@ -13,6 +13,28 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"tools"))
 import x500_variant_brep_runner_v37 as runner
 
 class TestV37SourceBrepContract(unittest.TestCase):
+ def test_model_zero_never_includes_small_positive_intersection(self):
+  t=runner.VOLUME_THRESHOLD_MM3
+  cases=[
+   (0.0,"MODEL_ZERO_INTERSECTION"),
+   (t/10,"INDETERMINATE_SUBTHRESHOLD_INTERSECTION"),
+   (t,"INDETERMINATE_SUBTHRESHOLD_INTERSECTION"),
+   (t*1.01,"MODEL_POSITIVE_INTERSECTION")
+  ]
+  for volume,status in cases:
+   self.assertEqual(runner.classify_intersection_volume(volume),status)
+   self.assertTrue(runner.valid_pair_measurement(status,volume))
+  for volume in (float("nan"),float("inf"),-1e-10,True):
+   with self.assertRaises(ValueError):
+    runner.classify_intersection_volume(volume)
+  self.assertFalse(runner.valid_pair_measurement("MODEL_ZERO_INTERSECTION",t/10))
+  self.assertFalse(runner.valid_pair_measurement(
+   "INDETERMINATE_SUBTHRESHOLD_INTERSECTION",0))
+  self.assertFalse(runner.valid_pair_measurement(
+   "MODEL_POSITIVE_INTERSECTION",t))
+  self.assertFalse(runner.valid_pair_measurement(
+   "INDETERMINATE_SUBTHRESHOLD_INTERSECTION",None))
+
  def test_source_name_hash_blocked_before_any_optional_cad_import(self):
   with tempfile.TemporaryDirectory() as d:
    invalid=Path(d)/"x500v2-frame.step"
