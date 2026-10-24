@@ -140,9 +140,11 @@ export function createX500VariantBrepPanel(){
     'CAD MODEL ONLY: '+validated.modeledStatus,
     'Expected/recorded exact BREP pairs: '+validated.numberOfExpectedPairs+
      ' / '+validated.evaluatedPairs,
-    'Positive ideal-CAD intersection pairs: '+validated.modelPositivePairs,
+    'Positive ideal-CAD intersection pairs (over threshold): '+validated.modelPositivePairs,
+    'Small positive volumes (indeterminate): '+validated.subthresholdPositiveModelPairs,
     'Indeterminate/not-run pairs: '+validated.untestedOrIndeterminatePairs,
     'Largest modeled positive overlap: '+validated.largestPositiveModelOverlapMm3+' mm³',
+    'Largest small positive modeled overlap: '+validated.largestSubthresholdModelOverlapMm3+' mm³',
     'Mechanical fastener/physical BOM qualification: NO',
     'Real-world fit, manufacture, procurement, power/flight: NOT APPROVED'
    ].join('\n');
