@@ -7,6 +7,7 @@ import {MOTOR_SITES,VARIANT_MODES,VARIANT_SCHEMA} from './x500_assembly_variant_
 export const RUN_SCHEMA='aeroforge/x500-variant-exact-brep-run-plan/v3.7';
 export const RESULT_SCHEMA='aeroforge/x500-variant-exact-brep-run-result/v3.7';
 const finite=x=>typeof x==='number'&&Number.isFinite(x);
+const MODEL_VOLUME_THRESHOLD_MM3=0.0001;
 const hash=/^[a-f0-9]{64}$/;
 const fail=message=>{throw Error('X500 variant exact-BREP contract rejected: '+message);};
 const falseKeys=['physicalFitApproved','procurementApproved','powerApproved','flightApproved'];
@@ -152,20 +153,31 @@ export function reviewX500VariantBrepResult(run,result,runByteSha256){
   !Array.isArray(result.pairs))
   fail('Incomplete source accounting or unjustified physical engineering status');
  const allowed=new Set(run.expectedOriginalSourceAabbPairs.map(x=>x.frameSolidIndex+':'+x.motorSolidIndex));
- const seen=new Set();let positive=0,max=0;
+ const seen=new Set();let positive=0,max=0,subthreshold=0,maxSubthreshold=0;
  for(const pair of result.pairs){
   const key=pair.frameSolidIndex+':'+pair.motorSolidIndex;
   if(!Number.isInteger(pair.frameSolidIndex)||!Number.isInteger(pair.motorSolidIndex)||
    seen.has(key)||!allowed.has(key)||
-   !['MODEL_POSITIVE_INTERSECTION','MODEL_ZERO_INTERSECTION','INDETERMINATE_TIMEOUT',
+   !['MODEL_POSITIVE_INTERSECTION','MODEL_ZERO_INTERSECTION',
+    'INDETERMINATE_SUBTHRESHOLD_INTERSECTION','INDETERMINATE_TIMEOUT',
     'INDETERMINATE_WORKER_ERROR'].includes(pair.status))
    fail('Duplicate, unplanned or unclassified original BREP source-solid pair');
   seen.add(key);
-  if(pair.status.startsWith('MODEL_')){
-   if(!finite(pair.modelIntersectionVolumeMm3)||pair.modelIntersectionVolumeMm3<0||
-    (pair.status==='MODEL_POSITIVE_INTERSECTION')!==(pair.modelIntersectionVolumeMm3>.0001))
-    fail('Contradictory model-only exact intersection volume');
-   if(pair.status==='MODEL_POSITIVE_INTERSECTION'){positive++;max=Math.max(max,pair.modelIntersectionVolumeMm3);}
+  if(pair.status==='MODEL_POSITIVE_INTERSECTION'){
+   if(!finite(pair.modelIntersectionVolumeMm3)||
+      pair.modelIntersectionVolumeMm3<=MODEL_VOLUME_THRESHOLD_MM3)
+    fail('Positive BREP model intersection requires volume above threshold');
+   positive++;max=Math.max(max,pair.modelIntersectionVolumeMm3);
+  }else if(pair.status==='MODEL_ZERO_INTERSECTION'){
+   if(pair.modelIntersectionVolumeMm3!==0)
+    fail('Model-zero BREP intersection must have exactly zero modeled volume');
+  }else if(pair.status==='INDETERMINATE_SUBTHRESHOLD_INTERSECTION'){
+   if(!finite(pair.modelIntersectionVolumeMm3)||
+      pair.modelIntersectionVolumeMm3<=0||
+      pair.modelIntersectionVolumeMm3>MODEL_VOLUME_THRESHOLD_MM3)
+    fail('Subthreshold model penetration must retain its positive numeric volume');
+   subthreshold++;
+   maxSubthreshold=Math.max(maxSubthreshold,pair.modelIntersectionVolumeMm3);
   }else if(pair.modelIntersectionVolumeMm3!==null){
    fail('Failed CAD Boolean must not assert any collision volume');
   }
@@ -195,6 +207,8 @@ export function reviewX500VariantBrepResult(run,result,runByteSha256){
   untestedOrIndeterminatePairs:allowed.size-result.pairs.length+indeterminate,
   modelPositivePairs:positive,
   largestPositiveModelOverlapMm3:max,
+  subthresholdPositiveModelPairs:subthreshold,
+  largestSubthresholdModelOverlapMm3:maxSubthreshold,
   modeledStatus:status,workerComplete:complete,
   manufacturerMotorCompatibilityVerified:false,
   physicalFitApproved:false,procurementApproved:false,
