@@ -16,6 +16,7 @@ import {reviewX500OccurrenceAudit} from './core/x500_occurrence_reconciliation_v
 import {reviewX500AssemblyHierarchy} from './core/x500_xcaf_assembly_review_v35.mjs';
 import {createX500AssemblyHierarchyPanel} from './cad_xcaf_assembly_ui_v35.mjs';
 import {createX500VariantPanel} from './cad_assembly_variant_ui_v36.mjs';
+import {createX500VariantBrepPanel} from './cad_variant_brep_ui_v37.mjs';
 import {createX500OccurrenceReviewPanel} from './cad_source_occurrence_ui_v34.mjs';
 import {createX500ContactSurveyPanel} from './cad_contact_survey_ui_v33.mjs';
 import {proposeX500CadMating,scopeX500CadMating,cadMatingAppliesToRecord} from './core/cad_mating_v24.mjs';
@@ -174,9 +175,10 @@ if(host){
  const occurrenceUI=createX500OccurrenceReviewPanel();
  const assemblyUI=createX500AssemblyHierarchyPanel();
  const variantUI=createX500VariantPanel();
+ const variantBrepUI=createX500VariantBrepPanel();
  const warning=el('p','CAUTION: Relative CAD preview and AABB checks are not collision certification, fastener qualification, calibrated metrology, or flight approval.');
  warning.className='cad-v24-warning';
- panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,planarReferenceLabel,contactLabel,boundedLabel,occurrenceLabel,flatLabel,assemblyLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,sourceContactUI.panel,occurrenceUI.panel,assemblyUI.panel,variantUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
+ panel.append(heading,lead,officialSourceLink,fileGrid,receiptLabel,candidatesLabel,topoLabel,contourLabel,planarReferenceLabel,contactLabel,boundedLabel,occurrenceLabel,flatLabel,assemblyLabel,controls,realSourceEvidence,featurePanel,topoPanel,contourPanel,nominalFitUI.panel,sourceContactUI.panel,occurrenceUI.panel,assemblyUI.panel,variantUI.panel,variantBrepUI.panel,form,viewButton,visualControls,viewerHost,result,warning);host.append(panel);
  let verified=null,proposal=null,viewer=null,token=0,aircraftRecord=null;
  const broadcast=()=>window.dispatchEvent(new CustomEvent('aeroforge:cad-mating-proposal-updated',{detail:{proposal}}));
  function clearProposal(){
@@ -186,7 +188,7 @@ if(host){
   markerToggle.disabled=true;broadcast();
  }
  function clearFiles(){
-  ++token;verified=null;build.disabled=true;nominalFitUI.reset();sourceContactUI.reset();occurrenceUI.reset();assemblyUI.reset();variantUI.reset();copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
+  ++token;verified=null;build.disabled=true;nominalFitUI.reset();sourceContactUI.reset();occurrenceUI.reset();assemblyUI.reset();variantUI.reset();variantBrepUI.reset();copyCandidate.disabled=false;realSourceEvidence.hidden=true;featurePanel.hidden=true;topoPanel.hidden=true;contourPanel.hidden=true;clearProposal();verifyStatus.textContent='Source selection changed. Reverify both packages.';
  }
  for(const group of Object.values(parts))for(const input of Object.values(group))input.addEventListener('change',clearFiles);
  receiptInput.addEventListener('change',clearFiles);
@@ -365,6 +367,9 @@ if(host){
    if(assemblyReview){
     assemblyUI.setEvidence(assemblyReview,rawAssemblyReport.sourceLeafInstances);
     variantUI.setEvidence(assemblyReview,rawAssemblyReport,v35AssemblySha);
+    if(sourceContactReview)variantBrepUI.setEvidence(
+     assemblyReview,rawAssemblyReport,v35AssemblySha,
+     sourceContactReview,sourceContactReportSha256);
    }
    if(contourReview)nominalFitUI.setEvidence(contourReview);
    contourPanel.hidden=!contourReview;
