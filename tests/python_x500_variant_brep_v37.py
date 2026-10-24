@@ -58,6 +58,18 @@ class TestV37SourceBrepContract(unittest.TestCase):
   self.assertIn('broadPhasePairIdentityMatched',source)
   self.assertIn('originalCadFilesEdited',source)
 
+ def test_conservative_aabb_guard_detects_historical_screen_omissions(self):
+  frame=([0.,0.,0.],[10.,10.,10.])
+  sub_epsilon=([10.-runner.EPS/10,0.,0.],[11.,10.,10.])
+  touching=([10.,0.,0.],[11.,10.,10.])
+  outside=([10.+runner.EPS*2,0.,0.],[11.,10.,10.])
+  for candidate in (sub_epsilon,touching):
+   self.assertFalse(runner.overlaps(frame,candidate))
+   self.assertTrue(runner.could_contact(frame,candidate))
+  self.assertFalse(runner.could_contact(frame,outside))
+  with self.assertRaisesRegex(ValueError,"nonnegative"):
+   runner.could_contact(frame,touching,-1)
+
  def test_import_requires_actual_bounded_positive_volume_solids(self):
   # Fake geometry deliberately bypasses CadQuery; qualification requires the
   # genuine STEP import in the isolated CAD worker, not this Python test.
