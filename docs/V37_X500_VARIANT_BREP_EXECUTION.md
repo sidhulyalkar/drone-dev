@@ -85,6 +85,15 @@ The viewer reports one of three **model-only** summary classes:
 
 The original v3.3 30-pair Boolean evidence, v3.4 occurrence reconciliations and v3.5 hierarchy stay unchanged. Nor does the v3.7 result alter an actual 3D mating proposal or source CAD geometry.
 
+## Conservative AABB coverage guard (source-qualification blocker)
+
+The original v3.3 AABB predicate required a positive interval overlap greater than a small numeric threshold (1e-5 source-native mm). That predicate is reproducible but is not conservative for exact contact or sub-threshold penetration. The v3.7 offline source reimport now computes **two** AABB candidate sets across the full 242 x 4 source-solid combinations:
+
+1. **Historical strict candidate set:** matches the immutable v3.3-selected index pairs and allows historical comparison.
+2. **Conservative near-contact candidate set:** also includes touching boxes and boxes separated by up to a 1e-5 mm screening margin. This is intentionally an overapproximation, not a physical tolerance or machining clearance.
+
+The worker **fails closed** before any nominal-clearance receipt if those sets differ, because the v3.7 plan has not authorized checks for additional conservative candidates. A detected difference is a **plan coverage defect/indeterminate result**, even when all previously planned pair Booleans would be zero. Do not delete the new pairs or widen a tolerance just to pass. A follow-up source-bound plan revision must include all conservative candidates and freshly evaluate them before claiming complete model coverage. This may reveal contacts in the original STEP assembly when the source binaries become available; no such result has yet been obtained.
+
 ## v3.7 preflight and result hardening
 
 The offline supervisor now uses a strict JSON decoder for source-bound plans, variants and source surveys. Duplicate JSON keys and non-finite JSON constants are rejected instead of allowing two readers to disagree about input meaning. Before CAD import, the worker also cross-checks the v3.5 assembly-report receipt with the variant lineage, all four original motor-assembly occurrence records, original and proposed motor names, exact excluded site, unchanged historic collision evidence, and hypothetical-only approval flags. These checks cannot independently authenticate manufacturer part revisions.
