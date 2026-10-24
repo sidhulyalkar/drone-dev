@@ -252,7 +252,17 @@ def projected_aabb(bounds,R,t):
             [max(p[i] for p in pts) for i in range(3)])
 
 def overlaps(a,b,epsilon=EPS):
+    # Historical v3.3 broadphase predicate. Preserved for byte-for-byte
+    # index-set comparability, NOT a universally conservative contact test.
     return all(min(a[1][i],b[1][i])-max(a[0][i],b[0][i])>epsilon
+               for i in range(3))
+
+def could_contact(a,b,margin=EPS):
+    """Conservative near-contact guard: never drop a sub-epsilon overlap."""
+    require(isinstance(margin,(int,float)) and
+            math.isfinite(margin) and margin>=0,
+            "Finite nonnegative source AABB contact margin required")
+    return all(min(a[1][i],b[1][i])-max(a[0][i],b[0][i])>=-margin
                for i in range(3))
 
 def screen_parts(plan,frame_path,motor_path):
@@ -264,11 +274,15 @@ def screen_parts(plan,frame_path,motor_path):
     observed=[{"frameSolidIndex":i,"motorSolidIndex":j}
        for i,fb in boxesF.items() for j,mb in boxesM.items()
        if overlaps(fb,mb)]
+    conservative=[{"frameSolidIndex":i,"motorSolidIndex":j}
+       for i,fb in boxesF.items() for j,mb in boxesM.items()
+       if could_contact(fb,mb)]
     return {"schema":"aeroforge/x500-brep-worker-screen/v3.7",
       "sourceReimportedFrameSolids":len(frame),
       "sourceReimportedMotorSolids":len(motor),
       "sourceMembershipCount":len(boxesF),
       "freshAllSourceAabbPairs":observed,
+      "conservativeNearContactPairs":conservative,
       "physicalFitApproved":False}
 
 def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
@@ -357,6 +371,18 @@ def execute(args):
     expected=[pair_id(p) for p in pairs]
     require(len(actual)==len(set(actual)) and set(actual)==set(expected),
       "Fresh original STEP AABB screen disagrees with planned broadphase: INDETERMINATE")
+    conservative_pairs=screen.get("conservativeNearContactPairs")
+    require(isinstance(conservative_pairs,list) and all(
+      isinstance(p,dict) and type(p.get("frameSolidIndex")) is int and
+      type(p.get("motorSolidIndex")) is int and
+      p["frameSolidIndex"] in plan["memberSourceFrameSolidIndices"] and
+      p["motorSolidIndex"] in plan["memberSourceMotorSolidIndices"]
+      for p in conservative_pairs),
+      "Missing or malformed safety-oriented source contact screen: INDETERMINATE")
+    near_contact_ids=[pair_id(p) for p in conservative_pairs]
+    require(len(near_contact_ids)==len(set(near_contact_ids)) and
+      set(near_contact_ids)==set(expected),
+      "Conservative source AABB screen found contacts absent from the historical v3.3 plan: INDETERMINATE. Regenerate source candidate evidence; never call skipped contacts clear")
     observed=[]
     for p in pairs[:args.max_pairs]:
         i,j=pair_id(p)
