@@ -135,6 +135,8 @@ test('plan and results reject poisoned source, masks, pose reflection, omitted s
  const p=plan(fixture()),poisonResult=[
   r=>r.sourcePlanJsonSha256='0'.repeat(64),
   r=>r.pairs[0].frameSolidIndex=189,
+  r=>r.pairs[0].frameSolidIndex=String(r.pairs[0].frameSolidIndex),
+  r=>r.pairs[0].motorSolidIndex=String(r.pairs[0].motorSolidIndex),
   r=>r.pairs.pop(),
   r=>r.pairs[0].status='MODEL_POSITIVE_INTERSECTION',
   r=>r.pairs[0].status='INDETERMINATE_WORKER_ERROR',
