@@ -155,7 +155,8 @@ export function reviewX500VariantBrepResult(run,result,runByteSha256){
  const seen=new Set();let positive=0,max=0;
  for(const pair of result.pairs){
   const key=pair.frameSolidIndex+':'+pair.motorSolidIndex;
-  if(seen.has(key)||!allowed.has(key)||
+  if(!Number.isInteger(pair.frameSolidIndex)||!Number.isInteger(pair.motorSolidIndex)||
+   seen.has(key)||!allowed.has(key)||
    !['MODEL_POSITIVE_INTERSECTION','MODEL_ZERO_INTERSECTION','INDETERMINATE_TIMEOUT',
     'INDETERMINATE_WORKER_ERROR'].includes(pair.status))
    fail('Duplicate, unplanned or unclassified original BREP source-solid pair');
