@@ -225,7 +225,7 @@ if(host){
   return {preview,glbBytes};
  }
  verify.addEventListener('click',async()=>{
-  const ticket=++token;verified=null;build.disabled=true;nominalFitUI.reset();sourceContactUI.reset();occurrenceUI.reset();clearProposal();verify.disabled=true;
+  const ticket=++token;verified=null;build.disabled=true;nominalFitUI.reset();sourceContactUI.reset();occurrenceUI.reset();assemblyUI.reset();variantUI.reset();variantBrepUI.reset();clearProposal();verify.disabled=true;
   verifyStatus.textContent='Hashing frame and motor STEP/GLB files locally…';
   try{
    const frame=await load('Frame',parts.frame);if(ticket!==token)return;
@@ -360,7 +360,6 @@ if(host){
      originalFlat,inventorySha,occurrenceReview,v34ReportSha256);
     if(ticket!==token)return;
    }
-   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview,sourceContactReview,boundedReview,occurrenceReview,assemblyReview};build.disabled=false;
    if(sourceContactReview)sourceContactUI.setEvidence(sourceContactReview);
    if(boundedReview)sourceContactUI.setBooleanEvidence(boundedReview);
    if(occurrenceReview)occurrenceUI.setEvidence(occurrenceReview);
@@ -414,10 +413,22 @@ if(host){
      'Motor: '+M.importedSolidCount+' solids, source AABB mm: '+JSON.stringify(M.sourceKernelAabbMm)+'\n'+
      F.observation+'\n'+M.observation+'\n'+sourceObservations.warning;
    }
+   // Commit only after every source-dependent panel has accepted the evidence.
+   // Partial initialization must never enable a mating proposal.
+   if(ticket!==token)return;
+   verified={frame,motor,matchedSourceReceipt,featureReview,topologyReview,contourReview,sourceContactReview,boundedReview,occurrenceReview,assemblyReview};
+   build.disabled=false;
    verifyStatus.textContent=matchedSourceReceipt
     ? 'Local STEP + GLB digests match BOTH paired source-intake report entries. Manufacturer origin, units and physical fit still unverified.'
     : 'Two local STEP and GLB digests matched their manifests. No paired intake report selected; vendor origin, units and mating datums unverified.';
-  }catch(err){if(ticket===token)verifyStatus.textContent='CAD intake rejected: '+err.message;}
+  }catch(err){
+   if(ticket===token){
+    verified=null;build.disabled=true;clearProposal();
+    nominalFitUI.reset();sourceContactUI.reset();occurrenceUI.reset();
+    assemblyUI.reset();variantUI.reset();variantBrepUI.reset();
+    verifyStatus.textContent='CAD intake rejected: '+err.message;
+   }
+  }
   finally{verify.disabled=false;}
  });
  function updateContourDetail(){
