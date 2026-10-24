@@ -85,6 +85,14 @@ The viewer reports one of three **model-only** summary classes:
 
 The original v3.3 30-pair Boolean evidence, v3.4 occurrence reconciliations and v3.5 hierarchy stay unchanged. Nor does the v3.7 result alter an actual 3D mating proposal or source CAD geometry.
 
+## v3.7 preflight and result hardening
+
+The offline supervisor now uses a strict JSON decoder for source-bound plans, variants and source surveys. Duplicate JSON keys and non-finite JSON constants are rejected instead of allowing two readers to disagree about input meaning. Before CAD import, the worker also cross-checks the v3.5 assembly-report receipt with the variant lineage, all four original motor-assembly occurrence records, original and proposed motor names, exact excluded site, unchanged historic collision evidence, and hypothetical-only approval flags. These checks cannot independently authenticate manufacturer part revisions.
+
+Fresh screen output must contain integer source-solid indices belonging to the selected variant and its independent motor source. The browser also rejects stringified pair indices rather than silently coercing them to numeric identifiers. All failures still block model-only clearance; no new fit claim is made.
+
+The CPU-only tests exercise intentionally synthetic and tampered metadata with STEP verification mocked **only inside the test**. They do not replace the mandatory fresh hash verification, original-source CAD reimport, exact BREP run, or per-arm physical checks. In particular, the real-source CadQuery/OCP import ordering and transformed AABB conventions remain pending validation with the actual source binaries.
+
 ## Tests and qualification boundaries
 
 Node synthetic tests verify four correctly scoped arm masks; necessary frame mounting plate remains present; other three arms' source-motor occurrences remain intact; no reused v3.3 result; right-handed continuous poses; full Boolean pair accounting; negative and positive model-only statuses; timeout handling; and false physical/BOM claim rejection.
