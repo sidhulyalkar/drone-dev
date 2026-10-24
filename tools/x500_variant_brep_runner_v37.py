@@ -192,23 +192,53 @@ def preflight(plan_path,variant_path,survey_path,frame_path,motor_path):
       "Plan's predicted retained pair set differs from complete original v3.3 broadphase")
     return plan,pairs
 
+def shape_bbox(shape):
+    """Bounded 3D source-solid box, not a substitute for a solid BREP witness."""
+    try:
+        b=shape.BoundingBox()
+        low=[b.xmin,b.ymin,b.zmin]
+        high=[b.xmax,b.ymax,b.zmax]
+    except (AttributeError,TypeError,ValueError,RuntimeError) as exc:
+        raise ValueError("Invalid source BREP bounding box") from exc
+    require(all(isinstance(v,(int,float)) and math.isfinite(v)
+                for v in [*low,*high]) and
+            all(low[i]<high[i] for i in range(3)),
+            "Non-finite, inverted or degenerate source BREP bounding box")
+    return low,high
+
+def validate_source_solids(parts,count,role):
+    """Count, solid topology and positive 3D volume are separate invariants."""
+    require(len(parts)==count,
+            "CAD reimport "+role+" source solid count changed")
+    for index,solid in enumerate(parts):
+        try:
+            is_solid=solid.ShapeType()=="Solid"
+            volume=solid.Volume()
+        except (AttributeError,TypeError,ValueError,RuntimeError) as exc:
+            raise ValueError("Invalid "+role+" BREP source solid at "+str(index)) from exc
+        require(is_solid and isinstance(volume,(int,float)) and
+                math.isfinite(volume) and volume>0,
+                "Missing, non-solid or non-positive-volume "+role+
+                " BREP source member "+str(index))
+        shape_bbox(solid)
+
 def import_parts(frame_path,motor_path):
     import cadquery as cq
     def flatten(path):
         result=cq.importers.importStep(str(path))
         shapes=[]
         for obj in result.objects:
+            # Reject empty/surface-only parents instead of silently promoting
+            # them to source solids and manufacturing model-only zero volumes.
             children=list(obj.Solids())
-            shapes.extend(children if children else [obj])
+            require(len(children)>0,
+                    "Source STEP import contained a component without solids")
+            shapes.extend(children)
         return shapes
     frame=flatten(frame_path);motor=flatten(motor_path)
-    require(len(frame)==244 and len(motor)==4,
-      "CAD reimport source solid count 244/4 changed")
+    validate_source_solids(frame,244,"frame")
+    validate_source_solids(motor,4,"motor")
     return frame,motor
-
-def shape_bbox(shape):
-    b=shape.BoundingBox()
-    return ([b.xmin,b.ymin,b.zmin],[b.xmax,b.ymax,b.zmax])
 
 def transform_corner(point,R,t):
     return [t[i]+sum(R[i][j]*point[j] for j in range(3)) for i in range(3)]
