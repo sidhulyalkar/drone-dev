@@ -1,4 +1,12 @@
-# AeroForge v3.6 Draft · Source-Bound Hardware Research Studio
+# AeroForge v3.7 Draft · Source-Bound Hardware Research Studio
+
+## New in v3.7: Original-source, bounded variant-specific BREP execution
+
+The v3.6 retain-vs-replace configuration model now leads into a **separate v3.7 original-source BREP job contract**. For one chosen arm and one v3.3 original-source right-handed 3D pose with opposing candidate face normals, AeroForge constructs a source-sha-bound **242-frame-solid + 4-motor-solid execution manifest**. It excludes only the two coincident old-motor CAD occurrences at that arm in the imaginary model composition, preserves all historic v3.3–v3.5 results and requires a *fresh independent AABB scan* with exactly matched planned source pair identities.
+
+The new **`tools/x500_variant_brep_runner_v37.py`** implements a *CAD-free supervisor with separate OpenCascade source import, AABB and per-pair BREP workers*, each under an OS process-group timeout. It refuses original STEP source substitution, incorrect source member indices, improper transforms, unplanned collision pair lists and incomplete broad-phase results. Pair timeouts and failures remain **INDETERMINATE** and never imply clearance. The browser can export the byte-linked v3.6 scenario + v3.7 execution manifest, then review the returned model-only result (positive collision, completed zero model intersection or incomplete), with **all physical/procurement/power/flight approvals false**.
+
+**The original X500 frame and AIR2216II STEP source binaries are not available in this conversation session**, so this milestone implements/test-drives the execution infrastructure and simulated safety contracts, **not a new original-source exact BREP result**. Re-upload the exact original STEP files to verify the actual worker against the original solids. [Read the v3.7 local workflow and strict engineering qualification limits](docs/V37_X500_VARIANT_BREP_EXECUTION.md).
 
 ## New in v3.6: Deliberate source-CAD motor alternatives with immutable collision history
 
