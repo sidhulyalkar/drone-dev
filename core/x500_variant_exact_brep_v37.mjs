@@ -94,8 +94,9 @@ export function planX500VariantExactBrep(variant,variantByteSha256,contactReview
   originalPairIds.add(p.frameSolidIndex+':'+p.motorSolidIndex);
  }
  const pruned=sourcePairs.filter(p=>!excluded.has(p.frameSolidIndex));
- if(!pruned.some(p=>p.frameSolidIndex===site.canonical&&p.motorSolidIndex===0))
-  fail('Original frame mounting solid absent from candidate broadphase');
+ const mountingPlates={'arm-1':35,'arm-2':62,'arm-3':89,'arm-4':116};
+ if(!pruned.some(p=>p.frameSolidIndex===mountingPlates[site.id]&&p.motorSolidIndex===0))
+  fail('Original frame mounting plate solid absent from candidate broadphase');
  // The worker MUST recompute every source AABB, compare exact pair identity
  // against this discovery preflight, and then perform fresh BREP Booleans.
  const otherSites=MOTOR_SITES.filter(s=>s.id!==site.id)
@@ -177,7 +178,7 @@ export function reviewX500VariantBrepResult(run,result,runByteSha256){
   result.broadPhasePairIdentityMatched!==true||
   result.expectedPairCount!==allowed.size||
   result.pairs.length>allowed.size||
-  result.complete!==result.pairs.length===allowed.size)
+  result.complete!==(result.pairs.length===allowed.size))
   fail('AABB/variant membership or completed pair claim contradicts run contract');
  const indeterminate=result.pairs.filter(x=>x.status.startsWith('INDETERMINATE_')).length;
  const complete=result.complete&&indeterminate===0;
