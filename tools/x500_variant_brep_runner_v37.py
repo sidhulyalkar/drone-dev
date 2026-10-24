@@ -29,6 +29,7 @@ SOURCE_NAMES={"frame":"x500v2-frame.step","motor":"AIR2216II_Motor_3D.STEP"}
 SITES={"arm-1":([56,189],35),"arm-2":([83,191],62),
        "arm-3":([110,190],89),"arm-4":([137,188],116)}
 EPS=0.00001
+VOLUME_THRESHOLD_MM3=0.0001
 
 def require(condition,message):
     if not condition:
@@ -285,6 +286,27 @@ def screen_parts(plan,frame_path,motor_path):
       "conservativeNearContactPairs":conservative,
       "physicalFitApproved":False}
 
+def classify_intersection_volume(volume):
+    """Small positive BREP volumes are uncertain, never model-zero."""
+    require(type(volume) in (int,float) and math.isfinite(volume) and volume>=0,
+            "Intersection BREP volume must be finite and nonnegative")
+    if volume==0:
+        return "MODEL_ZERO_INTERSECTION"
+    if volume<=VOLUME_THRESHOLD_MM3:
+        return "INDETERMINATE_SUBTHRESHOLD_INTERSECTION"
+    return "MODEL_POSITIVE_INTERSECTION"
+
+def valid_pair_measurement(status,volume):
+    if status=="INDETERMINATE_SUBTHRESHOLD_INTERSECTION":
+        return (type(volume) in (int,float) and math.isfinite(volume)
+                and 0<volume<=VOLUME_THRESHOLD_MM3)
+    if status in ("MODEL_ZERO_INTERSECTION","MODEL_POSITIVE_INTERSECTION"):
+        try:
+            return classify_intersection_volume(volume)==status
+        except ValueError:
+            return False
+    return False
+
 def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
     from OCP.gp import gp_Trsf
     from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
@@ -307,12 +329,10 @@ def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
     if not result.IsNull():
         BRepGProp.VolumeProperties_s(result,props)
     volume=0.0 if result.IsNull() else props.Mass()
-    require(math.isfinite(volume) and volume>=-1e-7,
-      "OpenCascade intersection volume not a finite nonnegative value")
-    volume=max(0.0,volume)
+    status=classify_intersection_volume(volume)
     return {"schema":"aeroforge/x500-brep-worker-pair/v3.7",
       "frameSolidIndex":frame_id,"motorSolidIndex":motor_id,
-      "status":"MODEL_POSITIVE_INTERSECTION" if volume>.0001 else "MODEL_ZERO_INTERSECTION",
+      "status":status,
       "modelIntersectionVolumeMm3":volume,
       "physicalFitApproved":False}
 
@@ -392,13 +412,12 @@ def execute(args):
                  "modelIntersectionVolumeMm3":None}
         elif (payload.get("schema")!="aeroforge/x500-brep-worker-pair/v3.7" or
           payload.get("frameSolidIndex")!=i or payload.get("motorSolidIndex")!=j or
-          payload.get("status") not in ("MODEL_POSITIVE_INTERSECTION","MODEL_ZERO_INTERSECTION") or
+          payload.get("status") not in (
+            "MODEL_POSITIVE_INTERSECTION","MODEL_ZERO_INTERSECTION",
+            "INDETERMINATE_SUBTHRESHOLD_INTERSECTION") or
           payload.get("physicalFitApproved") is not False or
-          not isinstance(payload.get("modelIntersectionVolumeMm3"),(int,float)) or
-          not math.isfinite(payload["modelIntersectionVolumeMm3"]) or
-          payload["modelIntersectionVolumeMm3"]<0 or
-          (payload["status"]=="MODEL_POSITIVE_INTERSECTION")!=
-           (payload["modelIntersectionVolumeMm3"]>.0001)):
+          not valid_pair_measurement(payload.get("status"),
+                                     payload.get("modelIntersectionVolumeMm3"))):
             row={"frameSolidIndex":i,"motorSolidIndex":j,
                  "status":"INDETERMINATE_WORKER_ERROR",
                  "modelIntersectionVolumeMm3":None}
