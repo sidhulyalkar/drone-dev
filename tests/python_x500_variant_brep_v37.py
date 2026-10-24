@@ -58,4 +58,105 @@ class TestV37SourceBrepContract(unittest.TestCase):
   self.assertIn('broadPhasePairIdentityMatched',source)
   self.assertIn('originalCadFilesEdited',source)
 
+ def test_json_rejects_duplicate_keys_and_nonfinite_values(self):
+  with tempfile.TemporaryDirectory() as d:
+   path=Path(d)/"source.json"
+   for payload in [
+    '{"source":{"sha":"first","sha":"second"},"padding":"123456789012345"}',
+    '{"source":{"volume":NaN},"padding":"123456789012345"}',
+    '{"source":{"volume":Infinity},"padding":"123456789012345"}',
+   ]:
+    path.write_text(payload,encoding="utf8")
+    with self.assertRaisesRegex(ValueError,"Duplicate key|Non-finite"):
+     runner.read_json(path)
+
+ def test_preflight_rejects_cross_variant_metadata_and_boolean_pair_indices(self):
+  # All input objects are synthetic. STEP verification is stubbed ONLY here;
+  # this test never represents a real source reimport or CAD qualification.
+  from unittest.mock import patch
+  import hashlib
+  import json
+  all_false={name:False for name in (
+   "physicalFitApproved","procurementApproved","powerApproved","flightApproved")}
+  site="arm-1"
+  pose={"id":"synthetic-pose","originalFramePlaneFaceIndex":103,
+        "originalMotorPlaneFaceIndex":28,"opposingSourceNormals":True,
+        "actualMatingSurfaceQualified":False,
+        "rotation3x3":[[1,0,0],[0,1,0],[0,0,1]],
+        "nativeTranslationMm":[0,0,0]}
+  survey={"schema":"aeroforge/x500-source-contact-hypotheses/v3.3",
+   "hypotheses":[{
+    "id":pose["id"],"frameSourceFaceIndex":103,
+    "motorSourceFaceIndex":28,"planeNormalsOppose":True,
+    "frameSourceSolidIndex":35,
+    "rightHandedRotation3x3":pose["rotation3x3"],
+    "translationNativeMm":pose["nativeTranslationMm"],
+    "broadPhaseAabbPairs":[{"frameSolidIndex":35,"motorSolidIndex":0}],
+    "broadPhasePotentialPairCount":1}],**all_false}
+  variant={"schema":"aeroforge/x500-unqualified-assembly-variant/v3.6",
+   "authority":"UNQUALIFIED_ASSEMBLY_PLAN_ONLY",
+   "targetSiteId":site,"scenarioMode":"HYPOTHETICAL_AIR2216II_REPLACEMENT",
+   "proposedMotorModel":"AIR2216II",
+   "originalSourceMotorModel":"DJ-2216-KV880",
+   "source":{"frameStepSha256":runner.FRAME_HASH,
+             "motorStepSha256":runner.MOTOR_HASH,
+             "v35AssemblyReportSha256":"d"*64},
+   "originalFrameSolidOccurrences":244,"hypotheticalFrameOccurrenceCount":242,
+   "excludedFromHypotheticalStudyOnly":[56,189],
+   "unmodifiedOriginalSourceMotorPairs":[
+    {"siteId":arm,"originalLeafIndexes":list(mask),
+     "nestedArmPath":"HMX5V-ARM-V1_ASM:"+str(i),
+     "sourceCadGeometryUnmodified":True,
+     "physicalMotorPresentVerified":False}
+    for i,(arm,(mask,_)) in enumerate(runner.SITES.items(),1)],
+   "originalGeometryWasModified":False,
+   "physicalExistingMotorRemovalAuthorized":False,
+   "replacementApproved":False,"selectedPhysicalBomQualified":False,
+   "hypotheticalHistoricalComparison":{
+     "overlapVolumesRecomputedAfterMask":False,
+     "newExactBooleanResult":None},**all_false}
+  plan={"schema":runner.SCHEMA,
+   "authority":"ORIGINAL_SOURCE_BREP_EXECUTION_REQUEST_NOT_RESULT",
+   "source":{"frameStepSha256":runner.FRAME_HASH,
+             "motorStepSha256":runner.MOTOR_HASH,
+             "originalAssemblyJsonSha256":"d"*64},
+   "targetSiteId":site,"scenarioMode":variant["scenarioMode"],
+   "pose":pose,"explicitlyMaskedFrameSolidIndices":[56,189],
+   "memberSourceFrameSolidIndices":[i for i in range(244) if i not in (56,189)],
+   "memberSourceMotorSolidIndices":[0,1,2,3],
+   "totalSourceFrameSolids":244,"totalOriginalMotorSolids":4,
+   "mustReimportOriginalStepFiles":True,"mustRecomputeAllAabbs":True,
+   "mustMatchOriginalAabbBroadphaseIdentity":True,
+   "mustEvaluateEveryAabbPositiveSourceSolidPair":True,
+   "expectedOriginalSourceAabbPairs":[{"frameSolidIndex":35,"motorSolidIndex":0}],
+   "jobStatus":"NOT_EXECUTED","originalCadFilesEdited":False,**all_false}
+  def exercise(mutate=None):
+   import copy
+   v,p,s=copy.deepcopy(variant),copy.deepcopy(plan),copy.deepcopy(survey)
+   if mutate:mutate(v,p,s)
+   with tempfile.TemporaryDirectory() as folder:
+    root=Path(folder)
+    vp,sp,pp=[root/name for name in ("variant.json","survey.json","plan.json")]
+    vp.write_text(json.dumps(v),encoding="utf8")
+    sp.write_text(json.dumps(s),encoding="utf8")
+    p["source"]["originalVariantJsonSha256"]=hashlib.sha256(vp.read_bytes()).hexdigest()
+    p["source"]["originalContactSurveyJsonSha256"]=hashlib.sha256(sp.read_bytes()).hexdigest()
+    pp.write_text(json.dumps(p),encoding="utf8")
+    with patch.object(runner,"verify_step"):
+     return runner.preflight(pp,vp,sp,root/"frame.step",root/"motor.step")
+  good,_=exercise()
+  self.assertEqual(good["targetSiteId"],site)
+  for mutate in [
+   lambda v,p,s:v["source"].__setitem__("v35AssemblyReportSha256","e"*64),
+   lambda v,p,s:v["unmodifiedOriginalSourceMotorPairs"][0].__setitem__(
+     "physicalMotorPresentVerified",True),
+   lambda v,p,s:v.__setitem__("replacementApproved",True),
+   lambda v,p,s:p["expectedOriginalSourceAabbPairs"][0].__setitem__(
+     "frameSolidIndex",True),
+   lambda v,p,s:p.__setitem__("originalCadFilesEdited",True),
+  ]:
+   with self.subTest(mutate=repr(mutate)):
+    with self.assertRaisesRegex(ValueError,"X500 v3.7 BREP run blocked"):
+     exercise(mutate)
+
 if __name__=="__main__":unittest.main()
