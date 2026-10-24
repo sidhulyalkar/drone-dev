@@ -106,3 +106,15 @@
 #cad-v36-export{max-width:100%;white-space:normal}
 #cad-v36-status{font-variant-numeric:tabular-nums}
 @media(max-width:600px){#cad-v36-variant-plan{padding:9px}}
+
+/* v3.7 source-verified offline BREP variant-plan and result-audit panel. */
+#cad-v37-brep-execution{margin:12px 0;padding:13px;border:1px solid var(--border,#667480);border-radius:10px}
+#cad-v37-brep-execution>summary{cursor:pointer;font-weight:650}
+#cad-v37-brep-execution .cad-v37-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:12px;margin:12px 0}
+#cad-v37-brep-execution label{display:flex;flex-direction:column;gap:7px;font-size:.85rem}
+#cad-v37-brep-execution select,#cad-v37-brep-execution input[type=file]{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+#cad-v37-brep-execution .cad-v37-readout{max-height:350px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;font-size:.82rem;padding:12px;border:1px solid #69839780;border-radius:8px}
+#cad-v37-brep-execution .cad-v37-export-row{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0}
+#cad-v37-brep-execution .cad-v37-export-row button{max-width:100%;white-space:normal}
+#cad-v37-brep-execution small{display:block;line-height:1.6;margin:12px 0}
+@media(max-width:600px){#cad-v37-brep-execution{padding:9px}}
