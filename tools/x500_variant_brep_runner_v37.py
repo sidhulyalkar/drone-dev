@@ -38,11 +38,26 @@ def digest(path):
     with Path(path).open("rb") as stream:
         return hashlib.file_digest(stream,"sha256").hexdigest()
 
+def reject_duplicate_keys(items):
+    """Disallow payloads that different JSON readers might interpret differently."""
+    result={}
+    for key,value in items:
+        require(key not in result,"Duplicate key in source-bound JSON: "+key)
+        result[key]=value
+    return result
+
+def reject_nonfinite_constant(value):
+    raise ValueError("X500 v3.7 BREP run blocked: Non-finite JSON number "+value)
+
 def read_json(path,limit=2_000_000):
     path=Path(path)
     require(path.is_file() and not path.is_symlink() and
             20<path.stat().st_size<=limit,"Missing/oversized source-bound JSON evidence")
-    return json.loads(path.read_bytes())
+    try:
+        return json.loads(path.read_bytes(),object_pairs_hook=reject_duplicate_keys,
+                          parse_constant=reject_nonfinite_constant)
+    except (UnicodeDecodeError,json.JSONDecodeError) as e:
+        raise ValueError("X500 v3.7 BREP run blocked: Invalid source-bound JSON") from e
 
 def verify_step(path,role):
     path=Path(path)
@@ -89,9 +104,42 @@ def preflight(plan_path,variant_path,survey_path,frame_path,motor_path):
     require(site in SITES and plan.get("scenarioMode")==
       "HYPOTHETICAL_AIR2216II_REPLACEMENT" and
       variant.get("targetSiteId")==site and
-      variant.get("scenarioMode")==plan.get("scenarioMode"),
+      variant.get("scenarioMode")==plan.get("scenarioMode") and
+      variant.get("authority")=="UNQUALIFIED_ASSEMBLY_PLAN_ONLY" and
+      variant.get("proposedMotorModel")=="AIR2216II" and
+      variant.get("originalSourceMotorModel")=="DJ-2216-KV880",
       "A named, explicit hypothetical source-motor replacement is required")
+    linked=variant.get("source",{})
+    require(linked.get("frameStepSha256")==FRAME_HASH and
+      linked.get("motorStepSha256")==MOTOR_HASH and
+      isinstance(linked.get("v35AssemblyReportSha256"),str) and
+      len(linked["v35AssemblyReportSha256"])==64 and
+      all(c in "0123456789abcdef" for c in linked["v35AssemblyReportSha256"]) and
+      plan["source"].get("originalAssemblyJsonSha256")==
+        linked["v35AssemblyReportSha256"] and
+      variant.get("originalFrameSolidOccurrences")==244 and
+      variant.get("hypotheticalFrameOccurrenceCount")==242 and
+      variant.get("originalGeometryWasModified") is False and
+      variant.get("physicalExistingMotorRemovalAuthorized") is False and
+      variant.get("replacementApproved") is False and
+      variant.get("selectedPhysicalBomQualified") is False and
+      plan.get("originalCadFilesEdited") is False,
+      "Original source assembly lineage or hypothetical-only safety gates changed")
+    comparison=variant.get("hypotheticalHistoricalComparison",{})
+    require(comparison.get("overlapVolumesRecomputedAfterMask") is False and
+      comparison.get("newExactBooleanResult") is None,
+      "Historical BREP comparisons must not masquerade as a fresh variant result")
     excluded,plate=SITES[site]
+    require(variant.get("unmodifiedOriginalSourceMotorPairs")==[
+      {"siteId":arm,"originalLeafIndexes":list(mask),
+       "nestedArmPath":path,"sourceCadGeometryUnmodified":True,
+       "physicalMotorPresentVerified":False}
+      for arm,(mask,_),path in [
+       ("arm-1",SITES["arm-1"],"HMX5V-ARM-V1_ASM:1"),
+       ("arm-2",SITES["arm-2"],"HMX5V-ARM-V1_ASM:2"),
+       ("arm-3",SITES["arm-3"],"HMX5V-ARM-V1_ASM:3"),
+       ("arm-4",SITES["arm-4"],"HMX5V-ARM-V1_ASM:4")
+      ]],"All four original motor source occurrences must be preserved")
     frame=plan.get("memberSourceFrameSolidIndices")
     motor=plan.get("memberSourceMotorSolidIndices")
     wanted=[i for i in range(244) if i not in excluded]
@@ -131,8 +179,8 @@ def preflight(plan_path,variant_path,survey_path,frame_path,motor_path):
     expected=set()
     for p in pairs:
         require(isinstance(p,dict) and
-          isinstance(p.get("frameSolidIndex"),int) and
-          isinstance(p.get("motorSolidIndex"),int) and
+          type(p.get("frameSolidIndex")) is int and
+          type(p.get("motorSolidIndex")) is int and
           p["frameSolidIndex"] in wanted and p["motorSolidIndex"] in motor and
           pair_id(p) not in expected,
           "Missing, duplicated or excluded source candidate collision pair")
@@ -244,8 +292,10 @@ def invoke_worker(args,stage,timeout_s,frame_id=None,motor_id=None):
         if proc.returncode:
             return None,"INDETERMINATE_WORKER_ERROR"
         try:
-            data=json.loads(stdout.read(1_000_000))
-            return data,None
+            data=json.loads(stdout.read(1_000_000),
+                            object_pairs_hook=reject_duplicate_keys,
+                            parse_constant=reject_nonfinite_constant)
+            return (data,None) if isinstance(data,dict) else (None,"INDETERMINATE_WORKER_ERROR")
         except (json.JSONDecodeError,ValueError):
             return None,"INDETERMINATE_WORKER_ERROR"
 
@@ -265,7 +315,15 @@ def execute(args):
       screen.get("sourceMembershipCount")==242 and
       screen.get("physicalFitApproved") is False,
       "Independent fresh source AABB screening failed or timed out: INDETERMINATE")
-    actual=[pair_id(p) for p in screen["freshAllSourceAabbPairs"]]
+    actual_pairs=screen.get("freshAllSourceAabbPairs")
+    require(isinstance(actual_pairs,list) and all(
+      isinstance(p,dict) and type(p.get("frameSolidIndex")) is int and
+      type(p.get("motorSolidIndex")) is int and
+      p["frameSolidIndex"] in plan["memberSourceFrameSolidIndices"] and
+      p["motorSolidIndex"] in plan["memberSourceMotorSolidIndices"]
+      for p in actual_pairs),
+      "Malformed new source-solid AABB screening result: INDETERMINATE")
+    actual=[pair_id(p) for p in actual_pairs]
     expected=[pair_id(p) for p in pairs]
     require(len(actual)==len(set(actual)) and set(actual)==set(expected),
       "Fresh original STEP AABB screen disagrees with planned broadphase: INDETERMINATE")
