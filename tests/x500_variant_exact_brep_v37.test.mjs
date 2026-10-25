@@ -159,6 +159,26 @@ test('exact BREP zero requires zero volume; small positive penetration stays ind
  }
 });
 
+test('zero-volume BREP surface contact cannot masquerade as empty intersection',()=>{
+ const p=plan(fixture());
+ const touching=measured(p);
+ touching.pairs[0].status='INDETERMINATE_NONVOLUMETRIC_CONTACT';
+ touching.pairs[0].modelIntersectionVolumeMm3=0;
+ const review=reviewX500VariantBrepResult(p,touching,C);
+ assert.equal(review.modeledStatus,'INDETERMINATE_INCOMPLETE_OR_FAILED_BREP');
+ assert.equal(review.nonvolumetricContactPairs,1);
+ assert.equal(review.untestedOrIndeterminatePairs,1);
+ assert.equal(review.workerComplete,false);
+ assert.equal(review.physicalFitApproved,false);
+ for(const value of [null,0.00001,-1,Infinity,'0']){
+  const malformed=measured(p);
+  malformed.pairs[0].status='INDETERMINATE_NONVOLUMETRIC_CONTACT';
+  malformed.pairs[0].modelIntersectionVolumeMm3=value;
+  assert.throws(()=>reviewX500VariantBrepResult(p,malformed,C),
+   /X500 variant exact-BREP contract rejected/);
+ }
+});
+
 test('plan and results reject poisoned source, masks, pose reflection, omitted solids, approval upgrades',()=>{
  const poison=[
   x=>x.variant.scenarioMode=VARIANT_MODES.RETAIN,
