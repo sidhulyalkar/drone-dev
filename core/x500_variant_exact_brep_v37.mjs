@@ -153,13 +153,14 @@ export function reviewX500VariantBrepResult(run,result,runByteSha256){
   !Array.isArray(result.pairs))
   fail('Incomplete source accounting or unjustified physical engineering status');
  const allowed=new Set(run.expectedOriginalSourceAabbPairs.map(x=>x.frameSolidIndex+':'+x.motorSolidIndex));
- const seen=new Set();let positive=0,max=0,subthreshold=0,maxSubthreshold=0;
+ const seen=new Set();let positive=0,max=0,subthreshold=0,maxSubthreshold=0,contact=0;
  for(const pair of result.pairs){
   const key=pair.frameSolidIndex+':'+pair.motorSolidIndex;
   if(!Number.isInteger(pair.frameSolidIndex)||!Number.isInteger(pair.motorSolidIndex)||
    seen.has(key)||!allowed.has(key)||
    !['MODEL_POSITIVE_INTERSECTION','MODEL_ZERO_INTERSECTION',
-    'INDETERMINATE_SUBTHRESHOLD_INTERSECTION','INDETERMINATE_TIMEOUT',
+    'INDETERMINATE_SUBTHRESHOLD_INTERSECTION',
+    'INDETERMINATE_NONVOLUMETRIC_CONTACT','INDETERMINATE_TIMEOUT',
     'INDETERMINATE_WORKER_ERROR'].includes(pair.status))
    fail('Duplicate, unplanned or unclassified original BREP source-solid pair');
   seen.add(key);
@@ -178,6 +179,10 @@ export function reviewX500VariantBrepResult(run,result,runByteSha256){
     fail('Subthreshold model penetration must retain its positive numeric volume');
    subthreshold++;
    maxSubthreshold=Math.max(maxSubthreshold,pair.modelIntersectionVolumeMm3);
+  }else if(pair.status==='INDETERMINATE_NONVOLUMETRIC_CONTACT'){
+   if(pair.modelIntersectionVolumeMm3!==0)
+    fail('Nonvolumetric BREP contact must retain exactly zero volume');
+   contact++;
   }else if(pair.modelIntersectionVolumeMm3!==null){
    fail('Failed CAD Boolean must not assert any collision volume');
   }
@@ -209,6 +214,7 @@ export function reviewX500VariantBrepResult(run,result,runByteSha256){
   largestPositiveModelOverlapMm3:max,
   subthresholdPositiveModelPairs:subthreshold,
   largestSubthresholdModelOverlapMm3:maxSubthreshold,
+  nonvolumetricContactPairs:contact,
   modeledStatus:status,workerComplete:complete,
   manufacturerMotorCompatibilityVerified:false,
   physicalFitApproved:false,procurementApproved:false,
