@@ -63,6 +63,7 @@ Per-pair statuses:
 | `MODEL_POSITIVE_INTERSECTION` | Strictly positive OpenCascade modeled intersection volume **above** the 0.0001 mm³ reporting threshold; modeled interference blocker |
 | `MODEL_ZERO_INTERSECTION` | Numerically **exactly 0 mm³** from the finished Boolean at this specific ideal CAD pose. Does not rule out tangential contact or physical interference |
 | `INDETERMINATE_SUBTHRESHOLD_INTERSECTION` | Positive measured modeled volume in the interval (0, 0.0001] mm³. Preserve its numeric value but **never classify it as zero** |
+| `INDETERMINATE_NONVOLUMETRIC_CONTACT` | OpenCascade returned nonempty face, edge or vertex contact with **zero modeled solid volume**, or an anomalous zero-volume result containing solids. Preserve the 0 mm³ measurement, but **never infer separation** |
 | `INDETERMINATE_TIMEOUT` | Worker did not finish in its hard limit; modeled volume unknown (null) |
 | `INDETERMINATE_WORKER_ERROR` | CAD import, Boolean, result parse or subprocess error; modeled volume unknown (null) |
 
@@ -87,6 +88,14 @@ The viewer reports one of three **model-only** summary classes:
 - `INDETERMINATE_INCOMPLETE_OR_FAILED_BREP`: any attempted timeout/failure or incomplete pair set, without converting failure into clearance
 
 The original v3.3 30-pair Boolean evidence, v3.4 occurrence reconciliations and v3.5 hierarchy stay unchanged. Nor does the v3.7 result alter an actual 3D mating proposal or source CAD geometry.
+
+## Exact Boolean topology and nonvolumetric contact guard
+
+The isolated v3.7 CAD worker now verifies the imported source-solid topology using CadQuery's OpenCascade validity check, as well as positive volume and bounded dimensions. A shape count of 244/4 alone never establishes that the import is valid.
+
+Before interpreting any BRepAlgoAPI_Common result volume, the worker requires a successful Boolean build, checks the resulting BREP with `BRepCheck_Analyzer(...).IsValid()`, and inspects the returned solid and lower-dimensional topology. An invalid Boolean result **blocks** the pair as a worker error. A null or truly empty valid result may be classified `MODEL_ZERO_INTERSECTION`, but a nonempty surface/edge/vertex-only result or a zero-volume result containing solids becomes `INDETERMINATE_NONVOLUMETRIC_CONTACT`. Such results must never lead to an all-zero clearance claim. The per-pair JSON preserves an exact numerical `0` for this contact state, separate from the `null` values used for timeouts and worker errors.
+
+This is intentionally strict. Some original STEP geometry may not pass these validity checks or may be represented differently by different OpenCascade builds. Do not disable the checks merely to obtain a green result: record the kernel and failure, inspect exact source shape identities and rerun under a pinned environment. CPU-only tests confirm the **classification contract** without importing original STEP. They do not demonstrate the real model has valid topology, reliable contact semantics, or physical fit.
 
 ## Conservative AABB coverage guard (source-qualification blocker)
 
