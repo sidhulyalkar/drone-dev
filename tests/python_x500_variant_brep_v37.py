@@ -23,7 +23,8 @@ class TestV37SourceBrepContract(unittest.TestCase):
   ]
   for volume,status in cases:
    self.assertEqual(runner.classify_intersection_volume(volume),status)
-   self.assertTrue(runner.valid_pair_measurement(status,volume))
+   self.assertTrue(runner.valid_pair_measurement(
+    status,volume,0.5 if status=="MODEL_ZERO_INTERSECTION" else None))
   for volume in (float("nan"),float("inf"),-1e-10,True):
    with self.assertRaises(ValueError):
     runner.classify_intersection_volume(volume)
