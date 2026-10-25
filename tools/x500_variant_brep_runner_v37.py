@@ -297,13 +297,30 @@ def classify_intersection_volume(volume):
         return "INDETERMINATE_SUBTHRESHOLD_INTERSECTION"
     return "MODEL_POSITIVE_INTERSECTION"
 
-def valid_pair_measurement(status,volume):
+def classify_separation_distance(distance,margin=EPS):
+    """Independent gap query: touching/near-touching is never model-clear."""
+    require(type(distance) in (int,float) and math.isfinite(distance) and
+            distance>=0 and type(margin) in (int,float) and
+            math.isfinite(margin) and margin>=0,
+            "Finite nonnegative BREP distance and contact margin required")
+    return ("INDETERMINATE_GEOMETRIC_CONTACT" if distance<=margin
+            else "MODEL_ZERO_INTERSECTION")
+
+def valid_pair_measurement(status,volume,distance=None):
+    if status in ("MODEL_ZERO_INTERSECTION","INDETERMINATE_GEOMETRIC_CONTACT"):
+        try:
+            return (type(volume) in (int,float) and volume==0 and
+                    classify_separation_distance(distance)==status)
+        except ValueError:
+            return False
+    if distance is not None:
+        return False
     if status=="INDETERMINATE_SUBTHRESHOLD_INTERSECTION":
         return (type(volume) in (int,float) and math.isfinite(volume)
                 and 0<volume<=VOLUME_THRESHOLD_MM3)
     if status=="INDETERMINATE_NONVOLUMETRIC_CONTACT":
         return type(volume) in (int,float) and volume==0
-    if status in ("MODEL_ZERO_INTERSECTION","MODEL_POSITIVE_INTERSECTION"):
+    if status=="MODEL_POSITIVE_INTERSECTION":
         try:
             return classify_intersection_volume(volume)==status
         except ValueError:
@@ -347,6 +364,7 @@ def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
     from OCP.BRepGProp import BRepGProp
     from OCP.GProp import GProp_GProps
     from OCP.BRepCheck import BRepCheck_Analyzer
+    from OCP.BRepExtrema import BRepExtrema_DistShapeShape
     from OCP.TopExp import TopExp_Explorer
     from OCP.TopAbs import TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX
     frame,motor=import_parts(frame_path,motor_path)
@@ -380,10 +398,21 @@ def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
     volume=props.Mass() if has_solid and is_valid else 0.0
     status=classify_boolean_topology(
         is_null,is_valid,has_solid,lower_dimensional,volume)
+    distance=None
+    if status=="MODEL_ZERO_INTERSECTION":
+        # OCCT Common may return an empty COMPOUND for both disjoint and
+        # face-touching solids. A valid empty Boolean is not proof of a gap.
+        probe=BRepExtrema_DistShapeShape(frame[frame_id].wrapped,moved)
+        probe.Perform()
+        require(probe.IsDone() and probe.NbSolution()>0,
+                "Independent source BREP minimum-distance query failed")
+        distance=float(probe.Value())
+        status=classify_separation_distance(distance)
     return {"schema":"aeroforge/x500-brep-worker-pair/v3.7",
       "frameSolidIndex":frame_id,"motorSolidIndex":motor_id,
       "status":status,
       "modelIntersectionVolumeMm3":volume,
+      "modelMinimumDistanceMm":distance,
       "physicalFitApproved":False}
 
 def invoke_worker(args,stage,timeout_s,frame_id=None,motor_id=None):
@@ -459,22 +488,25 @@ def execute(args):
         payload,error=invoke_worker(args,"pair",args.worker_timeout,i,j)
         if error is not None:
             row={"frameSolidIndex":i,"motorSolidIndex":j,"status":error,
-                 "modelIntersectionVolumeMm3":None}
+                 "modelIntersectionVolumeMm3":None,"modelMinimumDistanceMm":None}
         elif (payload.get("schema")!="aeroforge/x500-brep-worker-pair/v3.7" or
           payload.get("frameSolidIndex")!=i or payload.get("motorSolidIndex")!=j or
           payload.get("status") not in (
             "MODEL_POSITIVE_INTERSECTION","MODEL_ZERO_INTERSECTION",
             "INDETERMINATE_SUBTHRESHOLD_INTERSECTION",
-            "INDETERMINATE_NONVOLUMETRIC_CONTACT") or
+            "INDETERMINATE_NONVOLUMETRIC_CONTACT",
+            "INDETERMINATE_GEOMETRIC_CONTACT") or
           payload.get("physicalFitApproved") is not False or
           not valid_pair_measurement(payload.get("status"),
-                                     payload.get("modelIntersectionVolumeMm3"))):
+                                     payload.get("modelIntersectionVolumeMm3"),
+                                     payload.get("modelMinimumDistanceMm"))):
             row={"frameSolidIndex":i,"motorSolidIndex":j,
                  "status":"INDETERMINATE_WORKER_ERROR",
-                 "modelIntersectionVolumeMm3":None}
+                 "modelIntersectionVolumeMm3":None,"modelMinimumDistanceMm":None}
         else:
             row={k:payload[k] for k in (
-              "frameSolidIndex","motorSolidIndex","status","modelIntersectionVolumeMm3")}
+              "frameSolidIndex","motorSolidIndex","status","modelIntersectionVolumeMm3",
+              "modelMinimumDistanceMm")}
         observed.append(row)
     receipt={
       "schema":RESULT_SCHEMA,
