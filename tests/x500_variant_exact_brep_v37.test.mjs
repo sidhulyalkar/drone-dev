@@ -70,7 +70,8 @@ function measured(p,nonzero=false){
   physicalFitApproved:false,procurementApproved:false,powerApproved:false,flightApproved:false,
   pairs:p.expectedOriginalSourceAabbPairs.map((item,i)=>({
    ...item,status:nonzero&&i===0?'MODEL_POSITIVE_INTERSECTION':'MODEL_ZERO_INTERSECTION',
-   modelIntersectionVolumeMm3:nonzero&&i===0?3.5:0
+   modelIntersectionVolumeMm3:nonzero&&i===0?3.5:0,
+   modelMinimumDistanceMm:nonzero&&i===0?null:0.5
   }))};
  return result;
 }
@@ -113,6 +114,7 @@ test('zero model intersection still not physical fit; incomplete/timeouts remain
  const timedOut=measured(p);
  timedOut.pairs[3].status='INDETERMINATE_TIMEOUT';
  timedOut.pairs[3].modelIntersectionVolumeMm3=null;
+ timedOut.pairs[3].modelMinimumDistanceMm=null;
  const status=reviewX500VariantBrepResult(p,timedOut,C);
  assert.equal(status.modeledStatus,'INDETERMINATE_INCOMPLETE_OR_FAILED_BREP');
  assert.equal(status.workerComplete,false);
@@ -122,10 +124,11 @@ test('exact BREP zero requires zero volume; small positive penetration stays ind
  const zero=measured(p);
  zero.pairs[0].modelIntersectionVolumeMm3=0.00001;
  assert.throws(()=>reviewX500VariantBrepResult(p,zero,C),
-  /Model-zero BREP intersection must have exactly zero/);
+  /Model-zero BREP requires an independent positive separation distance/);
  const subthreshold=measured(p);
  subthreshold.pairs[0].status='INDETERMINATE_SUBTHRESHOLD_INTERSECTION';
  subthreshold.pairs[0].modelIntersectionVolumeMm3=0.00001;
+ subthreshold.pairs[0].modelMinimumDistanceMm=null;
  const review=reviewX500VariantBrepResult(p,subthreshold,C);
  assert.equal(review.modeledStatus,'INDETERMINATE_INCOMPLETE_OR_FAILED_BREP');
  assert.equal(review.subthresholdPositiveModelPairs,1);
@@ -136,10 +139,12 @@ test('exact BREP zero requires zero volume; small positive penetration stays ind
  const atThreshold=measured(p);
  atThreshold.pairs[0].status='INDETERMINATE_SUBTHRESHOLD_INTERSECTION';
  atThreshold.pairs[0].modelIntersectionVolumeMm3=0.0001;
+ atThreshold.pairs[0].modelMinimumDistanceMm=null;
  assert.equal(reviewX500VariantBrepResult(p,atThreshold,C).workerComplete,false);
  const boundary=measured(p);
  boundary.pairs[0].status='MODEL_POSITIVE_INTERSECTION';
  boundary.pairs[0].modelIntersectionVolumeMm3=0.000100001;
+ boundary.pairs[0].modelMinimumDistanceMm=null;
  assert.equal(reviewX500VariantBrepResult(p,boundary,C).modelPositivePairs,1);
  const malformed=[
   [0,'INDETERMINATE_SUBTHRESHOLD_INTERSECTION'],
@@ -154,6 +159,7 @@ test('exact BREP zero requires zero volume; small positive penetration stays ind
   const result=measured(p);
   result.pairs[0].status=status;
   result.pairs[0].modelIntersectionVolumeMm3=volume;
+  result.pairs[0].modelMinimumDistanceMm=status==='MODEL_ZERO_INTERSECTION'?0.5:null;
   assert.throws(()=>reviewX500VariantBrepResult(p,result,C),
    /X500 variant exact-BREP contract rejected/);
  }
@@ -164,6 +170,7 @@ test('zero-volume BREP surface contact cannot masquerade as empty intersection',
  const touching=measured(p);
  touching.pairs[0].status='INDETERMINATE_NONVOLUMETRIC_CONTACT';
  touching.pairs[0].modelIntersectionVolumeMm3=0;
+ touching.pairs[0].modelMinimumDistanceMm=null;
  const review=reviewX500VariantBrepResult(p,touching,C);
  assert.equal(review.modeledStatus,'INDETERMINATE_INCOMPLETE_OR_FAILED_BREP');
  assert.equal(review.nonvolumetricContactPairs,1);
@@ -174,9 +181,47 @@ test('zero-volume BREP surface contact cannot masquerade as empty intersection',
   const malformed=measured(p);
   malformed.pairs[0].status='INDETERMINATE_NONVOLUMETRIC_CONTACT';
   malformed.pairs[0].modelIntersectionVolumeMm3=value;
+  malformed.pairs[0].modelMinimumDistanceMm=null;
   assert.throws(()=>reviewX500VariantBrepResult(p,malformed,C),
    /X500 variant exact-BREP contract rejected/);
  }
+});
+
+test('empty Boolean without an independently measured gap is not model clearance',()=>{
+ const p=plan(fixture());
+ const clear=reviewX500VariantBrepResult(p,measured(p),C);
+ assert.equal(clear.minimumMeasuredSeparatedModelGapMm,0.5);
+ assert.equal(clear.geometricNearContactPairs,0);
+ const near=measured(p);
+ near.pairs[0].status='INDETERMINATE_GEOMETRIC_CONTACT';
+ near.pairs[0].modelMinimumDistanceMm=0;
+ const nr=reviewX500VariantBrepResult(p,near,C);
+ assert.equal(nr.geometricNearContactPairs,1);
+ assert.equal(nr.modeledStatus,'INDETERMINATE_INCOMPLETE_OR_FAILED_BREP');
+ assert.equal(nr.workerComplete,false);
+ assert.equal(nr.untestedOrIndeterminatePairs,1);
+ const atMargin=measured(p);
+ atMargin.pairs[0].status='INDETERMINATE_GEOMETRIC_CONTACT';
+ atMargin.pairs[0].modelMinimumDistanceMm=0.00001;
+ assert.equal(reviewX500VariantBrepResult(p,atMargin,C).geometricNearContactPairs,1);
+ for(const dist of [undefined,null,0,0.00001,-0.1,Infinity,'1']){
+  const forged=measured(p);
+  if(dist===undefined)delete forged.pairs[0].modelMinimumDistanceMm;
+  else forged.pairs[0].modelMinimumDistanceMm=dist;
+  assert.throws(()=>reviewX500VariantBrepResult(p,forged,C),
+   /Model-zero BREP requires an independent positive separation distance/);
+ }
+ for(const dist of [null,-1,0.00002,Infinity,'0']){
+  const forged=measured(p);
+  forged.pairs[0].status='INDETERMINATE_GEOMETRIC_CONTACT';
+  forged.pairs[0].modelMinimumDistanceMm=dist;
+  assert.throws(()=>reviewX500VariantBrepResult(p,forged,C),
+   /Geometric contact must retain an independently measured near-zero gap/);
+ }
+ const forged=measured(p);
+ forged.pairs[0].modelMinimumDistanceMm=undefined;
+ assert.throws(()=>reviewX500VariantBrepResult(p,forged,C),
+  /Model-zero BREP requires an independent positive separation distance/);
 });
 
 test('plan and results reject poisoned source, masks, pose reflection, omitted solids, approval upgrades',()=>{
