@@ -357,10 +357,11 @@ def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
        R[1][0],R[1][1],R[1][2],t[1],
        R[2][0],R[2][1],R[2][2],t[2])
     moved=BRepBuilderAPI_Transform(motor[motor_id].wrapped,xf,True).Shape()
+    moved_is_null=moved.IsNull()
     validate_transformed_solid(
-        moved.IsNull(),
-        TopExp_Explorer(moved,TopAbs_SOLID).More(),
-        False if moved.IsNull() else BRepCheck_Analyzer(moved).IsValid())
+        moved_is_null,
+        False if moved_is_null else TopExp_Explorer(moved,TopAbs_SOLID).More(),
+        False if moved_is_null else BRepCheck_Analyzer(moved).IsValid())
     common=BRepAlgoAPI_Common(frame[frame_id].wrapped,moved)
     common.Build()
     require(common.IsDone(),"OpenCascade exact Boolean did not complete")
