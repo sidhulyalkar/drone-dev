@@ -310,6 +310,12 @@ def valid_pair_measurement(status,volume):
             return False
     return False
 
+def validate_transformed_solid(is_null,has_solid,is_valid):
+    """Refuse transformed geometry that might make a Boolean falsely empty."""
+    require(all(type(v) is bool for v in (is_null,has_solid,is_valid)) and
+            not is_null and has_solid and is_valid,
+            "Transformed candidate motor is not a valid source BREP solid")
+
 def classify_boolean_topology(is_null,is_valid,has_solid,has_lower_dimensional,volume):
     """Treat surface contacts and invalid Boolean shapes as indeterminate.
 
@@ -351,10 +357,10 @@ def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
        R[1][0],R[1][1],R[1][2],t[1],
        R[2][0],R[2][1],R[2][2],t[2])
     moved=BRepBuilderAPI_Transform(motor[motor_id].wrapped,xf,True).Shape()
-    require(not moved.IsNull() and
-            TopExp_Explorer(moved,TopAbs_SOLID).More() and
-            BRepCheck_Analyzer(moved).IsValid(),
-            "Transformed candidate motor is not a valid source BREP solid")
+    validate_transformed_solid(
+        moved.IsNull(),
+        TopExp_Explorer(moved,TopAbs_SOLID).More(),
+        False if moved.IsNull() else BRepCheck_Analyzer(moved).IsValid())
     common=BRepAlgoAPI_Common(frame[frame_id].wrapped,moved)
     common.Build()
     require(common.IsDone(),"OpenCascade exact Boolean did not complete")
