@@ -143,6 +143,10 @@ export function createX500VariantBrepPanel(){
     'Positive ideal-CAD intersection pairs (over threshold): '+validated.modelPositivePairs,
     'Small positive volumes (indeterminate): '+validated.subthresholdPositiveModelPairs,
     'Zero-volume BREP contacts (indeterminate): '+validated.nonvolumetricContactPairs,
+    'Independent distance near-contact pairs (indeterminate): '+validated.geometricNearContactPairs,
+    'Smallest model-separated pair gap: '+
+     (validated.minimumMeasuredSeparatedModelGapMm===null?'NO MEASURED SEPARATION':
+      validated.minimumMeasuredSeparatedModelGapMm+' mm'),
     'Indeterminate/not-run pairs: '+validated.untestedOrIndeterminatePairs,
     'Largest modeled positive overlap: '+validated.largestPositiveModelOverlapMm3+' mm³',
     'Largest small positive modeled overlap: '+validated.largestSubthresholdModelOverlapMm3+' mm³',
