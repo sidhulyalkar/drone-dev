@@ -215,11 +215,12 @@ def validate_source_solids(parts,count,role):
         try:
             is_solid=solid.ShapeType()=="Solid"
             volume=solid.Volume()
+            is_valid=solid.isValid()
         except (AttributeError,TypeError,ValueError,RuntimeError) as exc:
             raise ValueError("Invalid "+role+" BREP source solid at "+str(index)) from exc
-        require(is_solid and isinstance(volume,(int,float)) and
+        require(is_solid and is_valid is True and type(volume) in (int,float) and
                 math.isfinite(volume) and volume>0,
-                "Missing, non-solid or non-positive-volume "+role+
+                "Missing, invalid, non-solid or non-positive-volume "+role+
                 " BREP source member "+str(index))
         shape_bbox(solid)
 
@@ -300,6 +301,8 @@ def valid_pair_measurement(status,volume):
     if status=="INDETERMINATE_SUBTHRESHOLD_INTERSECTION":
         return (type(volume) in (int,float) and math.isfinite(volume)
                 and 0<volume<=VOLUME_THRESHOLD_MM3)
+    if status=="INDETERMINATE_NONVOLUMETRIC_CONTACT":
+        return type(volume) in (int,float) and volume==0
     if status in ("MODEL_ZERO_INTERSECTION","MODEL_POSITIVE_INTERSECTION"):
         try:
             return classify_intersection_volume(volume)==status
@@ -307,12 +310,39 @@ def valid_pair_measurement(status,volume):
             return False
     return False
 
+def classify_boolean_topology(is_null,is_valid,has_solid,has_lower_dimensional,volume):
+    """Treat surface contacts and invalid Boolean shapes as indeterminate.
+
+    Empty Boolean results can be model-zero. A nonempty nonvolumetric
+    result cannot establish separation, even if its mass properties are 0.
+    """
+    require(all(type(v) is bool for v in
+                (is_null,is_valid,has_solid,has_lower_dimensional)),
+            "Exact Boolean topology checks must be explicit booleans")
+    require(type(volume) in (int,float) and math.isfinite(volume) and volume>=0,
+            "Exact Boolean result volume must be finite and nonnegative")
+    require(is_valid,"Invalid OpenCascade BREP Boolean result topology")
+    if is_null:
+        require(not has_solid and not has_lower_dimensional and volume==0,
+                "Null Boolean cannot contain geometry or positive volume")
+        return "MODEL_ZERO_INTERSECTION"
+    if not has_solid:
+        require(volume==0,"Boolean without solids reported a positive volume")
+        return ("INDETERMINATE_NONVOLUMETRIC_CONTACT"
+                if has_lower_dimensional else "MODEL_ZERO_INTERSECTION")
+    if volume==0:
+        return "INDETERMINATE_NONVOLUMETRIC_CONTACT"
+    return classify_intersection_volume(volume)
+
 def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
     from OCP.gp import gp_Trsf
     from OCP.BRepBuilderAPI import BRepBuilderAPI_Transform
     from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
     from OCP.BRepGProp import BRepGProp
     from OCP.GProp import GProp_GProps
+    from OCP.BRepCheck import BRepCheck_Analyzer
+    from OCP.TopExp import TopExp_Explorer
+    from OCP.TopAbs import TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX
     frame,motor=import_parts(frame_path,motor_path)
     R=plan["pose"]["rotation3x3"]
     t=plan["pose"]["nativeTranslationMm"]
@@ -325,11 +355,20 @@ def exact_pair(plan,frame_path,motor_path,frame_id,motor_id):
     common.Build()
     require(common.IsDone(),"OpenCascade exact Boolean did not complete")
     result=common.Shape()
+    is_null=result.IsNull()
+    is_valid=True if is_null else BRepCheck_Analyzer(result).IsValid()
+    has_solid=False if is_null else TopExp_Explorer(result,TopAbs_SOLID).More()
+    # Non-null common results may be faces/edges/vertices rather than solids.
+    # Such zero-volume contacts are not an exact model separation witness.
+    lower_dimensional=False if is_null or has_solid else any(
+        TopExp_Explorer(result,kind).More()
+        for kind in (TopAbs_FACE,TopAbs_EDGE,TopAbs_VERTEX))
     props=GProp_GProps()
-    if not result.IsNull():
+    if not is_null and has_solid and is_valid:
         BRepGProp.VolumeProperties_s(result,props)
-    volume=0.0 if result.IsNull() else props.Mass()
-    status=classify_intersection_volume(volume)
+    volume=props.Mass() if has_solid and is_valid else 0.0
+    status=classify_boolean_topology(
+        is_null,is_valid,has_solid,lower_dimensional,volume)
     return {"schema":"aeroforge/x500-brep-worker-pair/v3.7",
       "frameSolidIndex":frame_id,"motorSolidIndex":motor_id,
       "status":status,
@@ -414,7 +453,8 @@ def execute(args):
           payload.get("frameSolidIndex")!=i or payload.get("motorSolidIndex")!=j or
           payload.get("status") not in (
             "MODEL_POSITIVE_INTERSECTION","MODEL_ZERO_INTERSECTION",
-            "INDETERMINATE_SUBTHRESHOLD_INTERSECTION") or
+            "INDETERMINATE_SUBTHRESHOLD_INTERSECTION",
+            "INDETERMINATE_NONVOLUMETRIC_CONTACT") or
           payload.get("physicalFitApproved") is not False or
           not valid_pair_measurement(payload.get("status"),
                                      payload.get("modelIntersectionVolumeMm3"))):
