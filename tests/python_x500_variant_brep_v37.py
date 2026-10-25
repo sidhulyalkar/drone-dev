@@ -64,6 +64,46 @@ class TestV37SourceBrepContract(unittest.TestCase):
   self.assertFalse(runner.valid_pair_measurement(
    "INDETERMINATE_TIMEOUT",None,None))
 
+ @unittest.skipUnless(
+  importlib.util.find_spec("OCP") and importlib.util.find_spec("cadquery"),
+  "Optional actual OpenCascade/CadQuery kernel needed for synthetic contact test")
+ def test_occt_real_kernel_returns_empty_common_for_touching_boxes(self):
+  # These are synthetic boxes, never X500 or manufacturer geometry. The real
+  # OCCT Boolean intentionally exposes why topology inspection alone failed.
+  import cadquery as cq
+  from OCP.BRepAlgoAPI import BRepAlgoAPI_Common
+  from OCP.BRepExtrema import BRepExtrema_DistShapeShape
+  from OCP.TopExp import TopExp_Explorer
+  from OCP.TopAbs import TopAbs_SOLID,TopAbs_FACE,TopAbs_EDGE
+  reference=cq.Workplane("XY").box(2,2,2,centered=False).val()
+  def observe(offset):
+   candidate=reference.translate((offset,0,0))
+   common=BRepAlgoAPI_Common(reference.wrapped,candidate.wrapped)
+   common.Build()
+   self.assertTrue(common.IsDone())
+   result=common.Shape()
+   self.assertFalse(result.IsNull())
+   self.assertFalse(TopExp_Explorer(result,TopAbs_SOLID).More())
+   self.assertFalse(TopExp_Explorer(result,TopAbs_FACE).More())
+   self.assertFalse(TopExp_Explorer(result,TopAbs_EDGE).More())
+   distance=BRepExtrema_DistShapeShape(reference.wrapped,candidate.wrapped)
+   distance.Perform()
+   self.assertTrue(distance.IsDone())
+   self.assertGreater(distance.NbSolution(),0)
+   return distance.Value()
+  touching=observe(2)
+  separated=observe(5)
+  near=observe(2+runner.EPS/2)
+  self.assertLessEqual(touching,runner.EPS)
+  self.assertGreater(separated,runner.EPS)
+  self.assertLessEqual(near,runner.EPS)
+  self.assertEqual(runner.classify_separation_distance(touching),
+                   "INDETERMINATE_GEOMETRIC_CONTACT")
+  self.assertEqual(runner.classify_separation_distance(near),
+                   "INDETERMINATE_GEOMETRIC_CONTACT")
+  self.assertEqual(runner.classify_separation_distance(separated),
+                   "MODEL_ZERO_INTERSECTION")
+
  def test_transformed_motor_must_remain_a_valid_solid(self):
   runner.validate_transformed_solid(False,True,True)
   for invalid in [(True,False,False),(False,False,True),
