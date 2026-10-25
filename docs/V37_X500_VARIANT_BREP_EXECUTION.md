@@ -82,6 +82,7 @@ Per-pair statuses:
 | `MODEL_ZERO_INTERSECTION` | Numerically **exactly 0 mm³** from the finished Boolean at this specific ideal CAD pose. Does not rule out tangential contact or physical interference |
 | `INDETERMINATE_SUBTHRESHOLD_INTERSECTION` | Positive measured modeled volume in the interval (0, 0.0001] mm³. Preserve its numeric value but **never classify it as zero** |
 | `INDETERMINATE_NONVOLUMETRIC_CONTACT` | OpenCascade returned nonempty face, edge or vertex contact with **zero modeled solid volume**, or an anomalous zero-volume result containing solids. Preserve the 0 mm³ measurement, but **never infer separation** |
+| `INDETERMINATE_GEOMETRIC_CONTACT` | Boolean reports 0 mm³ but an **independent BRepExtrema distance query** measures a zero or near-zero gap (≤ 0.00001 mm). Preserve the gap in `modelMinimumDistanceMm`; never call it separated |
 | `INDETERMINATE_TIMEOUT` | Worker did not finish in its hard limit; modeled volume unknown (null) |
 | `INDETERMINATE_WORKER_ERROR` | CAD import, Boolean, result parse or subprocess error; modeled volume unknown (null) |
 
@@ -114,6 +115,20 @@ The isolated v3.7 CAD worker now verifies the imported source-solid topology usi
 After applying the selected source-native rigid pose, the worker first validates that the transformed candidate motor is still a non-null topologically valid solid; if it is not, the pair fails. Before interpreting any BRepAlgoAPI_Common result volume, the worker requires a successful Boolean build, checks the resulting BREP with `BRepCheck_Analyzer(...).IsValid()`, and inspects the returned solid and lower-dimensional topology. An invalid Boolean result **blocks** the pair as a worker error. A null or truly empty valid result may be classified `MODEL_ZERO_INTERSECTION`, but a nonempty surface/edge/vertex-only result or a zero-volume result containing solids becomes `INDETERMINATE_NONVOLUMETRIC_CONTACT`. Such results must never lead to an all-zero clearance claim. The per-pair JSON preserves an exact numerical `0` for this contact state, separate from the `null` values used for timeouts and worker errors.
 
 This is intentionally strict. Some original STEP geometry may not pass these validity checks or may be represented differently by different OpenCascade builds. Do not disable the checks merely to obtain a green result: record the kernel and failure, inspect exact source shape identities and rerun under a pinned environment. CPU-only tests confirm the **classification contract** without importing original STEP. They do not demonstrate the real model has valid topology, reliable contact semantics, or physical fit.
+
+## Independent distance witness for model-zero BREP results
+
+**Actual OpenCascade kernel finding:** `BRepAlgoAPI_Common` can return a valid, *empty* `COMPOUND` for two touching solids. That exact same kind of empty result can occur for two geometrically separated solids. Therefore, checking only `Common.IsDone()`, `BRepCheck_Analyzer(...).IsValid()`, topology explorers and zero volume **does not prove the original solids are separated**.
+
+The v3.7 worker now executes `BRepExtrema_DistShapeShape` for every Boolean pair initially classified as `MODEL_ZERO_INTERSECTION`. A successful query must report a finite, nonnegative model minimum distance and at least one solution. Its distance becomes part of the immutable per-pair receipt:
+
+- `MODEL_ZERO_INTERSECTION`: Boolean volume = 0 and independently measured minimum distance **greater than** 0.00001 mm.
+- `INDETERMINATE_GEOMETRIC_CONTACT`: Boolean volume = 0 and measured minimum distance in [0, 0.00001] mm.
+- Other statuses (`MODEL_POSITIVE_INTERSECTION`, positive subthreshold penetration, nonvolumetric topology contact, timeout, worker failure) carry `modelMinimumDistanceMm: null`. Distances for these cases must not be fabricated from AABB proximity.
+
+The `0.00001 mm` threshold is a numerical contact guard, **not** an engineering tolerance or guaranteed separation accuracy of OpenCascade. Numerical tolerances and CAD validity must ultimately be qualified against original source geometry and repeated across known kernel versions. Older receipts that claimed model-zero without this independent distance witness are now intentionally rejected by the browser validator.
+
+A test using genuine OpenCascade on **synthetic cubes** reproduces the ambiguous empty Boolean, and a separate opt-in CI workflow (`Synthetic OpenCascade kernel conformance`) installs pinned CadQuery and OCCT dependencies to run that test. The standard engineering test suite retains its CAD-free preflight tests; neither suite constitutes a real X500 source execution. The local kernel experiment showed distinct distances for touching and separated cubes, not certified physical clearance.
 
 ## Conservative AABB coverage guard (source-qualification blocker)
 
