@@ -35,6 +35,35 @@ class TestV37SourceBrepContract(unittest.TestCase):
   self.assertFalse(runner.valid_pair_measurement(
    "INDETERMINATE_SUBTHRESHOLD_INTERSECTION",None))
 
+ def test_minimum_gap_must_exist_before_reporting_model_zero(self):
+  t=runner.EPS
+  classify=runner.classify_separation_distance
+  for gap in (0,1e-7,t):
+   self.assertEqual(classify(gap),"INDETERMINATE_GEOMETRIC_CONTACT")
+   self.assertTrue(runner.valid_pair_measurement(
+    "INDETERMINATE_GEOMETRIC_CONTACT",0,gap))
+   self.assertFalse(runner.valid_pair_measurement(
+    "MODEL_ZERO_INTERSECTION",0,gap))
+  for gap in (t*2,0.5,4):
+   self.assertEqual(classify(gap),"MODEL_ZERO_INTERSECTION")
+   self.assertTrue(runner.valid_pair_measurement("MODEL_ZERO_INTERSECTION",0,gap))
+   self.assertFalse(runner.valid_pair_measurement(
+    "INDETERMINATE_GEOMETRIC_CONTACT",0,gap))
+  for invalid in (-1,float("nan"),float("inf"),None,True,"0"):
+   with self.subTest(invalid=invalid):
+    with self.assertRaisesRegex(ValueError,"BREP distance"):
+     classify(invalid)
+    self.assertFalse(runner.valid_pair_measurement(
+     "MODEL_ZERO_INTERSECTION",0,invalid))
+  self.assertFalse(runner.valid_pair_measurement(
+   "MODEL_ZERO_INTERSECTION",0))
+  self.assertFalse(runner.valid_pair_measurement(
+   "MODEL_POSITIVE_INTERSECTION",1.0,0.1))
+  self.assertFalse(runner.valid_pair_measurement(
+   "INDETERMINATE_NONVOLUMETRIC_CONTACT",0,0))
+  self.assertFalse(runner.valid_pair_measurement(
+   "INDETERMINATE_TIMEOUT",None,None))
+
  def test_transformed_motor_must_remain_a_valid_solid(self):
   runner.validate_transformed_solid(False,True,True)
   for invalid in [(True,False,False),(False,False,True),
