@@ -10,6 +10,24 @@ The original operator-uploaded X500 frame `x500v2-frame.step` SHA-256 `e7ccd422c
 
 The original frame XCAF source contains 244 solid occurrences, including four pairs of coincident `DJ-2216-KV880` model instances. The separately supplied AIR2216II CAD is an independently unqualified replacement candidate. v3.7 does not change that motor identity or grant a manufacturer BOM.
 
+## Recover original source data without changing historical evidence
+
+The manufacturer publicly lists both `x500v2-frame.step` and `AIR2216II_Motor_3D.STEP` at [Holybro's X500 V2 download page](https://docs.holybro.com/drone-development-kit/px4-development-kit-x500v2/download). Download them into a **private local directory**, not the public repository. This does not independently authenticate a purchased motor revision.
+
+On macOS/Linux, verify the exact historical file identities:
+
+```bash
+shasum -a 256 /private/cad/x500v2-frame.step
+# Expected: e7ccd422cf7825b61ad8270a98d8fbbbc12aced102cc6a20ed17ee66b816c360
+
+shasum -a 256 /private/cad/AIR2216II_Motor_3D.STEP
+# Expected: ba0e6e416a249a3e320ecef0370d401d854ea23bd7efd6719711de8c81e22e15
+```
+
+**Stop if either hash differs.** The public manufacturer's current downloadable revision is not necessarily byte-identical to the previously studied original. Do not rename or alter changed source bytes and claim they are the historical geometry; create a new versioned source-identity experiment instead. The v3.3 raw survey, v3.5 XCAF report, v3.6 variant and matching v3.7 JSON plan are separately required. Recreating missing reports requires executing their documented earlier stages against the verified exact original source.
+
+The public download page was located, but the two files were **not** re-downloaded or rehashed in this development session, and the original v3.3 survey is still unavailable here. No new source-backed Boolean result is implied. Review the original author's licensing and redistribution terms before sharing data or artifacts.
+
 ## Pipeline
 
 <escape>Original v2.8–v3.5 source reports and exact original STEP/GLB receipts
@@ -18,7 +36,7 @@ The original frame XCAF source contains 244 solid occurrences, including four pa
 → immutable v3.7 run-plan JSON with original SHA-256 receipts and 242 retained frame indices + 4 motor indices
 → reimport BOTH original STEP binaries in a separate CAD worker
 → recompute bounding boxes for all 242 × 4 source-solid combinations
-→ require exact match against the planned conservative AABB pair set
+→ require exact historical v3.3 pair-set match AND an independent conservative near-contact guard (any extra contact blocks v3.7 clearance)
 → execute each screened source pair in a new bounded OpenCascade process
 → immutable v3.7 BREP result with positive/zero/failed/timeout status for every attempted pair
 → separate browser reviewer and explicit physical-fit NOT APPROVED.</escape>
