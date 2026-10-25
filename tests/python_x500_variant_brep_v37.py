@@ -35,6 +35,37 @@ class TestV37SourceBrepContract(unittest.TestCase):
   self.assertFalse(runner.valid_pair_measurement(
    "INDETERMINATE_SUBTHRESHOLD_INTERSECTION",None))
 
+ def test_boolean_topology_preserves_zero_volume_contacts(self):
+  classify=runner.classify_boolean_topology
+  self.assertEqual(classify(True,True,False,False,0),
+                   "MODEL_ZERO_INTERSECTION")
+  self.assertEqual(classify(False,True,False,False,0),
+                   "MODEL_ZERO_INTERSECTION")
+  self.assertEqual(classify(False,True,False,True,0),
+                   "INDETERMINATE_NONVOLUMETRIC_CONTACT")
+  self.assertEqual(classify(False,True,True,False,0),
+                   "INDETERMINATE_NONVOLUMETRIC_CONTACT")
+  self.assertTrue(runner.valid_pair_measurement(
+   "INDETERMINATE_NONVOLUMETRIC_CONTACT",0))
+  self.assertFalse(runner.valid_pair_measurement(
+   "INDETERMINATE_NONVOLUMETRIC_CONTACT",0.00001))
+  self.assertEqual(classify(False,True,True,False,1e-5),
+                   "INDETERMINATE_SUBTHRESHOLD_INTERSECTION")
+  self.assertEqual(classify(False,True,True,False,0.001),
+                   "MODEL_POSITIVE_INTERSECTION")
+  for bad in [
+   (True,True,True,False,0),
+   (True,True,False,True,0),
+   (False,False,True,False,0),
+   (False,True,False,True,0.002),
+   (False,True,True,False,float("nan")),
+   (False,True,True,False,-0.0000001),
+   (False,True,True,None,0),
+  ]:
+   with self.subTest(bad=bad):
+    with self.assertRaisesRegex(ValueError,"X500 v3.7 BREP run blocked"):
+     classify(*bad)
+
  def test_source_name_hash_blocked_before_any_optional_cad_import(self):
   with tempfile.TemporaryDirectory() as d:
    invalid=Path(d)/"x500v2-frame.step"
@@ -97,12 +128,14 @@ class TestV37SourceBrepContract(unittest.TestCase):
   # genuine STEP import in the isolated CAD worker, not this Python test.
   from types import SimpleNamespace
   class FakeSolid:
-   def __init__(self,typ="Solid",volume=4.0,bounds=None):
+   def __init__(self,typ="Solid",volume=4.0,bounds=None,valid=True):
     self.typ=typ
     self.volume=volume
+    self.valid=valid
     self.bounds=bounds or [0.,0.,0.,2.,3.,4.]
    def ShapeType(self):return self.typ
    def Volume(self):return self.volume
+   def isValid(self):return self.valid
    def BoundingBox(self):
     return SimpleNamespace(**dict(zip(
      ("xmin","ymin","zmin","xmax","ymax","zmax"),self.bounds)))
@@ -111,6 +144,7 @@ class TestV37SourceBrepContract(unittest.TestCase):
   self.assertEqual(runner.shape_bbox(valid[0]),([0.,0.,0.],[2.,3.,4.]))
   for bad in [
    [FakeSolid(typ="Shell"),FakeSolid()],
+   [FakeSolid(valid=False),FakeSolid()],
    [FakeSolid(volume=0),FakeSolid()],
    [FakeSolid(volume=float("nan")),FakeSolid()],
    [FakeSolid(bounds=[0,0,0,float("inf"),3,4]),FakeSolid()],
@@ -119,7 +153,7 @@ class TestV37SourceBrepContract(unittest.TestCase):
    [FakeSolid()],
   ]:
    with self.subTest(bad=str(bad)):
-    with self.assertRaisesRegex(ValueError,"CAD reimport|Missing, non-solid|source BREP"):
+    with self.assertRaisesRegex(ValueError,"CAD reimport|Missing, invalid|source BREP"):
      runner.validate_source_solids(bad,2,"frame")
 
  def test_json_rejects_duplicate_keys_and_nonfinite_values(self):
