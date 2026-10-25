@@ -35,6 +35,16 @@ class TestV37SourceBrepContract(unittest.TestCase):
   self.assertFalse(runner.valid_pair_measurement(
    "INDETERMINATE_SUBTHRESHOLD_INTERSECTION",None))
 
+ def test_transformed_motor_must_remain_a_valid_solid(self):
+  runner.validate_transformed_solid(False,True,True)
+  for invalid in [(True,False,False),(False,False,True),
+                  (False,True,False),(False,True,0),
+                  (False,1,True)]:
+   with self.subTest(invalid=invalid):
+    with self.assertRaisesRegex(ValueError,
+        "Transformed candidate motor is not a valid source BREP solid"):
+     runner.validate_transformed_solid(*invalid)
+
  def test_boolean_topology_preserves_zero_volume_contacts(self):
   classify=runner.classify_boolean_topology
   self.assertEqual(classify(True,True,False,False,0),
