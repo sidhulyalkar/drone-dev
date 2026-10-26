@@ -5,12 +5,17 @@ import {createX500UnqualifiedVariant,VARIANT_MODES,MOTOR_SITES}
  from './core/x500_assembly_variant_v36.mjs';
 import {planX500VariantExactBrep,reviewX500VariantBrepResult}
  from './core/x500_variant_exact_brep_v37.mjs';
+import {buildX500VariantEvidenceReport}
+ from './core/x500_variant_evidence_report_v37.mjs';
 const el=(tag,label='')=>{const x=document.createElement(tag);x.textContent=label;return x;};
 const encoded=s=>new TextEncoder().encode(s);
 const hashHex=async value=>Array.from(new Uint8Array(
  await crypto.subtle.digest('SHA-256',encoded(value))),
  x=>x.toString(16).padStart(2,'0')).join('');
 const stringify=obj=>JSON.stringify(obj,null,2)+'\n';
+const hashRawBytes=async bytes=>Array.from(new Uint8Array(
+ await crypto.subtle.digest('SHA-256',bytes)),
+ x=>x.toString(16).padStart(2,'0')).join('');
 const save=(name,data)=>{
  const u=URL.createObjectURL(new Blob([data],{type:'application/json'}));
  const a=el('a');a.href=u;a.download=name;a.click();
@@ -41,16 +46,20 @@ export function createX500VariantBrepPanel(){
  const evidenceLabel=el('label','Optional completed v3.7 local BREP worker result (JSON)');
  const evidence=el('input');evidence.id='cad-v37-result-file';evidence.type='file';
  evidence.accept='.json,application/json';evidenceLabel.append(evidence);
+ const reportExport=el('button','Export source-redacted model evidence report JSON');
+ reportExport.type='button';reportExport.id='cad-v37-export-report';
+ reportExport.disabled=true;
  const resultBox=el('pre','NO VERIFIED NEW BREP RESULT. Historical model overlaps remain unresolved.');
  resultBox.className='cad-v37-readout';resultBox.id='cad-v37-result-status';
  const warn=el('small','This workflow does not run CAD Booleans inside the browser, select real motor hardware, remove physical parts, certify an OEM BOM, verify fastener engagement or authorize flight. Partial, failed, timed-out or zero modeled intersection results cannot certify actual fit.');
- panel.append(intro,controls,statement,info,exportRow,evidenceLabel,resultBox,warn);
- let source=null,built=null,busy=0;
+ panel.append(intro,controls,statement,info,exportRow,evidenceLabel,reportExport,resultBox,warn);
+ let source=null,built=null,busy=0,reviewedReport=null;
  function download(name,value){if(!value)throw Error('No verified research file prepared');save(name,value);}
  function reset(){
   ++busy;source=null;built=null;panel.hidden=true;
   site.value='arm-1';pose.replaceChildren();evidence.value='';
   info.textContent='';resultBox.textContent='NO VERIFIED NEW BREP RESULT.';
+  reviewedReport=null;reportExport.disabled=true;
   scenarioExport.disabled=true;runExport.disabled=true;
  }
  function posesForSite(){
@@ -69,7 +78,9 @@ export function createX500VariantBrepPanel(){
   void recalculate();
  }
  async function recalculate(){
-  const ticket=++busy;built=null;scenarioExport.disabled=true;runExport.disabled=true;
+  const ticket=++busy;built=null;reviewedReport=null;
+  scenarioExport.disabled=true;runExport.disabled=true;reportExport.disabled=true;
+  evidence.value='';
   resultBox.textContent='NO VERIFIED NEW BREP RESULT. Select a pose and execute locally.';
   if(!source||!pose.value){statement.textContent='No opposing-normal source pose selected.';return;}
   try{
@@ -123,8 +134,12 @@ export function createX500VariantBrepPanel(){
  runExport.addEventListener('click',()=>{
   download('x500-arm-'+site.value+'-exact-brep-request.v37.json',built?.planText);
  });
+ reportExport.addEventListener('click',()=>{
+  download('x500-'+site.value+'-model-evidence.v37.json',
+   reviewedReport?stringify(reviewedReport):null);
+ });
  evidence.addEventListener('change',async()=>{
-  const ticket=++busy;
+  const ticket=++busy;reviewedReport=null;reportExport.disabled=true;
   resultBox.textContent='Examining locally generated BREP evidence. No physical fit authorization.';
   const chosen=built;
   const file=evidence.files?.[0];
@@ -133,9 +148,15 @@ export function createX500VariantBrepPanel(){
   }
   try{
    if(file.size>512*1024)throw Error('v3.7 BREP result exceeds 512 KB');
-   const receipt=JSON.parse(await file.text());
+   const bytes=await file.arrayBuffer();
+   const receipt=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+   const receiptDigest=await hashRawBytes(bytes);
    if(ticket!==busy)return;
    const validated=reviewX500VariantBrepResult(chosen.plan,receipt,chosen.planDigest);
+   const report=buildX500VariantEvidenceReport(
+    chosen.plan,receipt,chosen.planDigest,receiptDigest);
+   if(ticket!==busy)return;
+   reviewedReport=report;reportExport.disabled=false;
    resultBox.textContent=[
     'CAD MODEL ONLY: '+validated.modeledStatus,
     'Expected/recorded exact BREP pairs: '+validated.numberOfExpectedPairs+
@@ -150,6 +171,7 @@ export function createX500VariantBrepPanel(){
     'Indeterminate/not-run pairs: '+validated.untestedOrIndeterminatePairs,
     'Largest modeled positive overlap: '+validated.largestPositiveModelOverlapMm3+' mm³',
     'Largest small positive modeled overlap: '+validated.largestSubthresholdModelOverlapMm3+' mm³',
+    'Source-linked evidence report: READY TO EXPORT (not independently attested)',
     'Mechanical fastener/physical BOM qualification: NO',
     'Real-world fit, manufacture, procurement, power/flight: NOT APPROVED'
    ].join('\n');
