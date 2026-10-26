@@ -1,12 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {spawnSync} from 'node:child_process';
 import {X500_SOURCE_OBSERVATIONS_V28 as S} from '../core/x500_real_source_observations_v28.mjs';
 import {VARIANT_MODES,MOTOR_SITES,VARIANT_SCHEMA} from '../core/x500_assembly_variant_v36.mjs';
 import {RUN_SCHEMA,RESULT_SCHEMA,planX500VariantExactBrep,
  reviewX500VariantBrepResult} from '../core/x500_variant_exact_brep_v37.mjs';
 import {buildX500VariantEvidenceReport,REPORT_SCHEMA}
  from '../core/x500_variant_evidence_report_v37.mjs';
+import {verifySubmittedX500ModelReport}
+ from '../tools/verify_x500_model_report_v37.mjs';
 const A='a'.repeat(64),B='b'.repeat(64),C='c'.repeat(64);
 const poses={
  'arm-1':['nn',35,[56,189]],'arm-2':['np',62,[83,191]],
@@ -314,6 +321,66 @@ test('model report refuses unbound hashes, forged approvals, unverified gaps and
  const duplicate=structuredClone(r);duplicate.pairs[1]={...duplicate.pairs[0]};
  assert.throws(()=>buildX500VariantEvidenceReport(p,duplicate,C,'d'.repeat(64)),
   /Duplicate, unplanned or unclassified/);
+});
+
+test('offline model report verifier re-hashes exact plan/receipt bytes and matches entire export',()=>{
+ const p=plan(fixture());
+ const stringify=x=>JSON.stringify(x,null,2)+'\n';
+ const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+ const planBytes=Buffer.from(stringify(p));
+ const receipt=measured(p);
+ receipt.sourcePlanJsonSha256=sha(planBytes);
+ const receiptBytes=Buffer.from(stringify(receipt));
+ const expected=buildX500VariantEvidenceReport(
+  p,receipt,sha(planBytes),sha(receiptBytes));
+ const reportBytes=Buffer.from(stringify(expected));
+ const inputs={planBytes,receiptBytes,reportBytes};
+ const verified=verifySubmittedX500ModelReport(inputs);
+ assert.equal(verified.status,'CONSISTENT_SUBMITTED_RECEIPT_NOT_SOURCE_ATTESTATION');
+ assert.equal(verified.planSha256,sha(planBytes));
+ assert.equal(verified.workerReceiptSha256,sha(receiptBytes));
+ assert.equal(verified.modeledStatus,'ALL_SCREENED_MODEL_PAIRS_ZERO_NOT_PHYSICAL_FIT');
+ assert.equal(verified.plannedPairs,22);
+ assert.equal(verified.recordedPairs,22);
+ assert.equal(verified.sourceExecutionIndependentlyAttested,false);
+ assert.equal(verified.independentlyReproduced,false);
+ assert.equal(verified.physicalFitApproved,false);
+ const mutReceipt=structuredClone(receipt);
+ mutReceipt.pairs[0].modelMinimumDistanceMm=0.7;
+ assert.throws(()=>verifySubmittedX500ModelReport({
+  ...inputs,receiptBytes:Buffer.from(stringify(mutReceipt))}),
+  /Report bytes differ from the deterministic result/);
+ const mutReport=structuredClone(expected);
+ mutReport.physicalFitApproved=true;
+ assert.throws(()=>verifySubmittedX500ModelReport({
+  ...inputs,reportBytes:Buffer.from(stringify(mutReport))}),
+  /Report bytes differ from the deterministic result/);
+ const alteredPlan=structuredClone(p);
+ alteredPlan.targetSiteId='arm-2';
+ assert.throws(()=>verifySubmittedX500ModelReport({
+  ...inputs,planBytes:Buffer.from(stringify(alteredPlan))}),
+  /source-bound fresh run\/result byte provenance mismatch/);
+ const paddedReport=Buffer.from(stringify(expected)+'\n');
+ assert.throws(()=>verifySubmittedX500ModelReport({...inputs,reportBytes:paddedReport}),
+  /Report bytes differ from the deterministic result/);
+ assert.throws(()=>verifySubmittedX500ModelReport({
+  ...inputs,reportBytes:Buffer.from('invalid-json-padding!')}),
+  /valid UTF-8 JSON/);
+ const root=mkdtempSync(join(tmpdir(),'aeroforge-report-'));
+ try{
+  const paths=['plan','receipt','report'].map(name=>join(root,name+'.json'));
+  [planBytes,receiptBytes,reportBytes].forEach((bytes,i)=>writeFileSync(paths[i],bytes));
+  const tool=fileURLToPath(new URL('../tools/verify_x500_model_report_v37.mjs',import.meta.url));
+  const invoke=()=>spawnSync(process.execPath,[tool,'--plan',paths[0],
+   '--receipt',paths[1],'--report',paths[2]],{encoding:'utf8'});
+  const ok=invoke();
+  assert.equal(ok.status,0,ok.stderr);
+  assert.equal(JSON.parse(ok.stdout).physicalFitApproved,false);
+  writeFileSync(paths[2],Buffer.from(stringify(mutReport)));
+  const blocked=invoke();
+  assert.equal(blocked.status,1);
+  assert.match(blocked.stderr,/Report bytes differ/);
+ }finally{rmSync(root,{recursive:true,force:true});}
 });
 
 test('plan and results reject poisoned source, masks, pose reflection, omitted solids, approval upgrades',()=>{
