@@ -310,6 +310,7 @@ test('v3.7 exact source BREP execution planning remains inaccessible without ori
  await expect(page.locator('#cad-v37-brep-execution')).toBeHidden();
  await expect(page.locator('#cad-v37-export-variant')).toBeDisabled();
  await expect(page.locator('#cad-v37-export-plan')).toBeDisabled();
+ await expect(page.locator('#cad-v37-export-report')).toBeDisabled();
  const frame=fixture('x500v2-frame.step','FRAME');
  const motor=fixture('AIR2216II_Motor_3D.STEP','MOTOR');
  await choose(page,0,frame);await choose(page,1,motor);
@@ -318,6 +319,7 @@ test('v3.7 exact source BREP execution planning remains inaccessible without ori
   'Two local STEP and GLB digests matched their manifests');
  await expect(page.locator('#cad-v37-brep-execution')).toBeHidden();
  await expect(page.locator('#cad-v37-export-plan')).toBeDisabled();
+ await expect(page.locator('#cad-v37-export-report')).toBeDisabled();
  // The explicitly unverified v2.4 research action has a lower trust gate.
  await expect(page.getByRole('button',{name:'Create unverified mating proposal'})).toBeEnabled();
 });
@@ -344,4 +346,5 @@ test('failed reverification revokes the previously enabled unverified research p
  await expect(proposal).toBeDisabled();
  await expect(page.locator('#cad-v37-brep-execution')).toBeHidden();
  await expect(page.locator('#cad-v37-export-plan')).toBeDisabled();
+ await expect(page.locator('#cad-v37-export-report')).toBeDisabled();
 });
