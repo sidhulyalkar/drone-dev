@@ -133,6 +133,23 @@ It does **not** embed original STEP bytes, the raw historical surveys, source co
 
 **Critical trust distinction:** The SHA-256 values authenticate the identity of the *submitted bytes*, not the fact that a CAD run occurred. A self-authored JSON matching the expected schema cannot prove original source acquisition, OpenCascade execution, independently reproducible solid identities, physical fit or flight readiness. A genuine source-backed experiment and its kernel build must be independently audited outside the browser. A fully model-separated report is still evidence of **one nominal pose only**, not a certified physical clearance.
 
+### Independently verify a portable report's *internal consistency*
+
+A second engineer can independently re-hash the **exact v3.7 plan JSON bytes** and **exact worker-result JSON bytes** and recompute the browser's entire redacted report using the Node.js CLI. This is useful for review without needing access to the private STEP binaries.
+
+```bash
+node tools/verify_x500_model_report_v37.mjs \
+  --plan "/private/x500-arm-arm-1-exact-brep-request.v37.json" \
+  --receipt "/private/x500-arm1-original-source-brep-result.v37.json" \
+  --report "/private/x500-arm-1-model-evidence.v37.json"
+```
+
+Equivalent project command: `npm run evidence:verify -- --plan PLAN.json --receipt WORKER.json --report REPORT.json`.
+
+The verifier reads bounded regular, non-symlink files, recalculates SHA-256 digests of both input byte streams, validates source-linked pair/status fields via the existing v3.7 browser contract, regenerates the deterministic report, and requires the supplied report **bytes** to match its canonical JSON export. Modifying any reported status, volume, distance, approval flag, source identity, plan, or receipt will cause a nonzero exit unless all interdependent evidence is also recomputed. Tests exercise genuine CLI subprocess execution and both positive and adversarial fixtures.
+
+A successful verifier output says `CONSISTENT_SUBMITTED_RECEIPT_NOT_SOURCE_ATTESTATION`. This is **not** proof that the worker genuinely ran or that the operator possessed matching STEP geometry: an adversary can create mutually consistent but fictional files. True original-source qualification still needs independent source acquisition, geometry and XCAF identity witnesses, OCCT execution records, and appropriate physical validation. The CLI does not modify source files or write a replacement report.
+
 ## Independent distance witness for model-zero BREP results
 
 **Actual OpenCascade kernel finding:** `BRepAlgoAPI_Common` can return a valid, *empty* `COMPOUND` for two touching solids. That exact same kind of empty result can occur for two geometrically separated solids. Therefore, checking only `Common.IsDone()`, `BRepCheck_Analyzer(...).IsValid()`, topology explorers and zero volume **does not prove the original solids are separated**.
