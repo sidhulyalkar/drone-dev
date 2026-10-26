@@ -1,0 +1,4 @@
+# Optional real-OpenCascade synthetic conformance suite, not original X500 CAD.
+# Kept separate from lightweight geometry contract CI.
+cadquery==2.8.0
+cadquery-ocp==7.9.3.1.1

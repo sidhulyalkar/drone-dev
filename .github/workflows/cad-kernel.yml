@@ -1,0 +1,30 @@
+name: Synthetic OpenCascade kernel conformance
+on:
+  pull_request:
+    paths:
+      - 'tools/x500_variant_brep_runner_v37.py'
+      - 'tests/python_x500_variant_brep_v37.py'
+      - 'requirements-cad-kernel.txt'
+      - '.github/workflows/cad-kernel.yml'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  synthetic-occt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: requirements-cad-kernel.txt
+      - name: Install pinned CadQuery and OCCT kernel
+        run: python -m pip install -r requirements-cad-kernel.txt
+      - name: Display CAD kernel package versions
+        run: |
+          python -m pip show cadquery cadquery-ocp
+      - name: Exercise synthetic real-kernel contact and evidence controls
+        run: python -m unittest discover -s tests -p python_x500_variant_brep_v37.py -v

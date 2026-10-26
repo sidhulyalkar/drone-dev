@@ -12,6 +12,9 @@ if(host){
  const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');};
  $('v22-date').value=today();$('v22-review-date').value=today();
  function emit(){window.dispatchEvent(new CustomEvent('aeroforge:inspection-journal-updated',{detail:{journal}}));}
+ // Late-mounted checklist modules can request the current immutable journal snapshot.
+ // The reply includes self-reported receipts only and does not imply verification.
+ window.addEventListener('aeroforge:inspection-journal-requested',()=>{if(journal)emit();});
  function render(){
   if(!record)return;
   if(!journal)journal=startInspectionJournal(record);

@@ -1,5 +1,8 @@
 name: Engineering screening tests
 on: [push, pull_request]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 jobs:
   node-tests:
     runs-on: ubuntu-latest
