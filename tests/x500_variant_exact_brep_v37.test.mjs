@@ -5,6 +5,8 @@ import {X500_SOURCE_OBSERVATIONS_V28 as S} from '../core/x500_real_source_observ
 import {VARIANT_MODES,MOTOR_SITES,VARIANT_SCHEMA} from '../core/x500_assembly_variant_v36.mjs';
 import {RUN_SCHEMA,RESULT_SCHEMA,planX500VariantExactBrep,
  reviewX500VariantBrepResult} from '../core/x500_variant_exact_brep_v37.mjs';
+import {buildX500VariantEvidenceReport,REPORT_SCHEMA}
+ from '../core/x500_variant_evidence_report_v37.mjs';
 const A='a'.repeat(64),B='b'.repeat(64),C='c'.repeat(64);
 const poses={
  'arm-1':['nn',35,[56,189]],'arm-2':['np',62,[83,191]],
@@ -222,6 +224,96 @@ test('empty Boolean without an independently measured gap is not model clearance
  forged.pairs[0].modelMinimumDistanceMm=undefined;
  assert.throws(()=>reviewX500VariantBrepResult(p,forged,C),
   /Model-zero BREP requires an independent positive separation distance/);
+});
+
+test('redacted model report includes source/receipt provenance and every planned pair',()=>{
+ const p=plan(fixture());
+ const result=measured(p);
+ const report=buildX500VariantEvidenceReport(p,result,C,'d'.repeat(64));
+ assert.equal(report.schema,REPORT_SCHEMA);
+ assert.equal(report.authority,
+  'OPERATOR_SUBMITTED_SOURCE_LINKED_MODEL_RECEIPT_NOT_PHYSICAL_APPROVAL');
+ assert.equal(report.provenance.exactPlanJsonSha256,C);
+ assert.equal(report.provenance.exactWorkerResultJsonSha256,'d'.repeat(64));
+ assert.equal(report.provenance.sourceExecutionIndependentlyAttested,false);
+ assert.equal(report.coverage.plannedPairs,22);
+ assert.equal(report.coverage.recordedPairs,22);
+ assert.equal(report.coverage.unexecutedPairs,0);
+ assert.equal(report.coverage.modelZeroPairs,22);
+ assert.equal(report.coverage.allModelPairsConclusive,true);
+ assert.equal(report.modelAssessment.level,'MODELED_SEPARATION_ONLY');
+ assert.equal(report.modelAssessment.minimumReportedSeparatedModelGapMm,0.5);
+ assert.equal(report.requirements[0].id,'modeledPairAssessment');
+ assert.equal(report.requirements[0].status,'MODELED_SEPARATION_ONLY');
+ assert.ok(report.requirements.slice(1).every(x=>x.status==='NOT_VERIFIED'));
+ assert.equal(report.pairEvidence.length,22);
+ assert.deepEqual(report.pairEvidence[0],{
+  ...p.expectedOriginalSourceAabbPairs[0],
+  status:'MODEL_ZERO_INTERSECTION',
+  modelIntersectionVolumeMm3:0,modelMinimumDistanceMm:0.5
+ });
+ assert.equal(report.physicalFitApproved,false);
+ assert.equal(report.flightApproved,false);
+ assert.equal(report.provenance.sourceCadBytesEmbedded,false);
+ assert.equal(report.provenance.rawSourceReportsEmbedded,false);
+ assert.ok(!JSON.stringify(report).includes('nativeTranslationMm'));
+});
+test('redacted model report preserves incomplete pairs and ambiguous contact without inventing a measurement',()=>{
+ const p=plan(fixture()),r=measured(p);
+ const missing=r.pairs.splice(3,1)[0];
+ r.pairs[0].status='INDETERMINATE_GEOMETRIC_CONTACT';
+ r.pairs[0].modelMinimumDistanceMm=0;
+ r.pairs[1].status='INDETERMINATE_TIMEOUT';
+ r.pairs[1].modelIntersectionVolumeMm3=null;
+ r.pairs[1].modelMinimumDistanceMm=null;
+ r.complete=false;
+ const report=buildX500VariantEvidenceReport(p,r,C,'e'.repeat(64));
+ assert.equal(report.modelAssessment.level,'INDETERMINATE');
+ assert.equal(report.coverage.recordedPairs,21);
+ assert.equal(report.coverage.unexecutedPairs,1);
+ assert.equal(report.coverage.timeoutOrErrorPairs,1);
+ assert.equal(report.coverage.ambiguousOrContactPairs,1);
+ assert.equal(report.coverage.allModelPairsConclusive,false);
+ const missingRow=report.pairEvidence.find(x=>x.frameSolidIndex===missing.frameSolidIndex&&
+   x.motorSolidIndex===missing.motorSolidIndex);
+ assert.equal(missingRow.status,'NOT_EXECUTED');
+ assert.equal(missingRow.modelIntersectionVolumeMm3,null);
+ assert.equal(missingRow.modelMinimumDistanceMm,null);
+ assert.equal(report.pairEvidence[0].status,'INDETERMINATE_GEOMETRIC_CONTACT');
+ assert.equal(report.pairEvidence[0].modelMinimumDistanceMm,0);
+ assert.ok(report.requirements.slice(1).every(x=>x.status==='NOT_VERIFIED'));
+});
+test('positive model interference remains a blocker even if other pairs remain incomplete',()=>{
+ const p=plan(fixture()),r=measured(p,true);
+ r.pairs.pop();r.complete=false;
+ const report=buildX500VariantEvidenceReport(p,r,C,'f'.repeat(64));
+ assert.equal(report.modelAssessment.level,'MODELED_INTERFERENCE');
+ assert.equal(report.modelAssessment.result,'MODEL_INTERFERENCE_PRESENT');
+ assert.equal(report.coverage.positiveModelOverlapPairs,1);
+ assert.equal(report.coverage.unexecutedPairs,1);
+ assert.equal(report.coverage.allModelPairsConclusive,false);
+ assert.equal(report.modelAssessment.largestPositiveOverlapMm3,3.5);
+ assert.equal(report.physicalFitApproved,false);
+});
+test('model report refuses unbound hashes, forged approvals, unverified gaps and duplicate source pairs',()=>{
+ const p=plan(fixture()),r=measured(p);
+ assert.throws(()=>buildX500VariantEvidenceReport(p,r,'bad','d'.repeat(64)),
+  /SHA-256 receipts required/);
+ assert.throws(()=>buildX500VariantEvidenceReport(p,r,C,'bad'),
+  /SHA-256 receipts required/);
+ const badHash=structuredClone(r);
+ badHash.sourcePlanJsonSha256='0'.repeat(64);
+ assert.throws(()=>buildX500VariantEvidenceReport(p,badHash,C,'d'.repeat(64)),
+  /source-bound fresh run\/result byte provenance mismatch/);
+ const forged=structuredClone(r);forged.physicalFitApproved=true;
+ assert.throws(()=>buildX500VariantEvidenceReport(p,forged,C,'d'.repeat(64)),
+  /Unverified authority/);
+ const noGap=structuredClone(r);delete noGap.pairs[0].modelMinimumDistanceMm;
+ assert.throws(()=>buildX500VariantEvidenceReport(p,noGap,C,'d'.repeat(64)),
+  /independent positive separation/);
+ const duplicate=structuredClone(r);duplicate.pairs[1]={...duplicate.pairs[0]};
+ assert.throws(()=>buildX500VariantEvidenceReport(p,duplicate,C,'d'.repeat(64)),
+  /Duplicate, unplanned or unclassified/);
 });
 
 test('plan and results reject poisoned source, masks, pose reflection, omitted solids, approval upgrades',()=>{
