@@ -9,6 +9,7 @@
     "test:cad": "node tools/run_cad_tests.mjs",
     "setup:cad": "bash tools/setup_cad.sh",
     "cad:inventory": "python3 tools/step_cad_inventory_v11.py --help",
-    "cad:visual-package": "python3 tools/cad_visual_package_v13.py --help"
+    "cad:visual-package": "python3 tools/cad_visual_package_v13.py --help",
+    "evidence:verify": "node tools/verify_x500_model_report_v37.mjs"
   }
 }
